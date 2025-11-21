@@ -54,11 +54,7 @@ export default async function DowntownChoicePage({
                 href={`/casts/${downtown.id}?prefecture=${encodeURIComponent(prefecture)}`}
                 className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-fuchsia-300/60 hover:bg-white/10"
               >
-                <span className="text-sm uppercase tracking-[0.3em] text-white/60">Downtown</span>
                 <p className="text-2xl font-semibold">{downtown.downtownName}</p>
-                <p className="text-xs text-white/70">
-                  ID: {downtown.id}
-                </p>
               </Link>
             ))}
           </div>
