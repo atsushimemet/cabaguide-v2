@@ -144,9 +144,6 @@ const AreaSearchCTA = ({ sectionId }: AreaSearchCTAProps) => {
       className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex flex-col gap-1 text-center sm:text-left">
-        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-fuchsia-200">
-          TOP
-        </span>
         <h2 className="text-2xl font-semibold text-white">エリアから探す</h2>
         <p className="text-sm text-white/70">
           今夜のとっておきを北海道から九州まで一気にチェック。
