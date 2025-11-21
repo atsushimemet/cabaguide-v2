@@ -29,3 +29,13 @@ export const findDowntownsByPrefecture = (prefectureName: string): Area[] => {
       ?.downtowns ?? []
   );
 };
+
+export const getPrefectureList = (): string[] => {
+  return Array.from(new Set(areas.map((area) => area.todofukenName))).sort(
+    (a, b) => a.localeCompare(b, "ja")
+  );
+};
+
+export const getAreaById = (id: number): Area | undefined => {
+  return areas.find((area) => area.id === id);
+};
