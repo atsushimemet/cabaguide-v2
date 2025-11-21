@@ -4,9 +4,7 @@ import Link from "next/link";
 import { Cast } from "@/types/cast";
 
 export const formatFollowers = (value: number) => {
-  const manValue = Math.floor((value / 10000) * 10) / 10;
-  const formatted = manValue.toFixed(1);
-  return `総フォロワー数 ${formatted}万`;
+  return `総フォロワー数 ${value.toLocaleString("ja-JP")}`;
 };
 
 export type CastCardProps = {
