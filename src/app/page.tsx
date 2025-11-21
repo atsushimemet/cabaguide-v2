@@ -110,7 +110,6 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/40">
               FOOTER
             </p>
-            <h4 className="mt-2 text-xl font-semibold">主要導線</h4>
           </div>
           <div className="mt-6 grid gap-4 text-center text-sm text-white/80 sm:grid-cols-2 lg:grid-cols-4 lg:text-left">
             {footerLinks.map((link) => (
