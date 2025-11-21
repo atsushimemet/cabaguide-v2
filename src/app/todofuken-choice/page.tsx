@@ -13,9 +13,7 @@ export default function TodofukenChoicePage() {
           STEP 1
         </p>
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">都道府県を選択</h1>
-        <p className="mt-2 text-sm text-white/80">
-          cabaguideがサポートする都道府県から気になるエリアを選んでください。
-        </p>
+        <p className="mt-2 text-sm text-white/80">都道府県を選んでください。</p>
       </div>
 
       <section className="rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
