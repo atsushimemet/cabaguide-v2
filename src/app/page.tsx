@@ -48,28 +48,7 @@ export default function Home() {
         </header>
 
         <main className="flex flex-col gap-12">
-          <section
-            id="area-search"
-            className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div className="flex flex-col gap-1 text-center sm:text-left">
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-fuchsia-200">
-                TOP
-              </span>
-              <h2 className="text-2xl font-semibold text-white">
-                エリアから探す
-              </h2>
-              <p className="text-sm text-white/70">
-                今夜のとっておきを北海道から九州まで一気にチェック。
-              </p>
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 px-8 py-3 text-base font-semibold shadow-[0_0_25px_rgba(236,72,153,0.45)] transition hover:scale-105"
-            >
-              エリアから探す
-            </button>
-          </section>
+          <AreaSearchCTA sectionId="area-search" />
 
           <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:flex lg:items-center lg:text-left">
             <div className="flex-1 space-y-3">
@@ -122,6 +101,8 @@ export default function Home() {
               資料をダウンロード
             </button>
           </section>
+
+          <AreaSearchCTA />
         </main>
 
         <footer className="mt-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
@@ -150,6 +131,35 @@ export default function Home() {
 
 type TopCastCardProps = {
   cast: (typeof topCasts)[number];
+};
+
+type AreaSearchCTAProps = {
+  sectionId?: string;
+};
+
+const AreaSearchCTA = ({ sectionId }: AreaSearchCTAProps) => {
+  return (
+    <section
+      id={sectionId}
+      className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div className="flex flex-col gap-1 text-center sm:text-left">
+        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-fuchsia-200">
+          TOP
+        </span>
+        <h2 className="text-2xl font-semibold text-white">エリアから探す</h2>
+        <p className="text-sm text-white/70">
+          今夜のとっておきを北海道から九州まで一気にチェック。
+        </p>
+      </div>
+      <button
+        type="button"
+        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 px-8 py-3 text-base font-semibold shadow-[0_0_25px_rgba(236,72,153,0.45)] transition hover:scale-105"
+      >
+        エリアから探す
+      </button>
+    </section>
+  );
 };
 
 const TopCastCard = ({ cast }: TopCastCardProps) => {
