@@ -9,13 +9,13 @@ type CastListPageProps = {
   params: {
     downtownId: string;
   };
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     prefecture?: string;
-  };
+  }>;
 };
 
-export default function CastListPage({ params, searchParams }: CastListPageProps) {
+export default async function CastListPage({ params, searchParams }: CastListPageProps) {
   const downtownId = Number(params.downtownId);
 
   if (Number.isNaN(downtownId)) {
@@ -28,7 +28,8 @@ export default function CastListPage({ params, searchParams }: CastListPageProps
     notFound();
   }
 
-  const requestedPage = Number(searchParams.page ?? "1");
+  const paramsData = await searchParams;
+  const requestedPage = Number(paramsData.page ?? "1");
   const { casts, totalCount, totalPages, currentPage } = getPaginatedCasts(
     downtownId,
     requestedPage,

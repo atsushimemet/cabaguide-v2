@@ -4,15 +4,16 @@ import { redirect } from "next/navigation";
 import { findDowntownsByPrefecture } from "@/lib/areas";
 
 type DowntownChoicePageProps = {
-  searchParams: {
+  searchParams: Promise<{
     prefecture?: string;
-  };
+  }>;
 };
 
-export default function DowntownChoicePage({
+export default async function DowntownChoicePage({
   searchParams,
 }: DowntownChoicePageProps) {
-  const prefecture = searchParams.prefecture;
+  const params = await searchParams;
+  const prefecture = params.prefecture;
 
   if (!prefecture) {
     redirect("/todofuken-choice");
