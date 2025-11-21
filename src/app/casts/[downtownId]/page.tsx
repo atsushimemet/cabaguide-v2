@@ -6,9 +6,9 @@ import { getAreaById } from "@/lib/areas";
 import { getPaginatedCasts, PAGE_SIZE } from "@/lib/casts";
 
 type CastListPageProps = {
-  params: {
+  params: Promise<{
     downtownId: string;
-  };
+  }>;
   searchParams: Promise<{
     page?: string;
     prefecture?: string;
@@ -16,7 +16,8 @@ type CastListPageProps = {
 };
 
 export default async function CastListPage({ params, searchParams }: CastListPageProps) {
-  const downtownId = Number(params.downtownId);
+  const paramsData = await params;
+  const downtownId = Number(paramsData.downtownId);
 
   if (Number.isNaN(downtownId)) {
     notFound();
@@ -28,8 +29,8 @@ export default async function CastListPage({ params, searchParams }: CastListPag
     notFound();
   }
 
-  const paramsData = await searchParams;
-  const requestedPage = Number(paramsData.page ?? "1");
+  const searchParamsData = await searchParams;
+  const requestedPage = Number(searchParamsData.page ?? "1");
   const { casts, totalCount, totalPages, currentPage } = getPaginatedCasts(
     downtownId,
     requestedPage,
