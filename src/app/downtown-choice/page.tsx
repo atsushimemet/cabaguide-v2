@@ -35,9 +35,7 @@ export default async function DowntownChoicePage({
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">
           {prefecture} の繁華街を選択
         </h1>
-        <p className="mt-2 text-sm text-white/80">
-          選択した都道府県にある繁華街からお探しください。
-        </p>
+        <p className="mt-2 text-sm text-white/80">繁華街を選んでください。</p>
       </div>
 
       <section className="rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
