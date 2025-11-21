@@ -29,7 +29,10 @@ export default function TodofukenChoicePage() {
             {prefectureGroups.map((group) => (
               <Link
                 key={group.prefecture}
-                href={`/downtown-choice?prefecture=${encodeURIComponent(group.prefecture)}`}
+                href={{
+                  pathname: "/downtown-choice",
+                  query: { prefecture: group.prefecture },
+                }}
                 className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-fuchsia-300/60 hover:bg-white/10"
               >
                 <span className="text-sm uppercase tracking-[0.3em] text-white/60">Prefecture</span>
