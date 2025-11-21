@@ -1,6 +1,6 @@
 import { Cast } from "@/types/cast";
 
-export const topCasts: Cast[] = [
+const featuredCasts: Cast[] = [
   {
     id: "hokkaido-1",
     prefecture: "北海道",
@@ -132,3 +132,7 @@ export const topCasts: Cast[] = [
     accent: "#7dd3fc",
   },
 ];
+
+export const topCasts: Cast[] = featuredCasts
+  .slice()
+  .sort((a, b) => b.followers - a.followers);

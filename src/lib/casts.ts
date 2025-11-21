@@ -14,6 +14,7 @@ export const getPaginatedCasts = (
   currentPage: number;
 } => {
   const all = getCastsByDowntownId(downtownId);
+  all.sort((a, b) => b.followers - a.followers);
   const totalCount = all.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
   const currentPage = Math.min(Math.max(page, 1), totalPages);
