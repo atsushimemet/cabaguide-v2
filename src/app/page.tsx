@@ -67,7 +67,7 @@ export default function Home() {
               type="button"
               className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 px-8 py-3 text-base font-semibold shadow-[0_0_25px_rgba(236,72,153,0.45)] transition hover:scale-105"
             >
-              エリアリストを開く
+              エリアから探す
             </button>
           </section>
 
