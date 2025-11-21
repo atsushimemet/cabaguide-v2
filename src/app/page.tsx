@@ -1,8 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { CastCard } from "@/components/CastCard";
 import { topCasts } from "@/data/topCasts";
-import { groupAreasByPrefecture } from "@/lib/areas";
 
 const footerLinks = [
   "ホーム",
@@ -15,15 +14,8 @@ const footerLinks = [
   "障害情報",
 ];
 
-const prefectureGroups = groupAreasByPrefecture();
-
-const formatFollowers = (value: number) => {
-  if (value >= 10000) {
-    const formatted = (value / 10000).toFixed(1).replace(/\\.0$/, "");
-    return `総フォロワー数 ${formatted}万`;
-  }
-
-  return `総フォロワー数 ${value.toLocaleString("ja-JP")}`;
+type AreaSearchCTAProps = {
+  sectionId?: string;
 };
 
 export default function Home() {
@@ -83,7 +75,7 @@ export default function Home() {
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {topCasts.map((cast) => (
-                <TopCastCard key={cast.id} cast={cast} />
+                <CastCard key={cast.id} cast={cast} />
               ))}
             </div>
           </section>
@@ -131,91 +123,24 @@ export default function Home() {
   );
 }
 
-type TopCastCardProps = {
-  cast: (typeof topCasts)[number];
-};
-
-type AreaSearchCTAProps = {
-  sectionId?: string;
-};
-
 const AreaSearchCTA = ({ sectionId }: AreaSearchCTAProps) => {
   return (
     <section
       id={sectionId}
-      className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between"
+      className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 text-center backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:text-left"
     >
-      <div className="flex flex-1 flex-col gap-4 text-center lg:text-left">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold text-white">エリアから探す</h2>
-          <p className="text-sm text-white/70">
-            今夜のとっておきを北海道から九州まで一気にチェック。
-          </p>
-        </div>
-
-        <div className="max-h-56 overflow-y-auto rounded-2xl border border-white/10 bg-black/20 p-4">
-          <ul className="grid gap-3 text-left text-sm text-white/80 sm:grid-cols-2">
-            {prefectureGroups.map((group) => (
-              <li
-                key={group.prefecture}
-                className="rounded-xl border border-white/5 bg-white/5 p-3"
-              >
-                <p className="text-base font-semibold text-white">
-                  {group.prefecture}
-                </p>
-                <p className="mt-1 text-xs text-white/70">
-                  {group.downtowns.map((area) => area.downtownName).join(" / ")}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="flex flex-1 flex-col gap-2">
+        <h2 className="text-2xl font-semibold text-white">エリアから探す</h2>
+        <p className="text-sm text-white/70">
+          今夜のとっておきを北海道から九州まで一気にチェック。
+        </p>
       </div>
-      <button
-        type="button"
+      <Link
+        href="/todofuken-choice"
         className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 px-8 py-3 text-base font-semibold shadow-[0_0_25px_rgba(236,72,153,0.45)] transition hover:scale-105 lg:self-start"
       >
         エリアから探す
-      </button>
-    </section>
-  );
-};
-
-const TopCastCard = ({ cast }: TopCastCardProps) => {
-  return (
-    <article className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_45px_rgba(15,6,33,0.65)] backdrop-blur-xl">
-      <Link href={cast.castLink} className="relative block overflow-hidden rounded-2xl">
-        <span
-          className="absolute right-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-black"
-          style={{ backgroundColor: cast.accent }}
-        >
-          {cast.prefecture} 1位
-        </span>
-        <Image
-          src={cast.image}
-          alt={`${cast.name}のキャスト画像`}
-          width={500}
-          height={600}
-          className="h-64 w-full object-cover transition duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-95" />
-        <div className="absolute inset-x-0 bottom-0 z-10 space-y-1 px-4 pb-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-white/70">
-            TOP CAST
-          </p>
-          <h3 className="text-2xl font-semibold leading-tight">{cast.name}</h3>
-        </div>
       </Link>
-      <div className="mt-4 flex flex-col gap-2 text-sm text-white/80">
-        <p className="font-medium text-fuchsia-100">{formatFollowers(cast.followers)}</p>
-        <Link
-          href={cast.storeLink}
-          className="inline-flex items-center gap-2 text-base font-semibold text-cyan-200 transition hover:text-white"
-        >
-          {cast.storeName}
-          <span aria-hidden>↗</span>
-        </Link>
-      </div>
-    </article>
+    </section>
   );
 };
