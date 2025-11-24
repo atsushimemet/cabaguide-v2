@@ -1,4 +1,5 @@
 import { AVAILABLE_TIME_SLOTS, getStoreById } from "@/data/mockStores";
+import { topCasts } from "@/data/topCasts";
 import { getCastSummary } from "@/lib/casts";
 import { Cast } from "@/types/cast";
 import { CastFollowerSnapshot, CastSNS, SNSPlatform } from "@/types/castProfile";
@@ -71,7 +72,9 @@ const ensureProfileData = (cast: Cast) => {
 };
 
 export const getCastDetail = (downtownId: number, castId: string): CastDetail | undefined => {
-  const cast = getCastSummary(downtownId, castId);
+  const cast =
+    getCastSummary(downtownId, castId) ??
+    topCasts.find((entry) => entry.id === castId && entry.downtownId === downtownId);
 
   if (!cast) {
     return undefined;

@@ -37,5 +37,9 @@ export const areas: Area[] = [
   { id: 34, todofukenName: "大阪府", downtownName: "北新地" },
   { id: 35, todofukenName: "広島県", downtownName: "流川・薬研堀周辺" },
   { id: 36, todofukenName: "福岡県", downtownName: "中洲" },
-  { id: 37, todofukenName: "福岡県", downtownName: "小倉" }
+  { id: 37, todofukenName: "福岡県", downtownName: "小倉" },
+  { id: 38, todofukenName: "神奈川県", downtownName: "横浜" },
+  { id: 39, todofukenName: "千葉県", downtownName: "千葉" },
+  { id: 40, todofukenName: "愛知県", downtownName: "名古屋" },
+  { id: 41, todofukenName: "京都府", downtownName: "祇園" }
 ];
