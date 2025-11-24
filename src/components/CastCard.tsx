@@ -38,6 +38,8 @@ export const CastCard = ({ cast }: CastCardProps) => {
         <p className="font-medium text-fuchsia-100">{formatFollowers(cast.followers)}</p>
         <Link
           href={cast.storeLink}
+          target="_blank"
+          rel="noreferrer"
           className="inline-flex items-center gap-2 text-base font-semibold text-cyan-200 transition hover:text-white"
         >
           {cast.storeName}
