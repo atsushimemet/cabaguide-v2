@@ -1,4 +1,4 @@
-import { getCastsByDowntownId } from "@/data/mockCasts";
+import { findCastByDowntownAndId, getCastsByDowntownId } from "@/data/mockCasts";
 import { Cast } from "@/types/cast";
 
 export const PAGE_SIZE = 10;
@@ -27,4 +27,8 @@ export const getPaginatedCasts = (
     totalPages,
     currentPage,
   };
+};
+
+export const getCastSummary = (downtownId: number, castId: string): Cast | undefined => {
+  return findCastByDowntownAndId(downtownId, castId);
 };
