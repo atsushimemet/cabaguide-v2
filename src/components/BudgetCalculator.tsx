@@ -12,8 +12,6 @@ type BudgetCalculatorProps = {
 const currencyFormatter = new Intl.NumberFormat("ja-JP");
 
 const formatYen = (value: number) => `${currencyFormatter.format(Math.max(0, Math.round(value)))}円`;
-const ensureNumber = (value: number, fallback: number = 0) =>
-  Number.isFinite(value) ? value : fallback;
 
 const defaultParams = (timeSlots: string[]): BudgetParams => {
   const startTime = timeSlots[0] ?? "20:00";
@@ -37,6 +35,8 @@ const tooltipDetails = [
 ];
 
 type NumericField = "guestCount" | "nominationCount" | "castDrinkCountPerGuest" | "extensionCount";
+const guestCountOptions = [1, 2, 3, 4, 5];
+const zeroToFiveOptions = [0, 1, 2, 3, 4, 5];
 
 export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
   const slotLabels = useMemo(() => store.timeSlots.map((slot) => slot.timeSlot), [store.timeSlots]);
@@ -50,11 +50,11 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
 
   const result: BudgetBreakdown = useMemo(() => calculateBudget(store, params), [store, params]);
 
-  const handleNumberChange = (field: NumericField) => (event: ChangeEvent<HTMLInputElement>) => {
+  const handleSelectChange = (field: NumericField) => (event: ChangeEvent<HTMLSelectElement>) => {
     const value = Number(event.target.value);
     setParams((prev) => ({
       ...prev,
-      [field]: Number.isNaN(value) ? 0 : Math.max(0, value),
+      [field]: value,
     }));
   };
 
@@ -118,46 +118,62 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
 
         <label className="space-y-1 text-sm">
           <span className="font-medium text-white/80">来店人数</span>
-          <input
-            type="number"
-            min={1}
-            value={ensureNumber(params.guestCount, 1)}
-            onChange={handleNumberChange("guestCount")}
+          <select
+            value={params.guestCount}
+            onChange={handleSelectChange("guestCount")}
             className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          />
+          >
+            {guestCountOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}名
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1 text-sm">
           <span className="font-medium text-white/80">指名キャスト数</span>
-          <input
-            type="number"
-            min={0}
-            value={ensureNumber(params.nominationCount)}
-            onChange={handleNumberChange("nominationCount")}
+          <select
+            value={params.nominationCount}
+            onChange={handleSelectChange("nominationCount")}
             className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          />
+          >
+            {zeroToFiveOptions.map((option) => (
+              <option key={`nomination-${option}`} value={option}>
+                {option}名
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1 text-sm">
           <span className="font-medium text-white/80">キャストドリンク数（1人あたり）</span>
-          <input
-            type="number"
-            min={0}
-            value={ensureNumber(params.castDrinkCountPerGuest)}
-            onChange={handleNumberChange("castDrinkCountPerGuest")}
+          <select
+            value={params.castDrinkCountPerGuest}
+            onChange={handleSelectChange("castDrinkCountPerGuest")}
             className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          />
+          >
+            {zeroToFiveOptions.map((option) => (
+              <option key={`drink-${option}`} value={option}>
+                {option}杯
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1 text-sm">
           <span className="font-medium text-white/80">延長回数</span>
-          <input
-            type="number"
-            min={0}
-            value={ensureNumber(params.extensionCount)}
-            onChange={handleNumberChange("extensionCount")}
+          <select
+            value={params.extensionCount}
+            onChange={handleSelectChange("extensionCount")}
             className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          />
+          >
+            {zeroToFiveOptions.map((option) => (
+              <option key={`extension-${option}`} value={option}>
+                {option}回
+              </option>
+            ))}
+          </select>
         </label>
 
         <div className="space-y-2 text-sm">
