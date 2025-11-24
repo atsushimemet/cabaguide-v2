@@ -1,56 +1,76 @@
-# 開発計画: キャスト詳細ページ
+# 開発ノート: dev_4 キャスト詳細ページ
 
-## 1. 概要
-- 目的: `/casts/[downtownId]` のキャストカードから遷移する詳細ページ `/cast/[id]` (仮) を実装し、プロフィール情報と予算計算機能を提供する。
-- 成果物: キャスト詳細ページ、遷移導線、モックデータ/計算ロジック、ツールチップを含むUI。
-- スコープ外: 実DB連携、外部APIからのリアルタイム情報取得、決済などの予約機能。
+docs/er.md をベースに、キャスト詳細ページ実装時に前提となるデータモデリングを整理する。
 
-## 2. 要件整理
-1. キャストカードの画像・名前クリックで詳細ページへ遷移。
-2. 詳細ページは上から順に以下情報を表示: キャスト画像、キャスト名、Instagramフォロワー数、TikTokフォロワー数、総フォロワー数、所属店舗名、店舗Google Mapリンク、予算計算UI。
-3. ユーザーが指定する項目: 開始時間、終了時間 (指定の時間帯リスト)、来店人数、指名キャスト数、キャストドリンク数。
-4. 予算は「2時間滞在」を前提に時間帯料金を参照して算出。
-5. 人数料金: 時間帯料金 × 人数。
-6. 指名キャスト数: 指名キャスト数 × 指名料 × 2時間。
-7. キャストドリンク: 1杯2,000円 × ドリンク数。
-8. 予算合計: 人数料金 + 指名料金 + ドリンク代。
-9. 予算金額にツールチップを設け、クリックで算出ロジックを説明。
+## 1. テーブル前提
+- **Area**: `id`, `todofuken_name`, `downtime_name`。店舗は必ず所属エリアを参照するため、キャストページでは `Store.area_id` を辿って表示する。
+- **Store**: `id`, `area_id`, `name`, `google_map_link`, `phone`。キャスト所属店舗の基本情報を提供。
+- **StoreBasePricing**: `store_id` と 1:1。`nomination_price`, `service_fee_rate`, `tax_rate`, `extension_price`, `light_drink_price`, `cheapest_champagne_price` を保持し、指名料・サービス料算出に利用。
+- **StoreTimeSlotPricing**: `store_id` と 1:多。`time_slot`, `main_price`, `vip_price` を保持し、予算計算時に 2h 分のベース料金を求める。
+- **Cast**: `store_id` と 1:多。`name`, `age`, `image_url` を保持。詳細ページのメイン情報。
+- **CastSNS**: `cast_id` と 1:多。`platform`, `url` を保持し、プロフィール欄に表示するリンクを抽出。
+- **CastFollowerSnapshot**: `cast_id` と 1:多。`platform`, `followers`, `captured_at` を持ち、最新レコードを Instagram/TikTok 別に抽出して表示。総フォロワー数はプラットフォームごとの最新値合算。
 
-## 3. 実装方針
-1. ルーティング: `src/app/cast/[castId]/page.tsx` (App Router) を作成し、`CastCard` のリンクを新パスに変更。
-2. データ: 既存 `mockCasts` を拡張して Instagram/TikTok フォロワー数や店舗情報、料金テーブルを持つようにする (生成スクリプトや型を更新)。
-3. 予算計算: クライアントサイドでフォームを制御。入力変更時に即時計算するフック/ユーティリティを用意。
-4. 時間帯料金: 各店舗に時間帯別料金表を持たせ、開始/終了時間から対象の時間帯を決定して 2時間分の料金を算出。
-5. ツールチップ: Headless UI or カスタムコンポーネントで表示し、内側に計算式を記載。
-6. UI: 既存のネオン風デザインに合わせ、主要情報カード + 入力フォーム + 予算結果で構成。
+## 2. 型定義・モックデータ方針
+```ts
+type Area = { id: string; todofukenName: string; downtownName: string };
 
-## 4. タスク分解
-1. **データ拡張**: Cast 型と mockCasts を Instagram/TikTok/店舗地図リンク/料金表込みで再生成。
-2. **リンク更新**: CastCard からの遷移パスを `/cast/[castId]` に変更。
-3. **詳細ページUI**: プロフィール情報セクション、店舗情報ボックス、地図リンクボタンを実装。
-4. **時間帯料金取得ロジック**: 選択した開始/終了に応じて利用する料金テーブルを決定する関数を実装。
-5. **予算計算フォーム**: フォーム状態管理、バリデーション、結果表示、ドリンク/指名計算。
-6. **ツールチップ**: 算出式をわかりやすく開示するコンポーネント実装。
-7. **結合/テスト**: ルーティング動作、計算結果、メモリライズの確認。Lint/Type Check。
+type Store = {
+  id: string;
+  areaId: string;
+  name: string;
+  googleMapLink: string;
+  phone: string;
+  basePricing: StoreBasePricing;
+  timeSlots: StoreTimeSlotPricing[];
+};
 
-## 5. スケジュール目安
-- Day 1: データモデリング、mockCasts/型更新、ルーティング設計。
-- Day 2: 詳細ページレイアウトと基本情報セクション作成。
-- Day 3: 予算計算フォーム & ロジック実装、ツールチップ追加。
-- Day 4: UI polish、アクセシビリティ微調整、テスト。
-- Day 5: ドキュメント整備、レビュー準備。
+type StoreBasePricing = {
+  nominationPrice: number;
+  serviceFeeRate: number;
+  taxRate: number;
+  extensionPrice: number;
+  lightDrinkPrice: number;
+  cheapestChampagnePrice: number;
+};
 
-## 6. リスクと対策
-- **データ複雑化**: 料金テーブル等を JSON 管理し、型定義を厳密化。
-- **計算ミス**: 単体テスト or util テストを用意してロジックを検証。
-- **UI 遷移**: 遷移導線の断絶防止のため、キャストカードのリンクパスと詳細ページの 404 fallback を丁寧に実装。
-- **フォーム入力**: 数値入力のバリデーションを行い、多人数でも破綻しない計算処理を検証。
+type StoreTimeSlotPricing = {
+  timeSlot: string; // '20:00', '22:00' etc.
+  mainPrice: number;
+  vipPrice: number;
+};
 
-## 7. 成果物チェックリスト
-- [ ] `/cast/[id]` でキャスト詳細ページが表示される。
-- [ ] キャスト画像～店舗情報までが所定の順序で表示される。
-- [ ] 開始/終了時間、人数、指名キャスト数、ドリンク数を入力できる。
-- [ ] 時間帯料金・人数料金・指名・ドリンク・合計が仕様どおり計算される。
-- [ ] 予算の横にツールチップがあり、算出ロジックを確認できる。
-- [ ] `/casts/[downtownId]` からキャスト詳細ページへ遷移できる。
-- [ ] Lint/Type Check 通過、主要フローの動作確認済み。
+type Cast = {
+  id: string;
+  storeId: string;
+  name: string;
+  age: number;
+  imageUrl: string;
+  sns: CastSNS[];
+  followerSnapshots: CastFollowerSnapshot[];
+};
+```
+
+- `mockCasts` に `store` 情報をネストせず、`storeId` を参照させて `mockStores` から populate することで ER 図の参照関係を保つ。
+- SNS とフォロワー履歴は `platform` 別に `latestFollowers` を求めるユーティリティで抽象化する。
+
+## 3. 予算計算ロジックとテーブル活用
+1. **時間帯料金**: `StoreTimeSlotPricing` から開始時間に最も近い `time_slot` を 2h 分引用する（例: 21時開始なら 21〜23 時スロットの `main_price` を使用）。
+2. **人数料金**: `main_price` × `来店人数`。VIP 指定時は `vip_price` を利用。
+3. **指名キャスト数**: `nomination_price` × `指名人数` × 2h。
+4. **キャストドリンク**: 1杯 2,000 円（`light_drink_price` が定義されていればそれを優先）。
+5. **サービス料/税**: 合計小計に `service_fee_rate` と `tax_rate` を逐次乗算。
+6. **延長料金**: 延長操作が追加された場合 `extension_price` × 延長回数で加算できるよう開口部を残す。
+
+## 4. データ取得計画
+- **API 層**: Supabase もしくは mock から `Cast` を取得 -> `store_id` で `Store` をフェッチ -> さらに `StoreBasePricing` / `StoreTimeSlotPricing` を `select('*')` + `eq('store_id', storeId)` で取得。
+- **SNS/フォロワー**: `cast_id` に紐づく最新 `CastSNS`, `CastFollowerSnapshot` を取得し、`platform` ごとに `order('captured_at', { ascending: false })` で1件ずつ抽出。
+- **クライアントキャッシュ**: React Query か SSG でデータをキャッシュし、フォーム入力時にはフロントのみで計算。
+
+## 5. 今後のタスク
+1. Supabase へ各テーブルの migration/seed を投入。
+2. `src/types/cast.ts` (仮) に上記型を実装し、API レイヤーの返り値を型安全にする。
+3. 料金計算ユーティリティ `calculateBudget(params)` を実装し、`docs/designs/design_4.md` の要件と突き合わせたテストを書く。
+4. SNS/フォロワーの最新値抽出の単体テストを追加して、履歴テーブルのデータ増加にも耐えられるようにする。
+
+ER 図の前提を満たすデータを先に整えることで、キャスト詳細ページの UI 実装時に mock 依存を減らし、Supabase 連携へスムーズに移行できる。
