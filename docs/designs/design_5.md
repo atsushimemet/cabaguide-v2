@@ -27,8 +27,7 @@ issue_5 で指摘されたスマホ入力の UX 課題を解消するため、Bu
    - 変更イベントは `BudgetCalculator` の state 更新ロジックに統合。
 4. **バリデーション**:
    - 既存の `ensureNumber`、`Math.max` のような入力チェックは select 化で不要。代わりにセレクトの options で制限。
-5. **ARIA/テキスト**:
-   - モバイルでの読上げを考慮し `aria-label` や option の日本語を明確にする。
+
 
 ## 4. 変更範囲
 - `src/components/BudgetCalculator.tsx`
