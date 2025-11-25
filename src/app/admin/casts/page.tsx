@@ -195,8 +195,18 @@ export default function AdminCastsPage() {
     <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/40">Cast</p>
-          <h1 className="text-2xl font-semibold">キャスト登録 & 一覧</h1>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/40">Cast</p>
+              <h1 className="text-2xl font-semibold">キャスト登録 & 一覧</h1>
+            </div>
+            <Link
+              href="/admin"
+              className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+            >
+              /admin に戻る
+            </Link>
+          </div>
           <p className="text-sm text-white/70">所属店舗を選択し、キャスト登録と SNS 更新を管理します。</p>
         </header>
 
