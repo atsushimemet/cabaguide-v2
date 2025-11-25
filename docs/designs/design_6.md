@@ -16,14 +16,14 @@ issue_6 の要求に基づき、管理者向けログイン〜店舗/キャス�
 | `/admin/casts` | 登録済キャスト一覧 | 写真が無い場合はプレースホルダーでカード表示 |
 | `/admin/casts/[id]` | キャスト詳細編集。SNS フォロワー数入力 | Instagram/TikTok のみ扱う |
 
-- ランタイムパスワードはクライアント側のみで照合し、成功時に `sessionStorage` 等へフラグを保存。サーバーレンダリングを避け、`next/dynamic` もしくは `useEffect` で初回読み込み時に検証。
+- ログイン時は Next.js API で `.env` の `ADMIN_PASSWORD` を照合し、成功時に HttpOnly Cookie + `sessionStorage` へセッションを保存。サーバーガード付き API からのみ Supabase へ書き込む。
 - ルーティングガードは `middleware.ts` または layout で実装し、セッションがない場合 `/admin/login` へ強制リダイレクト。
 
 ## 3. 認証仕様
-1. `.env` に `NEXT_PUBLIC_ADMIN_PASSWORD` (または `ADMIN_PASSWORD`) を定義し、build 時に注入。
-2. `/admin/login` で入力された値が一致すれば `sessionStorage.setItem('cabaguide-admin', '1')`。
+1. `.env` に `ADMIN_PASSWORD` を定義し、API 経由でのみ参照する (クライアントへ露出させない)。
+2. `/admin/login` で入力された値を API に送信 → 一致すれば Cookie + `sessionStorage` にセッションフラグを保存。
 3. 認証済であれば `/admin` へ遷移。未認証ならフォームにエラーメッセージを表示。
-4. ログアウトは `/admin` のヘッダーにボタンを置き、ストレージを削除して `/admin/login` へ戻す。
+4. ログアウトは `/admin` のヘッダーにボタンを置き、API 経由で Cookie を削除しつつ `/admin/login` へ戻す。
 
 ## 4. 店舗登録フォーム (/admin, /admin/shop)
 | フィールド | 必須 | UI | 型/レンジ |
@@ -80,12 +80,12 @@ issue_6 の要求に基づき、管理者向けログイン〜店舗/キャス�
 - React Hook Form + Zod でバリデーションを共通化するとフォーム数が増えても保守しやすい。
 
 ## 9. タスク分解
-1. `.env.example` に `ADMIN_PASSWORD` を追加し、Next コンフィグで公開。
+1. `.env.example` に `ADMIN_PASSWORD` / `SUPABASE_SERVICE_ROLE_KEY` を追加し、サーバー専用の Supabase クライアントを用意。
 2. `middleware.ts` で `/admin` 配下へのアクセスをチェックするか、`AdminGuard` コンポーネントを用意。
 3. `/admin/login` ページとカスタム hook (`useAdminSession`) を実装。
 4. `/admin` ページで店舗登録フォームとキャスト登録フォームを実装。共通フィールド (ラベル/入力) を部品化。
 5. ピッカー (select options) を `utils/pickers.ts` 的なモジュールで一元管理。
-6. Supabase への insert 処理とトランザクション対策 (失敗時ロールバック) を実装。
+6. Supabase への insert 処理は Next.js API 経由 + サービスロールキーで行い、RLS を回避しつつトランザクション順序を整理。
 7. `/admin/shop` ルートを追加し、店舗登録フォーム/一覧を切り出す。
 8. `/admin/casts` 一覧を `Suspense` + `useEffect` でデータ取得し、カード UI を Tailwind で整える。
 9. `/admin/casts/[id]` ページでフォロワー入力フォームと履歴テーブルを実装。

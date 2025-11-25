@@ -52,8 +52,9 @@ export const useAdminGuard = () => {
     };
   }, [router]);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     clearAdminSession();
+    await fetch("/api/admin/session", { method: "DELETE" });
     router.replace("/admin/login");
   }, [router]);
 

@@ -146,11 +146,6 @@ export default function AdminCastsPage() {
     setFormError(null);
     setFormSuccess(null);
 
-    if (!client) {
-      setFormError(clientError ?? "Supabase クライアントを初期化できませんでした");
-      return;
-    }
-
     if (!formState.storeId || !formState.name) {
       setFormError("店舗とキャスト名は必須です");
       return;
@@ -159,15 +154,20 @@ export default function AdminCastsPage() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await client.from("casts").insert({
-        store_id: formState.storeId,
-        name: formState.name,
-        age: formState.age ? Number(formState.age) : null,
-        image_url: formState.imageUrl || null,
+      const response = await fetch("/api/admin/casts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId: formState.storeId,
+          name: formState.name,
+          age: formState.age ? Number(formState.age) : null,
+          imageUrl: formState.imageUrl || null,
+        }),
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "キャスト登録に失敗しました");
       }
 
       setFormSuccess("キャストを登録しました");

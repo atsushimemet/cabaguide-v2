@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { hasAdminSession, persistAdminSession } from "@/hooks/useAdminSession";
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
-
 export default function AdminLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -19,13 +17,8 @@ export default function AdminLoginPage() {
     }
   }, [router]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!ADMIN_PASSWORD) {
-      setError("環境変数 NEXT_PUBLIC_ADMIN_PASSWORD が設定されていません");
-      return;
-    }
 
     if (isSubmitting) {
       return;
@@ -33,11 +26,27 @@ export default function AdminLoginPage() {
 
     setIsSubmitting(true);
 
-    if (password === ADMIN_PASSWORD) {
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.error ?? "認証に失敗しました");
+        setIsSubmitting(false);
+        return;
+      }
+
       persistAdminSession();
       router.replace("/admin");
-    } else {
-      setError("パスワードが正しくありません");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "認証に失敗しました";
+      setError(message);
       setIsSubmitting(false);
     }
   };

@@ -80,7 +80,7 @@ export default function AdminShopPage() {
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
-  const [formState, setFormState] = useState<StoreFormState>(createDefaultFormState);
+  const [formState, setFormState] = useState<StoreFormState>(() => createDefaultFormState());
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -200,59 +200,38 @@ export default function AdminShopPage() {
 
     setIsSubmitting(true);
 
+    const payload = {
+      areaId: Number(formState.areaId),
+      name: formState.name,
+      googleMapUrl: formState.googleMapUrl,
+      phone: formState.phone,
+      nominationPrice: parseNumber(formState.nominationPrice),
+      serviceFeeRate: parseNumber(formState.serviceFeeRate),
+      taxRate: parseNumber(formState.taxRate),
+      extensionPrice: parseNumber(formState.extensionPrice),
+      lightDrinkPrice: parseNumber(formState.lightDrinkPrice),
+      cheapestChampagnePrice: parseNumber(formState.cheapestChampagnePrice),
+      timeSlots: TIME_SLOT_OPTIONS.map((slot) => ({
+        timeSlot: slot,
+        mainPrice: Number(formState.timeSlots[slot].main),
+        vipPrice: formState.timeSlots[slot].vip ? Number(formState.timeSlots[slot].vip) : null,
+      })),
+    };
+
     try {
-      const { data: storeData, error: storeError } = await client
-        .from("stores")
-        .insert({
-          area_id: Number(formState.areaId),
-          name: formState.name,
-          google_map_link: formState.googleMapUrl,
-          phone: formState.phone,
-        })
-        .select("id")
-        .single();
+      const response = await fetch("/api/admin/stores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      if (storeError) {
-        throw storeError;
-      }
-
-      const storeId = storeData?.id;
-
-      if (!storeId) {
-        throw new Error("store_id を取得できませんでした");
-      }
-
-      const basePricingPayload = {
-        store_id: storeId,
-        nomination_price: parseNumber(formState.nominationPrice),
-        service_fee_rate: parseNumber(formState.serviceFeeRate) ?? null,
-        tax_rate: parseNumber(formState.taxRate) ?? null,
-        extension_price: parseNumber(formState.extensionPrice),
-        light_drink_price: parseNumber(formState.lightDrinkPrice),
-        cheapest_champagne_price: parseNumber(formState.cheapestChampagnePrice),
-      };
-
-      const { error: baseError } = await client
-        .from("store_base_pricings")
-        .insert(basePricingPayload);
-
-      if (baseError) {
-        throw baseError;
-      }
-
-      const timeSlotPayloads = TIME_SLOT_OPTIONS.map((slot) => ({
-        store_id: storeId,
-        time_slot: slot,
-        main_price: Number(formState.timeSlots[slot].main),
-        vip_price: formState.timeSlots[slot].vip ? Number(formState.timeSlots[slot].vip) : null,
-      }));
-
-      const { error: timeSlotError } = await client
-        .from("store_time_slot_pricings")
-        .insert(timeSlotPayloads);
-
-      if (timeSlotError) {
-        throw timeSlotError;
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setFormError(data?.error ?? "店舗登録に失敗しました");
+        setIsSubmitting(false);
+        return;
       }
 
       setFormSuccess("店舗を登録しました");

@@ -105,21 +105,15 @@ export default function CastDetailPage() {
     setErrorMessage(null);
     setStatusMessage(null);
 
-    if (!client || !castId) {
-      setErrorMessage(clientError ?? "Supabase 初期化エラー");
+    if (!castId) {
+      setErrorMessage("cast_id が不明です");
       return;
     }
 
-    const payload = [] as { platform: string; followers: number }[];
+    const instagramValue = formState.instagram ? Number(formState.instagram) : null;
+    const tiktokValue = formState.tiktok ? Number(formState.tiktok) : null;
 
-    if (formState.instagram) {
-      payload.push({ platform: "instagram", followers: Number(formState.instagram) });
-    }
-    if (formState.tiktok) {
-      payload.push({ platform: "tiktok", followers: Number(formState.tiktok) });
-    }
-
-    if (payload.length === 0) {
+    if (!instagramValue && !tiktokValue) {
       setErrorMessage("Instagram か TikTok のどちらかを入力してください");
       return;
     }
@@ -127,18 +121,20 @@ export default function CastDetailPage() {
     setIsSubmitting(true);
 
     try {
-      const now = new Date().toISOString();
-      const insertPayload = payload.map((item) => ({
-        cast_id: castId,
-        platform: item.platform,
-        followers: item.followers,
-        captured_at: now,
-      }));
+      const response = await fetch(`/api/admin/casts/${castId}/followers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instagram: instagramValue ?? undefined,
+          tiktok: tiktokValue ?? undefined,
+        }),
+      });
 
-      const { error } = await client.from("cast_follower_snapshots").insert(insertPayload);
-
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "更新に失敗しました");
       }
 
       setStatusMessage("フォロワー数を更新しました");
