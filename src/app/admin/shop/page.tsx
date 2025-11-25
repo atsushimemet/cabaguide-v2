@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import {
@@ -12,7 +13,6 @@ import {
   TIME_SLOT_OPTIONS,
   VIP_PRICE_OPTIONS,
 } from "@/lib/adminOptions";
-import { areas as fallbackAreas } from "@/data/areas";
 
 type AreaOption = {
   id: number;
@@ -261,10 +261,7 @@ export default function AdminShopPage() {
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-white/40">Store</p>
-              <h1 className="text-2xl font-semibold">店舗登録 / admin shop</h1>
-              <p className="text-sm text-white/70">
-                営業中のスマホから、繁華街・料金テーブル込みで登録できます。
-              </p>
+              <h1 className="text-2xl font-semibold">店舗登録</h1>
             </div>
             <button
               onClick={logout}
