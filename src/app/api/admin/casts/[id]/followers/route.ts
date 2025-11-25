@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ensureAdminSession } from "@/lib/adminAuth";
-import { getServiceSupabaseClient } from "@/lib/supabaseServer";
+import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
 export async function POST(
   request: Request,
@@ -38,7 +38,15 @@ export async function POST(
     return NextResponse.json({ error: "フォロワー数を入力してください" }, { status: 400 });
   }
 
-  const supabase = getServiceSupabaseClient();
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
 
   try {
     const insertPayload = payload.map((row) => ({
@@ -47,11 +55,12 @@ export async function POST(
     }));
     const { error } = await supabase.from("cast_follower_snapshots").insert(insertPayload);
     if (error) {
-      throw error;
+      throw new Error(error.message);
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error(`[admin/casts/${castId}/followers]`, error);
     const message = error instanceof Error ? error.message : "フォロワー更新に失敗しました";
     return NextResponse.json({ error: message }, { status: 500 });
   }

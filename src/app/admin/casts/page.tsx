@@ -157,6 +157,7 @@ export default function AdminCastsPage() {
       const response = await fetch("/api/admin/casts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           storeId: formState.storeId,
           name: formState.name,

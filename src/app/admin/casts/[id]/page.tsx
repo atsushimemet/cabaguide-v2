@@ -126,6 +126,7 @@ export default function CastDetailPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           instagram: instagramValue ?? undefined,
           tiktok: tiktokValue ?? undefined,

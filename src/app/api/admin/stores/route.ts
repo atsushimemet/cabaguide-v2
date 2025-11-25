@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ensureAdminSession } from "@/lib/adminAuth";
-import { getServiceSupabaseClient } from "@/lib/supabaseServer";
+import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
 type TimeSlotInput = {
   timeSlot: number;
@@ -39,7 +39,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "必須項目が不足しています" }, { status: 400 });
   }
 
-  const supabase = getServiceSupabaseClient();
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
 
   try {
     const { data: storeData, error: storeError } = await supabase
@@ -52,9 +60,12 @@ export async function POST(request: Request) {
       })
       .select("id")
       .single();
+    if (storeError) {
+      throw new Error(storeError.message);
+    }
 
-    if (storeError || !storeData?.id) {
-      throw storeError ?? new Error("store_id を取得できませんでした");
+    if (!storeData?.id) {
+      throw new Error("store_id を取得できませんでした");
     }
 
     const storeId = storeData.id;
@@ -71,7 +82,7 @@ export async function POST(request: Request) {
 
     const { error: baseError } = await supabase.from("store_base_pricings").insert(basePricingPayload);
     if (baseError) {
-      throw baseError;
+      throw new Error(baseError.message);
     }
 
     const slotPayloads = (timeSlots as TimeSlotInput[]).map((slot) => ({
@@ -83,11 +94,12 @@ export async function POST(request: Request) {
 
     const { error: slotError } = await supabase.from("store_time_slot_pricings").insert(slotPayloads);
     if (slotError) {
-      throw slotError;
+      throw new Error(slotError.message);
     }
 
     return NextResponse.json({ ok: true, storeId });
   } catch (error) {
+    console.error("[admin/stores]", error);
     const message = error instanceof Error ? error.message : "店舗登録に失敗しました";
     return NextResponse.json({ error: message }, { status: 500 });
   }

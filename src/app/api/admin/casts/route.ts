@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ensureAdminSession } from "@/lib/adminAuth";
-import { getServiceSupabaseClient } from "@/lib/supabaseServer";
+import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
   const unauthorized = ensureAdminSession();
@@ -21,7 +21,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "店舗とキャスト名は必須です" }, { status: 400 });
   }
 
-  const supabase = getServiceSupabaseClient();
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
 
   try {
     const { error } = await supabase.from("casts").insert({
@@ -32,11 +40,12 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      throw error;
+      throw new Error(error.message);
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("[admin/casts]", error);
     const message = error instanceof Error ? error.message : "キャスト登録に失敗しました";
     return NextResponse.json({ error: message }, { status: 500 });
   }
