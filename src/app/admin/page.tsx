@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useAdminGuard } from "@/hooks/useAdminSession";
+import { AdminFooter } from "@/components/AdminFooter";
 
 export default function AdminDashboardPage() {
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
@@ -26,12 +27,6 @@ export default function AdminDashboardPage() {
               店舗とキャストの登録、SNS フォロワー更新をここから開始できます。
             </p>
           </div>
-          <button
-            onClick={logout}
-            className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10"
-          >
-            ログアウト
-          </button>
         </div>
       </header>
 
@@ -40,10 +35,7 @@ export default function AdminDashboardPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-pink-200/80">
             Store
           </p>
-          <h2 className="mt-3 text-xl font-semibold">店舗登録ページへ</h2>
-          <p className="mt-2 text-sm text-white/70">
-            繁華街・料金テーブルまでスマホで一括登録。登録履歴も /admin/shop で確認できます。
-          </p>
+          <h2 className="mt-3 text-xl font-semibold">店舗登録</h2>
           <span className="mt-4 inline-flex items-center text-sm text-pink-200 group-hover:gap-2">
             登録フォームを開く →
           </span>
@@ -53,15 +45,14 @@ export default function AdminDashboardPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-indigo-200/80">
             Cast
           </p>
-          <h2 className="mt-3 text-xl font-semibold">キャスト登録 & 一覧</h2>
-          <p className="mt-2 text-sm text-white/70">
-            所属店舗を選んでキャスト登録。SNS フォロワー更新は一覧から詳細ページに遷移できます。
-          </p>
+          <h2 className="mt-3 text-xl font-semibold">キャスト登録</h2>
           <span className="mt-4 inline-flex items-center text-sm text-indigo-200 group-hover:gap-2">
             キャスト一覧を見る →
           </span>
         </Link>
       </main>
+
+      <AdminFooter onLogout={logout} />
     </div>
   );
 }
