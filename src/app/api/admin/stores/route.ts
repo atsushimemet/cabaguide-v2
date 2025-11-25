@@ -10,7 +10,7 @@ type TimeSlotInput = {
 };
 
 export async function POST(request: Request) {
-  const unauthorized = ensureAdminSession();
+  const unauthorized = await ensureAdminSession();
   if (unauthorized) {
     return unauthorized;
   }

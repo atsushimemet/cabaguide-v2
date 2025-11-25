@@ -4,7 +4,7 @@ import { ensureAdminSession } from "@/lib/adminAuth";
 import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
-  const unauthorized = ensureAdminSession();
+  const unauthorized = await ensureAdminSession();
   if (unauthorized) {
     return unauthorized;
   }

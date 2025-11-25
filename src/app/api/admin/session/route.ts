@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { ADMIN_SESSION_COOKIE } from "@/lib/adminAuth";
-
 export async function POST(request: Request) {
   const { password } = await request.json().catch(() => ({ password: null }));
   const adminPassword = process.env.ADMIN_PASSWORD ?? process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
@@ -18,7 +17,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "パスワードが正しくありません" }, { status: 401 });
   }
 
-  cookies().set(ADMIN_SESSION_COOKIE, "1", {
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_SESSION_COOKIE, "1", {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
@@ -30,6 +30,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  cookies().delete(ADMIN_SESSION_COOKIE);
+  const cookieStore = await cookies();
+  cookieStore.delete(ADMIN_SESSION_COOKIE);
   return NextResponse.json({ ok: true });
 }

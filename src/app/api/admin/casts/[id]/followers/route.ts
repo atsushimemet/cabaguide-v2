@@ -7,7 +7,7 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const unauthorized = ensureAdminSession();
+  const unauthorized = await ensureAdminSession();
   if (unauthorized) {
     return unauthorized;
   }
