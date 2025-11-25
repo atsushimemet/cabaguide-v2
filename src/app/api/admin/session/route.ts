@@ -5,10 +5,13 @@ import { ADMIN_SESSION_COOKIE } from "@/lib/adminAuth";
 
 export async function POST(request: Request) {
   const { password } = await request.json().catch(() => ({ password: null }));
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPassword = process.env.ADMIN_PASSWORD ?? process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
   if (!adminPassword) {
-    return NextResponse.json({ error: "ADMIN_PASSWORD が設定されていません" }, { status: 500 });
+    return NextResponse.json(
+      { error: "ADMIN_PASSWORD (または NEXT_PUBLIC_ADMIN_PASSWORD) が設定されていません" },
+      { status: 500 }
+    );
   }
 
   if (!password || password !== adminPassword) {
