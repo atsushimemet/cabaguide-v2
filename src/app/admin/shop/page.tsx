@@ -32,7 +32,35 @@ type StoreRow = {
   created_at?: string;
 };
 
-const defaultForm = {
+type TimeSlotForm = Record<
+  number,
+  {
+    main: string;
+    vip: string;
+  }
+>;
+
+type StoreFormState = {
+  areaId: string;
+  name: string;
+  googleMapUrl: string;
+  phone: string;
+  nominationPrice: string;
+  serviceFeeRate: string;
+  taxRate: string;
+  extensionPrice: string;
+  lightDrinkPrice: string;
+  cheapestChampagnePrice: string;
+  timeSlots: TimeSlotForm;
+};
+
+const createInitialTimeSlots = (): TimeSlotForm =>
+  TIME_SLOT_OPTIONS.reduce((acc, slot) => {
+    acc[slot] = { main: "", vip: "" };
+    return acc;
+  }, {} as TimeSlotForm);
+
+const createDefaultFormState = (): StoreFormState => ({
   areaId: "",
   name: "",
   googleMapUrl: "",
@@ -43,10 +71,8 @@ const defaultForm = {
   extensionPrice: "",
   lightDrinkPrice: "2000",
   cheapestChampagnePrice: "25000",
-  timeSlot: "",
-  mainPrice: "",
-  vipPrice: "",
-};
+  timeSlots: createInitialTimeSlots(),
+});
 
 export default function AdminShopPage() {
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
@@ -54,7 +80,7 @@ export default function AdminShopPage() {
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
-  const [formState, setFormState] = useState(defaultForm);
+  const [formState, setFormState] = useState<StoreFormState>(createDefaultFormState);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,6 +154,19 @@ export default function AdminShopPage() {
     return Number.isFinite(numeric) ? numeric : null;
   };
 
+  const updateTimeSlotField = (slot: number, field: "main" | "vip", value: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      timeSlots: {
+        ...prev.timeSlots,
+        [slot]: {
+          ...prev.timeSlots[slot],
+          [field]: value,
+        },
+      },
+    }));
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormSuccess(null);
@@ -138,18 +177,24 @@ export default function AdminShopPage() {
       return;
     }
 
-    const requiredFields: (keyof typeof formState)[] = [
+    const requiredFields: (keyof StoreFormState)[] = [
       "areaId",
       "name",
       "googleMapUrl",
       "phone",
-      "timeSlot",
-      "mainPrice",
     ];
 
-    const missing = requiredFields.find((field) => !formState[field]);
+    const missing = requiredFields.find((field) => !(formState[field] as string));
     if (missing) {
       setFormError("必須項目をすべて入力してください");
+      return;
+    }
+
+    const missingSlot = TIME_SLOT_OPTIONS.find(
+      (slot) => !formState.timeSlots[slot] || !formState.timeSlots[slot].main
+    );
+    if (missingSlot !== undefined) {
+      setFormError(`${missingSlot}:00 のメイン料金を入力してください`);
       return;
     }
 
@@ -195,23 +240,23 @@ export default function AdminShopPage() {
         throw baseError;
       }
 
-      const timeSlotPayload = {
+      const timeSlotPayloads = TIME_SLOT_OPTIONS.map((slot) => ({
         store_id: storeId,
-        time_slot: Number(formState.timeSlot),
-        main_price: Number(formState.mainPrice),
-        vip_price: formState.vipPrice ? Number(formState.vipPrice) : null,
-      };
+        time_slot: slot,
+        main_price: Number(formState.timeSlots[slot].main),
+        vip_price: formState.timeSlots[slot].vip ? Number(formState.timeSlots[slot].vip) : null,
+      }));
 
       const { error: timeSlotError } = await client
         .from("store_time_slot_pricings")
-        .insert(timeSlotPayload);
+        .insert(timeSlotPayloads);
 
       if (timeSlotError) {
         throw timeSlotError;
       }
 
       setFormSuccess("店舗を登録しました");
-      setFormState(defaultForm);
+      setFormState(createDefaultFormState());
       fetchStores();
     } catch (err) {
       const message = err instanceof Error ? err.message : "店舗登録に失敗しました";
@@ -348,34 +393,38 @@ export default function AdminShopPage() {
               placeholder="25000"
             />
 
-            <SelectField
-              label="タイムスロット (必須)"
-              value={formState.timeSlot}
-              onChange={(value) => setFormState((prev) => ({ ...prev, timeSlot: value }))}
-              options={TIME_SLOT_OPTIONS}
-              unit="時"
-              placeholder="時間を選択"
-              required
-            />
-
-            <SelectField
-              label="メイン料金 (必須)"
-              value={formState.mainPrice}
-              onChange={(value) => setFormState((prev) => ({ ...prev, mainPrice: value }))}
-              options={MAIN_PRICE_OPTIONS}
-              unit="円"
-              placeholder="金額を選択"
-              required
-            />
-
-            <SelectField
-              label="VIP料金 (任意)"
-              value={formState.vipPrice}
-              onChange={(value) => setFormState((prev) => ({ ...prev, vipPrice: value }))}
-              options={VIP_PRICE_OPTIONS}
-              unit="円"
-              placeholder="金額を選択"
-            />
+            <div className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+              <div>
+                <p className="text-base font-semibold text-white">タイムスロット料金 (20:00〜24:00)</p>
+                <p className="text-sm text-white/60">各時間帯のメイン/VIP料金を入力してください。</p>
+              </div>
+              <div className="space-y-4">
+                {TIME_SLOT_OPTIONS.map((slot) => (
+                  <div key={slot} className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                    <p className="text-sm font-semibold text-white">{slot}:00 帯</p>
+                    <div className="mt-3 grid gap-4 md:grid-cols-2">
+                      <SelectField
+                        label="メイン料金 (必須)"
+                        value={formState.timeSlots[slot]?.main ?? ""}
+                        onChange={(value) => updateTimeSlotField(slot, "main", value)}
+                        options={MAIN_PRICE_OPTIONS}
+                        unit="円"
+                        placeholder="金額を選択"
+                        required
+                      />
+                      <SelectField
+                        label="VIP料金 (任意)"
+                        value={formState.timeSlots[slot]?.vip ?? ""}
+                        onChange={(value) => updateTimeSlotField(slot, "vip", value)}
+                        options={VIP_PRICE_OPTIONS}
+                        unit="円"
+                        placeholder="金額を選択"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {formError && (
               <p className="rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
