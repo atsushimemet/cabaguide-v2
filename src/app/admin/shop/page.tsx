@@ -80,6 +80,7 @@ export default function AdminShopPage() {
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
+  const [storesError, setStoresError] = useState<string | null>(null);
   const [formState, setFormState] = useState<StoreFormState>(() => createDefaultFormState());
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
@@ -118,27 +119,26 @@ export default function AdminShopPage() {
   }, [client]);
 
   const fetchStores = useCallback(async () => {
-    if (!client) {
-      return;
-    }
     setIsLoadingStores(true);
-    const { data, error } = await client
-      .from("stores")
-      .select("id, name, area_id, phone, created_at")
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (!error && data) {
-      setStores(data as StoreRow[]);
+    setStoresError(null);
+    try {
+      const response = await fetch("/api/admin/stores", { credentials: "include" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "店舗一覧の取得に失敗しました");
+      }
+      setStores((payload?.stores as StoreRow[]) ?? []);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "店舗一覧の取得に失敗しました";
+      setStoresError(message);
+    } finally {
+      setIsLoadingStores(false);
     }
-    setIsLoadingStores(false);
-  }, [client]);
+  }, []);
 
   useEffect(() => {
-    if (client) {
-      fetchStores();
-    }
-  }, [client, fetchStores]);
+    fetchStores();
+  }, [fetchStores]);
 
   const areaMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -444,14 +444,9 @@ export default function AdminShopPage() {
           </div>
 
           <div className="mt-4 space-y-3">
-            {clientError && (
+            {storesError && (
               <p className="rounded-xl border border-yellow-500/60 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-100">
-                {clientError}
-              </p>
-            )}
-            {!client && !clientError && (
-              <p className="rounded-xl border border-yellow-500/60 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-100">
-                Supabase クライアント初期化中...
+                {storesError}
               </p>
             )}
 

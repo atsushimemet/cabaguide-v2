@@ -9,6 +9,41 @@ type TimeSlotInput = {
   vipPrice?: number | null;
 };
 
+export async function GET() {
+  const unauthorized = await ensureAdminSession();
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("stores")
+      .select("id, name, area_id, phone, created_at")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return NextResponse.json({ stores: data ?? [] });
+  } catch (error) {
+    console.error("[admin/stores][GET]", error);
+    const message = error instanceof Error ? error.message : "店舗一覧の取得に失敗しました";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   const unauthorized = await ensureAdminSession();
   if (unauthorized) {
