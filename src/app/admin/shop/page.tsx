@@ -10,7 +10,6 @@ import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import {
   EXTENSION_PRICE_OPTIONS,
   MAIN_PRICE_OPTIONS,
-  NOMINATION_PRICE_OPTIONS,
   SERVICE_FEE_OPTIONS,
   TIME_SLOT_OPTIONS,
   VIP_PRICE_OPTIONS,
@@ -319,13 +318,14 @@ export default function AdminShopPage() {
               placeholder="03-1234-5678"
             />
 
-            <SelectField
+            <Field
               label="指名料金"
               value={formState.nominationPrice}
               onChange={(value) => setFormState((prev) => ({ ...prev, nominationPrice: value }))}
-              options={NOMINATION_PRICE_OPTIONS}
-              unit="円"
-              placeholder="未設定"
+              placeholder="3300"
+              type="number"
+              inputMode="numeric"
+              min="0"
             />
 
             <SelectField
@@ -483,6 +483,8 @@ const Field = ({
   placeholder,
   type = "text",
   step,
+  inputMode,
+  min,
 }: {
   label: string;
   value: string;
@@ -490,12 +492,16 @@ const Field = ({
   placeholder?: string;
   type?: string;
   step?: string;
+  inputMode?: string;
+  min?: string;
 }) => (
   <label className="block text-sm text-white/70">
     {label}
     <input
       type={type}
       step={step}
+      inputMode={inputMode}
+      min={min}
       className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
       value={value}
       onChange={(event) => onChange(event.target.value)}
