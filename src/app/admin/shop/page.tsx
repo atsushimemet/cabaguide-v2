@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import type { InputHTMLAttributes } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
 import { areas as fallbackAreas } from "@/data/areas";
@@ -490,10 +491,10 @@ const Field = ({
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: string;
+  type?: InputHTMLAttributes<HTMLInputElement>["type"];
   step?: string;
-  inputMode?: string;
-  min?: string;
+  inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
+  min?: InputHTMLAttributes<HTMLInputElement>["min"];
 }) => (
   <label className="block text-sm text-white/70">
     {label}
