@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export const ADMIN_SESSION_KEY = "cabaguide-admin";
@@ -28,18 +28,34 @@ export const clearAdminSession = () => {
 
 export const useAdminGuard = () => {
   const router = useRouter();
-  const isAuthenticated = hasAdminSession();
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    let isActive = true;
+    const authed = hasAdminSession();
+
+    Promise.resolve().then(() => {
+      if (!isActive) {
+        return;
+      }
+      setIsAuthenticated(authed);
+      setIsChecking(false);
+    });
+
+    if (!authed) {
       router.replace("/admin/login");
     }
-  }, [isAuthenticated, router]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
 
   const logout = useCallback(() => {
     clearAdminSession();
     router.replace("/admin/login");
   }, [router]);
 
-  return { isChecking: false, isAuthenticated, logout };
+  return { isChecking, isAuthenticated, logout };
 };
