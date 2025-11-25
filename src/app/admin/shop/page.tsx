@@ -9,7 +9,6 @@ import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import {
-  EXTENSION_PRICE_OPTIONS,
   MAIN_PRICE_OPTIONS,
   SERVICE_FEE_OPTIONS,
   TIME_SLOT_OPTIONS,
@@ -348,13 +347,14 @@ export default function AdminShopPage() {
               placeholder="0.10"
             />
 
-            <SelectField
+            <Field
               label="延長料金"
               value={formState.extensionPrice}
               onChange={(value) => setFormState((prev) => ({ ...prev, extensionPrice: value }))}
-              options={EXTENSION_PRICE_OPTIONS}
-              unit="円"
-              placeholder="未設定"
+              placeholder="5000"
+              type="number"
+              inputMode="numeric"
+              min="0"
             />
 
             <Field
