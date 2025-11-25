@@ -5,7 +5,6 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
 import { useAdminGuard } from "@/hooks/useAdminSession";
-import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import { AGE_OPTIONS } from "@/lib/adminOptions";
 
 type StoreOption = {
@@ -27,13 +26,6 @@ type Followers = {
   tiktok?: number;
 };
 
-type SnapshotRow = {
-  cast_id: string;
-  platform: string;
-  followers: number;
-  captured_at: string;
-};
-
 const defaultForm = {
   storeId: "",
   name: "",
@@ -43,7 +35,6 @@ const defaultForm = {
 
 export default function AdminCastsPage() {
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
-  const { client, error: clientError } = useSupabaseBrowserClient();
   const [stores, setStores] = useState<StoreOption[]>([]);
   const [casts, setCasts] = useState<CastRow[]>([]);
   const [followersMap, setFollowersMap] = useState<Record<string, Followers>>({});
@@ -52,6 +43,8 @@ export default function AdminCastsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [storeError, setStoreError] = useState<string | null>(null);
+  const [castError, setCastError] = useState<string | null>(null);
 
   const storeMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -60,87 +53,61 @@ export default function AdminCastsPage() {
   }, [stores]);
 
   const fetchStores = useCallback(async () => {
-    if (!client) {
-      return;
+    setStoreError(null);
+    try {
+      const response = await fetch("/api/admin/store-options", { credentials: "include" });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "店舗一覧の取得に失敗しました");
+      }
+
+      const storeRows = Array.isArray(payload?.stores) ? (payload.stores as StoreOption[]) : [];
+      const sortedRows = [...storeRows].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+      setStores(sortedRows);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "店舗一覧の取得に失敗しました";
+      setStores([]);
+      setStoreError(message);
     }
-    const { data } = await client
-      .from("stores")
-      .select("id, name")
-      .order("name", { ascending: true });
-    if (data) {
-      setStores(data as StoreOption[]);
-    }
-  }, [client]);
-
-  const fetchFollowers = useCallback(
-    async (castIds: string[]) => {
-      if (!client || castIds.length === 0) {
-        setFollowersMap({});
-        return;
-      }
-
-      const { data } = await client
-        .from("cast_follower_snapshots")
-        .select("cast_id, platform, followers, captured_at")
-        .in("cast_id", castIds)
-        .order("captured_at", { ascending: false });
-
-      if (!data) {
-        setFollowersMap({});
-        return;
-      }
-
-      const snapshotRows = data as SnapshotRow[];
-      const newMap: Record<string, Followers> = {};
-      for (const row of snapshotRows) {
-        const castId = row.cast_id;
-        const platform = row.platform;
-        const followers = row.followers;
-
-        if (!newMap[castId]) {
-          newMap[castId] = {};
-        }
-
-        if (platform === "instagram" && newMap[castId].instagram === undefined) {
-          newMap[castId].instagram = followers;
-        }
-
-        if (platform === "tiktok" && newMap[castId].tiktok === undefined) {
-          newMap[castId].tiktok = followers;
-        }
-      }
-
-      setFollowersMap(newMap);
-    },
-    [client]
-  );
+  }, []);
 
   const fetchCasts = useCallback(async () => {
-    if (!client) {
-      return;
-    }
     setIsLoading(true);
-    const { data } = await client
-      .from("casts")
-      .select("id, name, store_id, age, image_url, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
+    setCastError(null);
+    try {
+      const response = await fetch("/api/admin/casts", { credentials: "include" });
+      const payload = await response.json().catch(() => null);
 
-    if (data) {
-      const castRows = data as CastRow[];
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "キャスト一覧の取得に失敗しました");
+      }
+
+      const castRows = Array.isArray(payload?.casts) ? (payload.casts as CastRow[]) : [];
       setCasts(castRows);
-      const castIds = castRows.map((cast) => cast.id);
-      fetchFollowers(castIds);
+      const followerPayload = payload?.followers;
+      if (followerPayload && typeof followerPayload === "object") {
+        setFollowersMap(followerPayload as Record<string, Followers>);
+      } else {
+        setFollowersMap({});
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "キャスト一覧の取得に失敗しました";
+      setCastError(message);
+      setCasts([]);
+      setFollowersMap({});
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [client, fetchFollowers]);
+  }, []);
 
   useEffect(() => {
-    if (client) {
-      fetchStores();
-      fetchCasts();
-    }
-  }, [client, fetchStores, fetchCasts]);
+    fetchStores();
+  }, [fetchStores]);
+
+  useEffect(() => {
+    fetchCasts();
+  }, [fetchCasts]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -204,10 +171,10 @@ export default function AdminCastsPage() {
               href="/admin"
               className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10"
             >
-              /admin に戻る
+              /admin
             </Link>
           </div>
-          <p className="text-sm text-white/70">所属店舗を選択し、キャスト登録と SNS 更新を管理します。</p>
+          <p className="text-sm text-white/70"></p>
         </header>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
@@ -228,6 +195,7 @@ export default function AdminCastsPage() {
                   </option>
                 ))}
               </select>
+              {storeError && <p className="mt-2 text-sm text-red-300">{storeError}</p>}
             </label>
 
             <Field
@@ -290,15 +258,9 @@ export default function AdminCastsPage() {
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {clientError && (
-              <p className="rounded-xl border border-yellow-500/60 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-100">
-                {clientError}
-              </p>
-            )}
-
-            {!client && !clientError && (
-              <p className="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm text-white/70">
-                Supabase クライアント初期化中...
+            {castError && (
+              <p className="rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
+                {castError}
               </p>
             )}
 

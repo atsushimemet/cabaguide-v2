@@ -5,13 +5,14 @@ import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabas
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const unauthorized = await ensureAdminSession();
   if (unauthorized) {
     return unauthorized;
   }
 
+  const params = await context.params;
   const castId = params.id;
 
   if (!castId) {

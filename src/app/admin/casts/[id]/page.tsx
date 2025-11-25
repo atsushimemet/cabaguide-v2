@@ -6,7 +6,11 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
 import { useAdminGuard } from "@/hooks/useAdminSession";
-import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
+
+const SOCIAL_PLATFORM_OPTIONS = [
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+] as const;
 
 type CastRow = {
   id: string;
@@ -28,11 +32,16 @@ type SnapshotRow = {
   captured_at: string;
 };
 
+type SocialLink = {
+  id: string;
+  platform: string;
+  url: string;
+};
+
 export default function CastDetailPage() {
   const params = useParams<{ id: string }>();
   const castId = params?.id;
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
-  const { client, error: clientError } = useSupabaseBrowserClient();
   const [cast, setCast] = useState<CastRow | null>(null);
   const [store, setStore] = useState<StoreRow | null>(null);
   const [snapshots, setSnapshots] = useState<SnapshotRow[]>([]);
@@ -41,65 +50,51 @@ export default function CastDetailPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [socialForm, setSocialForm] = useState({
+    platform: SOCIAL_PLATFORM_OPTIONS[0].value,
+    url: "",
+  });
+  const [socialMessage, setSocialMessage] = useState<string | null>(null);
+  const [socialError, setSocialError] = useState<string | null>(null);
+  const [isSocialSubmitting, setIsSocialSubmitting] = useState(false);
+  const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
 
-  const fetchCast = useCallback(async () => {
-    if (!client || !castId) {
+  const fetchCastDetail = useCallback(async () => {
+    if (!castId) {
       return;
     }
+    setDetailError(null);
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}`, { credentials: "include" });
+      const payload = await response.json().catch(() => null);
 
-    const { data } = await client
-      .from("casts")
-      .select("id, name, store_id, age, image_url")
-      .eq("id", castId)
-      .single();
-
-    if (data) {
-      setCast(data as CastRow);
-      const { data: storeData } = await client
-        .from("stores")
-        .select("id, name")
-        .eq("id", data.store_id)
-        .single();
-      if (storeData) {
-        setStore(storeData as StoreRow);
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "キャスト詳細の取得に失敗しました");
       }
-    }
-  }, [client, castId]);
 
-  const fetchSnapshots = useCallback(async () => {
-    if (!client || !castId) {
-      return;
+      setCast(payload?.cast ?? null);
+      setStore(payload?.store ?? null);
+      const snapshotRows = Array.isArray(payload?.snapshots) ? (payload.snapshots as SnapshotRow[]) : [];
+      setSnapshots(snapshotRows);
+      setLatestFollowers(payload?.latestFollowers ?? {});
+      const linkRows = Array.isArray(payload?.socialLinks) ? (payload.socialLinks as SocialLink[]) : [];
+      setSocialLinks(linkRows);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "キャスト詳細の取得に失敗しました";
+      setDetailError(message);
+      setCast(null);
+      setStore(null);
+      setSnapshots([]);
+      setLatestFollowers({});
+      setSocialLinks([]);
     }
-
-    const { data } = await client
-      .from("cast_follower_snapshots")
-      .select("id, platform, followers, captured_at")
-      .eq("cast_id", castId)
-      .order("captured_at", { ascending: false })
-      .limit(20);
-
-    if (data) {
-      const rows = data as SnapshotRow[];
-      setSnapshots(rows);
-      const latest: { instagram?: number; tiktok?: number } = {};
-      rows.forEach((row) => {
-        if (row.platform === "instagram" && latest.instagram === undefined) {
-          latest.instagram = row.followers;
-        }
-        if (row.platform === "tiktok" && latest.tiktok === undefined) {
-          latest.tiktok = row.followers;
-        }
-      });
-      setLatestFollowers(latest);
-    }
-  }, [client, castId]);
+  }, [castId]);
 
   useEffect(() => {
-    if (client) {
-      fetchCast();
-      fetchSnapshots();
-    }
-  }, [client, fetchCast, fetchSnapshots]);
+    fetchCastDetail();
+  }, [fetchCastDetail]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -141,12 +136,95 @@ export default function CastDetailPage() {
 
       setStatusMessage("フォロワー数を更新しました");
       setFormState({ instagram: "", tiktok: "" });
-      fetchSnapshots();
+      fetchCastDetail();
     } catch (err) {
       const message = err instanceof Error ? err.message : "更新に失敗しました";
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSocialError(null);
+    setSocialMessage(null);
+
+    if (!castId) {
+      setSocialError("cast_id が不明です");
+      return;
+    }
+
+    if (!socialForm.url) {
+      setSocialError("URL を入力してください");
+      return;
+    }
+
+    try {
+      new URL(socialForm.url);
+    } catch {
+      setSocialError("有効な URL を入力してください");
+      return;
+    }
+
+    setIsSocialSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}/social-links`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          platform: socialForm.platform,
+          url: socialForm.url,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "SNS リンクの保存に失敗しました");
+      }
+
+      setSocialMessage("SNS リンクを保存しました");
+      setSocialForm((prev) => ({ ...prev, url: "" }));
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "SNS リンクの保存に失敗しました";
+      setSocialError(message);
+    } finally {
+      setIsSocialSubmitting(false);
+    }
+  };
+
+  const handleDeleteLink = async (linkId: string) => {
+    if (!castId) {
+      setSocialError("cast_id が不明です");
+      return;
+    }
+    setSocialError(null);
+    setSocialMessage(null);
+    setDeletingLinkId(linkId);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}/social-links?linkId=${linkId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "SNS リンクの削除に失敗しました");
+      }
+
+      setSocialMessage("SNS リンクを削除しました");
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "SNS リンクの削除に失敗しました";
+      setSocialError(message);
+    } finally {
+      setDeletingLinkId(null);
     }
   };
 
@@ -186,7 +264,10 @@ export default function CastDetailPage() {
         </header>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-          <h2 className="text-xl font-semibold">SNS フォロワー数を更新</h2>
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold">SNS フォロワー数を更新</h2>
+            {cast?.name && <p className="text-sm text-white/70">対象キャスト: {cast.name}</p>}
+          </div>
           <div className="mt-3 grid grid-cols-2 gap-4 text-sm text-white/70">
             <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
               <p className="text-xs uppercase tracking-[0.3em] text-white/40">Instagram</p>
@@ -248,10 +329,101 @@ export default function CastDetailPage() {
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold">SNS リンクを登録</h2>
+            <p className="text-sm text-white/70"></p>
+          </div>
+
+          <form className="mt-5 space-y-4" onSubmit={handleSocialSubmit}>
+            <label className="block text-sm text-white/70">
+              プラットフォーム
+              <select
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                value={socialForm.platform}
+                onChange={(event) => setSocialForm((prev) => ({ ...prev, platform: event.target.value }))}
+              >
+                {SOCIAL_PLATFORM_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm text-white/70">
+              URL
+              <input
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                value={socialForm.url}
+                onChange={(event) => setSocialForm((prev) => ({ ...prev, url: event.target.value }))}
+                placeholder="https://instagram.com/example"
+              />
+            </label>
+
+            {socialError && (
+              <p className="rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
+                {socialError}
+              </p>
+            )}
+            {socialMessage && (
+              <p className="rounded-xl border border-emerald-500/60 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-100">
+                {socialMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full rounded-full bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 px-4 py-3 text-base font-semibold shadow-lg shadow-indigo-900/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isSocialSubmitting}
+            >
+              {isSocialSubmitting ? "保存中..." : "SNS リンクを保存"}
+            </button>
+          </form>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold">登録済みリンク</h3>
+            {socialLinks.length === 0 ? (
+              <p className="mt-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
+                まだ登録されていません。
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-3">
+                {socialLinks.map((link) => (
+                  <li
+                    key={link.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm text-white/60">{getPlatformLabel(link.platform)}</p>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-base text-white/90 underline-offset-4 hover:underline"
+                      >
+                        {link.url}
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLink(link.id)}
+                      className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={deletingLinkId === link.id}
+                    >
+                      {deletingLinkId === link.id ? "削除中..." : "削除"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
           <h2 className="text-xl font-semibold">履歴</h2>
-          {clientError && (
+          {detailError && (
             <p className="mt-4 rounded-xl border border-yellow-500/60 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-100">
-              {clientError}
+              {detailError}
             </p>
           )}
           <ul className="mt-4 space-y-3 text-sm text-white/70">
@@ -279,6 +451,11 @@ export default function CastDetailPage() {
     </div>
   );
 }
+
+const getPlatformLabel = (value: string) => {
+  const option = SOCIAL_PLATFORM_OPTIONS.find((platform) => platform.value === value);
+  return option ? option.label : value;
+};
 
 const AdminLoading = ({ message = "読み込み中" }: { message?: string }) => (
   <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">

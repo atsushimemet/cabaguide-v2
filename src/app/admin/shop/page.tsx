@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
-import { areas as fallbackAreas } from "@/data/areas";
 import { AdminFooter } from "@/components/AdminFooter";
+import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import {
@@ -269,7 +269,7 @@ export default function AdminShopPage() {
               href="/admin"
               className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10"
             >
-              /admin に戻る
+              /admin
             </Link>
           </div>
         </header>
