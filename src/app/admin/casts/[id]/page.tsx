@@ -12,6 +12,8 @@ const SOCIAL_PLATFORM_OPTIONS = [
   { value: "tiktok", label: "TikTok" },
 ] as const;
 
+type SocialPlatform = (typeof SOCIAL_PLATFORM_OPTIONS)[number]["value"];
+
 type CastRow = {
   id: string;
   name: string;
@@ -52,7 +54,7 @@ export default function CastDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-  const [socialForm, setSocialForm] = useState({
+  const [socialForm, setSocialForm] = useState<{ platform: SocialPlatform; url: string }>({
     platform: SOCIAL_PLATFORM_OPTIONS[0].value,
     url: "",
   });
@@ -340,7 +342,9 @@ export default function CastDetailPage() {
               <select
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
                 value={socialForm.platform}
-                onChange={(event) => setSocialForm((prev) => ({ ...prev, platform: event.target.value }))}
+                onChange={(event) =>
+                  setSocialForm((prev) => ({ ...prev, platform: event.target.value as SocialPlatform }))
+                }
               >
                 {SOCIAL_PLATFORM_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
