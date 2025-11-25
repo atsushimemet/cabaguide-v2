@@ -40,7 +40,7 @@ issue_6 の要求に基づき、管理者向けログイン〜店舗/キャス�
 | 最安シャンパン価格 | ✖ | 数値入力 (デフォ 25000) | `StoreBasePricing.cheapest_champagne_price` |
 | タイムスロット | ✔ | ピッカー (20〜24, 1 刻み) | `StoreTimeSlotPricing.time_slot` |
 | メイン料金 | ✔ | ピッカー (1000〜20000, 1000 刻み) | `StoreTimeSlotPricing.main_price` |
-| VIP 料金 | ✔ | ピッカー (5000〜50000, 1000 刻み) | `StoreTimeSlotPricing.vip_price` |
+| VIP 料金 | ✖ | ピッカー (5000〜50000, 1000 刻み) | `StoreTimeSlotPricing.vip_price` (未入力可) |
 
 - `Store`, `StoreBasePricing`, `StoreTimeSlotPricing` への insert 3 件を 1 トランザクションで実行。Supabase RPC もしくは `supabase.from(...).insert([...]).select()` を順次叩く。
 - モバイルピッカーは `<select>` をベースにし、`inputmode="numeric"` で数値キーボードを出す。

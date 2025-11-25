@@ -33,7 +33,7 @@ create table if not exists public.store_time_slot_pricings (
   store_id uuid not null references public.stores (id) on delete cascade,
   time_slot smallint not null check (time_slot between 0 and 24),
   main_price integer not null,
-  vip_price integer not null,
+  vip_price integer,
   created_at timestamptz not null default timezone('utc'::text, now())
 );
 

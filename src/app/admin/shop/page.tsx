@@ -145,7 +145,6 @@ export default function AdminShopPage() {
       "phone",
       "timeSlot",
       "mainPrice",
-      "vipPrice",
     ];
 
     const missing = requiredFields.find((field) => !formState[field]);
@@ -200,7 +199,7 @@ export default function AdminShopPage() {
         store_id: storeId,
         time_slot: Number(formState.timeSlot),
         main_price: Number(formState.mainPrice),
-        vip_price: Number(formState.vipPrice),
+        vip_price: formState.vipPrice ? Number(formState.vipPrice) : null,
       };
 
       const { error: timeSlotError } = await client
@@ -370,13 +369,12 @@ export default function AdminShopPage() {
             />
 
             <SelectField
-              label="VIP料金 (必須)"
+              label="VIP料金 (任意)"
               value={formState.vipPrice}
               onChange={(value) => setFormState((prev) => ({ ...prev, vipPrice: value }))}
               options={VIP_PRICE_OPTIONS}
               unit="円"
               placeholder="金額を選択"
-              required
             />
 
             {formError && (
