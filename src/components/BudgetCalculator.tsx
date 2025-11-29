@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChangeEvent, useMemo, useState } from "react";
 
 import { BudgetBreakdown, BudgetParams, calculateBudget } from "@/lib/budget";
@@ -27,7 +28,7 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
 };
 
 const tooltipDetails = [
-  "開始時間から2時間分の時間帯料金を取得し、VIP選択時はVIP料金、通常時はメイン料金を参照します。",
+  "開始時間から連続した2時間分の時間帯料金を取得し、VIP選択時はVIP料金、通常時はメイン料金を参照します。",
   "時間帯料金 × 来店人数で小計を計算します。",
   "指名料は1名あたり指名料金 × 2時間で計算します。",
   "ドリンクは店舗設定(なければ2,000円) × 杯数で加算します。",
@@ -49,6 +50,13 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const result: BudgetBreakdown = useMemo(() => calculateBudget(store, params), [store, params]);
+  const roundedTotal = useMemo(() => {
+    if (result.total === 0) {
+      return 0;
+    }
+    return Math.round(result.total / 5000) * 5000;
+  }, [result.total]);
+  const storePageHref = store.slug ? `/stores/${store.slug}` : undefined;
 
   const handleSelectChange = (field: NumericField) => (event: ChangeEvent<HTMLSelectElement>) => {
     const value = Number(event.target.value);
@@ -76,7 +84,24 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-fuchsia-200">BUDGET</p>
           <h3 className="text-2xl font-semibold">2時間滞在の概算</h3>
-          <p className="text-sm text-white/70">人数・時間を調整して予算感を掴みましょう。</p>
+          <p className="text-sm text-white/70">
+            人数・時間を調整して予算感を掴みましょう。開始時間から連続した2時間分の料金を表示しています。料金概算のため詳細は
+            {storePageHref ? (
+              <>
+                {" "}
+                <Link
+                  href={storePageHref}
+                  className="text-fuchsia-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+                  aria-label={`${store.name} の店舗詳細ページを開く`}
+                >
+                  店舗ページ
+                </Link>
+                をご確認ください。
+              </>
+            ) : (
+              " 店舗ページをご確認ください。"
+            )}
+          </p>
         </div>
         <button
           type="button"
@@ -113,9 +138,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             ))}
           </select>
         </label>
-
-        <p className="text-xs text-white/50">※開始時間から連続した2時間分の料金を参照します。</p>
-
         <label className="space-y-1 text-sm">
           <span className="font-medium text-white/80">来店人数</span>
           <select
@@ -196,7 +218,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
       <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-purple-900/60 via-fuchsia-800/40 to-cyan-900/40 p-6 shadow-2xl shadow-purple-900/30">
         <p className="text-sm uppercase tracking-[0.3em] text-white/70">ESTIMATE</p>
         <div className="mt-2 flex items-end gap-2">
-          <p className="text-4xl font-bold text-white">{formatYen(result.total)}</p>
+          <p className="text-4xl font-bold text-white">{formatYen(roundedTotal)}</p>
           <span className="text-sm text-white/60">（税込）</span>
         </div>
         <p className="mt-1 text-sm text-white/70">

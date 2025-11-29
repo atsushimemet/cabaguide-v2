@@ -15,6 +15,7 @@ export type StoreTimeSlotPricing = {
 
 export type Store = {
   id: string;
+  slug: string;
   areaId: number;
   name: string;
   googleMapLink: string;
