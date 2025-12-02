@@ -32,7 +32,7 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
     notFound();
   }
 
-  const detail = getCastDetail(downtownId, castId);
+  const detail = await getCastDetail(downtownId, castId);
 
   if (!detail) {
     notFound();

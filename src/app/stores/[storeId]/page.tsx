@@ -2,12 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageFrame } from "@/components/PageFrame";
-import { getStoreBySlug } from "@/data/mockStores";
 import { getAreaById } from "@/lib/areas";
+import { getStoreById } from "@/lib/stores";
 
 type StoreDetailPageProps = {
   params: Promise<{
-    storeSlug: string;
+    storeId: string;
   }>;
 };
 
@@ -27,8 +27,12 @@ const formatTimeRange = (slot: string) => {
 };
 
 export default async function StoreDetailPage({ params }: StoreDetailPageProps) {
-  const { storeSlug } = await params;
-  const store = getStoreBySlug(storeSlug);
+  const { storeId } = await params;
+  if (!storeId) {
+    notFound();
+  }
+
+  const store = await getStoreById(storeId);
 
   if (!store) {
     notFound();

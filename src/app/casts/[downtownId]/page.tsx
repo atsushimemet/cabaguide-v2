@@ -32,7 +32,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
 
   const searchParamsData = await searchParams;
   const requestedPage = Number(searchParamsData.page ?? "1");
-  const { casts, totalCount, totalPages, currentPage } = getPaginatedCasts(
+  const { casts, totalCount, totalPages, currentPage } = await getPaginatedCasts(
     downtownId,
     requestedPage,
     PAGE_SIZE

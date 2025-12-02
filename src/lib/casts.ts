@@ -1,25 +1,217 @@
-import { findCastByDowntownAndId, getCastsByDowntownId } from "@/data/mockCasts";
+import { getAreaById } from "@/lib/areas";
+import { getServiceSupabaseClient } from "@/lib/supabaseServer";
 import { Cast } from "@/types/cast";
 
 export const PAGE_SIZE = 10;
 
-export const getPaginatedCasts = (
+const PLACEHOLDER_IMAGE = "/images/top-casts/placeholder.svg";
+const ACCENT_COLORS = [
+  "#f472b6",
+  "#c084fc",
+  "#a5b4fc",
+  "#67e8f9",
+  "#fda4af",
+  "#f0abfc",
+  "#bef264",
+  "#f9a8d4",
+  "#a78bfa",
+  "#7dd3fc",
+];
+
+type CastRow = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  store_id: string;
+  created_at: string;
+};
+
+type StoreRow = {
+  id: string;
+  area_id: number;
+  name: string;
+  google_map_link: string;
+  phone: string;
+};
+
+type FollowersRow = {
+  cast_id: string;
+  platform: string;
+  followers: number;
+  captured_at: string;
+};
+
+const buildStoreMap = (rows: StoreRow[]) => {
+  const map = new Map<string, StoreRow>();
+  rows.forEach((row) => map.set(row.id, row));
+  return map;
+};
+
+const fetchLatestFollowerTotals = async (castIds: string[]): Promise<Record<string, number>> => {
+  if (castIds.length === 0) {
+    return {};
+  }
+
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("cast_follower_snapshots")
+    .select("cast_id, platform, followers, captured_at")
+    .in("cast_id", castIds)
+    .order("captured_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const latestMap: Record<string, { instagram?: number; tiktok?: number }> = {};
+
+  (data as FollowersRow[] | null)?.forEach((row) => {
+    const castId = row.cast_id;
+    if (!latestMap[castId]) {
+      latestMap[castId] = {};
+    }
+    if (row.platform === "instagram" && latestMap[castId].instagram === undefined) {
+      latestMap[castId].instagram = row.followers;
+    }
+    if (row.platform === "tiktok" && latestMap[castId].tiktok === undefined) {
+      latestMap[castId].tiktok = row.followers;
+    }
+  });
+
+  const totals: Record<string, number> = {};
+  Object.entries(latestMap).forEach(([castId, followers]) => {
+    totals[castId] = (followers.instagram ?? 0) + (followers.tiktok ?? 0);
+  });
+  return totals;
+};
+
+const mapCastRowToCard = (
+  row: CastRow,
+  store: StoreRow | undefined,
+  followers: number,
+  accentIndex: number
+): Cast | null => {
+  if (!store) {
+    return null;
+  }
+
+  const area = getAreaById(store.area_id);
+  if (!area) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    downtownId: store.area_id,
+    prefecture: area.todofukenName,
+    downtownName: area.downtownName,
+    name: row.name,
+    followers,
+    storeId: store.id,
+    storeName: store.name,
+    image: row.image_url ?? PLACEHOLDER_IMAGE,
+    castLink: `/casts/${store.area_id}/${row.id}`,
+    storeLink: store.google_map_link,
+    accent: ACCENT_COLORS[accentIndex % ACCENT_COLORS.length],
+    badgeText: area.downtownName,
+  };
+};
+
+const fetchStoreRowsByArea = async (downtownId: number): Promise<StoreRow[]> => {
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("stores")
+    .select("id, area_id, name, google_map_link, phone")
+    .eq("area_id", downtownId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as StoreRow[];
+};
+
+const fetchStoreRowsByIds = async (storeIds: string[]): Promise<StoreRow[]> => {
+  if (storeIds.length === 0) {
+    return [];
+  }
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("stores")
+    .select("id, area_id, name, google_map_link, phone")
+    .in("id", storeIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as StoreRow[];
+};
+
+const fetchCastRowsByStoreIds = async (storeIds: string[]): Promise<CastRow[]> => {
+  if (storeIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("casts")
+    .select("id, name, image_url, store_id, created_at")
+    .in("store_id", storeIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as CastRow[];
+};
+
+const fetchAllCastRows = async (): Promise<CastRow[]> => {
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("casts")
+    .select("id, name, image_url, store_id, created_at");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as CastRow[];
+};
+
+export const getPaginatedCasts = async (
   downtownId: number,
   page: number,
   perPage: number = PAGE_SIZE
-): {
+): Promise<{
   casts: Cast[];
   totalCount: number;
   totalPages: number;
   currentPage: number;
-} => {
-  const all = getCastsByDowntownId(downtownId);
-  all.sort((a, b) => b.followers - a.followers);
-  const totalCount = all.length;
+}> => {
+  const storeRows = await fetchStoreRowsByArea(downtownId);
+  const storeIds = storeRows.map((store) => store.id);
+  const storeMap = buildStoreMap(storeRows);
+
+  const castRows = await fetchCastRowsByStoreIds(storeIds);
+  const castIds = castRows.map((row) => row.id);
+  const followerTotals = await fetchLatestFollowerTotals(castIds);
+
+  const allCasts: Cast[] = [];
+  castRows.forEach((row, index) => {
+    const cast = mapCastRowToCard(row, storeMap.get(row.store_id), followerTotals[row.id] ?? 0, index);
+    if (cast) {
+      allCasts.push(cast);
+    }
+  });
+
+  allCasts.sort((a, b) => b.followers - a.followers);
+  const totalCount = allCasts.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
-  const currentPage = Math.min(Math.max(page, 1), totalPages);
+  const requestedPage = Number.isFinite(page) ? page : 1;
+  const currentPage = Math.min(Math.max(requestedPage, 1), totalPages);
   const start = (currentPage - 1) * perPage;
-  const casts = all.slice(start, start + perPage);
+  const casts = allCasts.slice(start, start + perPage);
 
   return {
     casts,
@@ -29,6 +221,21 @@ export const getPaginatedCasts = (
   };
 };
 
-export const getCastSummary = (downtownId: number, castId: string): Cast | undefined => {
-  return findCastByDowntownAndId(downtownId, castId);
+export const getTopCasts = async (limit = 10): Promise<Cast[]> => {
+  const castRows = await fetchAllCastRows();
+  const storeIds = Array.from(new Set(castRows.map((row) => row.store_id)));
+  const storeRows = await fetchStoreRowsByIds(storeIds);
+  const storeMap = buildStoreMap(storeRows);
+  const followerTotals = await fetchLatestFollowerTotals(castRows.map((row) => row.id));
+
+  const mapped: Cast[] = [];
+  castRows.forEach((row, index) => {
+    const cast = mapCastRowToCard(row, storeMap.get(row.store_id), followerTotals[row.id] ?? 0, index);
+    if (cast) {
+      mapped.push(cast);
+    }
+  });
+
+  mapped.sort((a, b) => b.followers - a.followers);
+  return mapped.slice(0, limit);
 };

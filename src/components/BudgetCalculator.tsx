@@ -56,7 +56,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
     }
     return Math.round(result.total / 5000) * 5000;
   }, [result.total]);
-  const storePageHref = store.slug ? `/stores/${store.slug}` : undefined;
+  const storePageHref = store.id ? `/stores/${store.id}` : undefined;
 
   const handleSelectChange = (field: NumericField) => (event: ChangeEvent<HTMLSelectElement>) => {
     const value = Number(event.target.value);

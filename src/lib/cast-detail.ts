@@ -1,6 +1,6 @@
-import { AVAILABLE_TIME_SLOTS, getStoreById } from "@/data/mockStores";
-import { topCasts } from "@/data/topCasts";
-import { getCastSummary } from "@/lib/casts";
+import { getAreaById } from "@/lib/areas";
+import { getServiceSupabaseClient } from "@/lib/supabaseServer";
+import { getStoreById } from "@/lib/stores";
 import { Cast } from "@/types/cast";
 import { CastFollowerSnapshot, CastSNS, SNSPlatform } from "@/types/castProfile";
 import { Store } from "@/types/store";
@@ -12,81 +12,125 @@ export type CastDetail = {
   followerSnapshots: CastFollowerSnapshot[];
 };
 
-const snsMap = new Map<string, CastSNS[]>();
-const followerMap = new Map<string, CastFollowerSnapshot[]>();
-
-const createHandleSlug = (cast: Cast) => {
-  return `${cast.downtownName}-${cast.id}`.replace(/\s+/g, "").toLowerCase();
+type SocialLinkRow = {
+  platform: string;
+  url: string;
 };
 
-const createSNSRecords = (cast: Cast): CastSNS[] => {
-  const slug = createHandleSlug(cast);
-
-  return [
-    {
-      castId: cast.id,
-      platform: "instagram",
-      url: `https://www.instagram.com/${slug}/`,
-      handle: `@${slug}`,
-    },
-    {
-      castId: cast.id,
-      platform: "tiktok",
-      url: `https://www.tiktok.com/@${slug}`,
-      handle: `@${slug}`,
-    },
-  ];
+type SnapshotRow = {
+  platform: string;
+  followers: number;
+  captured_at: string;
 };
 
-const createFollowerSnapshots = (cast: Cast): CastFollowerSnapshot[] => {
-  const instagramLatest = Math.max(1000, Math.round(cast.followers * 0.6));
-  const tiktokLatest = Math.max(800, cast.followers - instagramLatest);
+const PLACEHOLDER_IMAGE = "/images/top-casts/placeholder.svg";
+const DEFAULT_ACCENT = "#f472b6";
 
-  const snapshotDates = ["2024-05-01", "2024-06-01", "2024-07-01"];
-
-  const createPlatformSnapshots = (platform: SNSPlatform, latest: number) => {
-    return snapshotDates.map((capturedAt, index) => ({
-      castId: cast.id,
-      platform,
-      capturedAt,
-      followers: Math.max(500, Math.round(latest * (0.8 + index * 0.1))),
-    }));
-  };
-
-  return [...createPlatformSnapshots("instagram", instagramLatest), ...createPlatformSnapshots("tiktok", tiktokLatest)];
-};
-
-const ensureProfileData = (cast: Cast) => {
-  if (!snsMap.has(cast.id)) {
-    snsMap.set(cast.id, createSNSRecords(cast));
-  }
-
-  if (!followerMap.has(cast.id)) {
-    followerMap.set(cast.id, createFollowerSnapshots(cast));
+const toSnapshot = (castId: string, row: SnapshotRow): CastFollowerSnapshot | null => {
+  if (row.platform !== "instagram" && row.platform !== "tiktok") {
+    return null;
   }
 
   return {
-    sns: snsMap.get(cast.id)!,
-    followerSnapshots: followerMap.get(cast.id)!,
+    castId,
+    platform: row.platform,
+    followers: row.followers,
+    capturedAt: row.captured_at,
   };
 };
 
-export const getCastDetail = (downtownId: number, castId: string): CastDetail | undefined => {
-  const cast =
-    getCastSummary(downtownId, castId) ??
-    topCasts.find((entry) => entry.id === castId && entry.downtownId === downtownId);
-
-  if (!cast) {
-    return undefined;
+const toSocialLink = (castId: string, row: SocialLinkRow): CastSNS | null => {
+  if (row.platform !== "instagram" && row.platform !== "tiktok") {
+    return null;
   }
 
-  const store = getStoreById(cast.storeId);
+  return {
+    castId,
+    platform: row.platform,
+    url: row.url,
+    handle: row.url,
+  };
+};
 
-  if (!store) {
-    return undefined;
+export const getCastDetail = async (downtownId: number, castId: string): Promise<CastDetail | null> => {
+  if (!castId) {
+    return null;
   }
 
-  const { sns, followerSnapshots } = ensureProfileData(cast);
+  const supabase = getServiceSupabaseClient();
+  const { data: castRow, error: castError } = await supabase
+    .from("casts")
+    .select("id, name, image_url, store_id")
+    .eq("id", castId)
+    .single();
+
+  if (castError) {
+    throw new Error(castError.message);
+  }
+
+  if (!castRow) {
+    return null;
+  }
+
+  const store = await getStoreById(castRow.store_id);
+  if (!store || store.areaId !== downtownId) {
+    return null;
+  }
+
+  const area = getAreaById(store.areaId);
+  if (!area) {
+    return null;
+  }
+
+  const { data: socialRows, error: socialError } = await supabase
+    .from("cast_social_links")
+    .select("platform, url")
+    .eq("cast_id", castId)
+    .order("created_at", { ascending: false });
+
+  if (socialError) {
+    throw new Error(socialError.message);
+  }
+
+  const sns =
+    (socialRows ?? [])
+      .map((row) => toSocialLink(castId, row as SocialLinkRow))
+      .filter((value): value is CastSNS => Boolean(value)) ?? [];
+
+  const { data: snapshotRows, error: snapshotError } = await supabase
+    .from("cast_follower_snapshots")
+    .select("platform, followers, captured_at")
+    .eq("cast_id", castId)
+    .order("captured_at", { ascending: true });
+
+  if (snapshotError) {
+    throw new Error(snapshotError.message);
+  }
+
+  const followerSnapshots =
+    (snapshotRows ?? [])
+      .map((row) => toSnapshot(castId, row as SnapshotRow))
+      .filter((value): value is CastFollowerSnapshot => Boolean(value)) ?? [];
+
+  const latestFollowers = getLatestFollowers(followerSnapshots);
+  const totalFollowers =
+    (latestFollowers.instagram?.followers ?? 0) + (latestFollowers.tiktok?.followers ?? 0);
+
+  const cast: Cast = {
+    id: castRow.id,
+    downtownId: store.areaId,
+    prefecture: area.todofukenName,
+    downtownName: area.downtownName,
+    name: castRow.name,
+    followers: totalFollowers,
+    storeId: store.id,
+    storeName: store.name,
+    image: castRow.image_url ?? PLACEHOLDER_IMAGE,
+    castLink: `/casts/${store.areaId}/${castRow.id}`,
+    storeLink: store.googleMapLink,
+    accent: DEFAULT_ACCENT,
+    badgeText: area.downtownName,
+  };
 
   return {
     cast,
@@ -110,5 +154,3 @@ export const getLatestFollowers = (
     return acc;
   }, {} as Record<SNSPlatform, { followers: number; capturedAt: string }>);
 };
-
-export const getAvailableTimeSlots = () => [...AVAILABLE_TIME_SLOTS];
