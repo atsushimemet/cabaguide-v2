@@ -4,7 +4,7 @@ export type StoreBasePricing = {
   taxRate: number;
   extensionPrice: number;
   lightDrinkPrice?: number;
-  cheapestChampagnePrice: number;
+  cheapestChampagnePrice?: number;
 };
 
 export type StoreTimeSlotPricing = {

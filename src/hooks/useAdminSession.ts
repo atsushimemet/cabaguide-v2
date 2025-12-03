@@ -33,19 +33,42 @@ export const useAdminGuard = () => {
 
   useEffect(() => {
     let isActive = true;
-    const authed = hasAdminSession();
 
-    Promise.resolve().then(() => {
-      if (!isActive) {
-        return;
+    const verifySession = async () => {
+      try {
+        const response = await fetch("/api/admin/session", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!isActive) {
+          return;
+        }
+
+        if (response.ok) {
+          persistAdminSession();
+          setIsAuthenticated(true);
+        } else {
+          clearAdminSession();
+          setIsAuthenticated(false);
+          router.replace("/admin/login");
+        }
+      } catch {
+        if (!isActive) {
+          return;
+        }
+        clearAdminSession();
+        setIsAuthenticated(false);
+        router.replace("/admin/login");
+      } finally {
+        if (isActive) {
+          setIsChecking(false);
+        }
       }
-      setIsAuthenticated(authed);
-      setIsChecking(false);
-    });
+    };
 
-    if (!authed) {
-      router.replace("/admin/login");
-    }
+    verifySession();
 
     return () => {
       isActive = false;

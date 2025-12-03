@@ -20,6 +20,13 @@ const formatPercent = (value: number) => {
   return `${percent.replace(/\.0$/, "")}%`;
 };
 
+const formatOptionalYen = (value?: number) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return formatYen(value);
+  }
+  return "未入力";
+};
+
 const formatTimeRange = (slot: string) => {
   const [hour] = slot.split(":").map((value) => Number(value));
   const nextHour = (hour + 1) % 24;
@@ -83,11 +90,11 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
           <div className="space-y-2 rounded-2xl border border-white/10 bg-black/30 p-4">
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">延長・ドリンク</p>
             <p>延長料金: {formatYen(store.basePricing.extensionPrice)}</p>
-            <p>キャストドリンク: {formatYen(store.basePricing.lightDrinkPrice ?? 2000)}</p>
+            <p>キャストドリンク: {formatOptionalYen(store.basePricing.lightDrinkPrice)}</p>
           </div>
           <div className="space-y-2 rounded-2xl border border-white/10 bg-black/30 p-4">
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">シャンパン</p>
-            <p>最安ボトル: {formatYen(store.basePricing.cheapestChampagnePrice)}</p>
+            <p>最安ボトル: {formatOptionalYen(store.basePricing.cheapestChampagnePrice)}</p>
           </div>
         </div>
       </section>

@@ -29,7 +29,7 @@ const toBasePricing = (row?: BasePricingRow | null): StoreBasePricing => {
     taxRate: row?.tax_rate ? Number(row.tax_rate) : 0,
     extensionPrice: row?.extension_price ?? 0,
     lightDrinkPrice: row?.light_drink_price ?? undefined,
-    cheapestChampagnePrice: row?.cheapest_champagne_price ?? 0,
+    cheapestChampagnePrice: row?.cheapest_champagne_price ?? undefined,
   };
 };
 

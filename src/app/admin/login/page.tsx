@@ -12,9 +12,38 @@ export default function AdminLoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    let isActive = true;
+
     if (hasAdminSession()) {
       router.replace("/admin");
+      return;
     }
+
+    const verifyExistingSession = async () => {
+      try {
+        const response = await fetch("/api/admin/session", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!isActive) {
+          return;
+        }
+
+        if (response.ok) {
+          persistAdminSession();
+          router.replace("/admin");
+        }
+      } catch {
+        // ignore, user must log in
+      }
+    };
+
+    verifyExistingSession();
+
+    return () => {
+      isActive = false;
+    };
   }, [router]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
