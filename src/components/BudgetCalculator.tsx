@@ -21,6 +21,7 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
 
   return {
     startTime,
+    guestCount: 1,
     nominationCount: 1,
     useVipSeat: false,
   };
