@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { getStoreById } from "@/lib/stores";
+import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 
 type StoreDetailPageProps = {
   params: Promise<{
@@ -82,7 +83,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">基本情報</p>
             <p>指名料: {formatYen(store.basePricing.nominationPrice)}</p>
             <p>サービス料率: {formatPercent(store.basePricing.serviceFeeRate)}</p>
-            <p>税率: {formatPercent(store.basePricing.taxRate)}</p>
+            <p>消費税: {formatPercent(CONSUMPTION_TAX_RATE)}</p>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChangeEvent, useMemo, useState } from "react";
 
 import { BudgetBreakdown, BudgetParams, calculateBudget } from "@/lib/budget";
+import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 import { Store } from "@/types/store";
 
 type BudgetCalculatorProps = {
@@ -32,7 +33,7 @@ const tooltipDetails = [
   "時間帯料金 × 来店人数で小計を計算します。",
   "指名料は1名あたり指名料金 × 2時間で計算します。",
   "ドリンクは店舗設定(なければ2,000円) × 杯数で加算します。",
-  "延長は回数 × 延長料金、最後にサービス料→税率の順に乗算します。",
+  "延長は回数 × 延長料金、最後にサービス料→消費税(10%)の順に乗算します。",
 ];
 
 type NumericField = "guestCount" | "nominationCount" | "castDrinkCountPerGuest" | "extensionCount";
@@ -257,7 +258,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             <strong>{formatYen(result.serviceFee)}</strong>
           </li>
           <li className="flex items-center justify-between text-white/70">
-            <span>消費税 ({Math.round(store.basePricing.taxRate * 100)}%)</span>
+            <span>消費税 ({Math.round(CONSUMPTION_TAX_RATE * 100)}%)</span>
             <strong>{formatYen(result.tax)}</strong>
           </li>
         </ul>

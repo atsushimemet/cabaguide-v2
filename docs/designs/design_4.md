@@ -5,7 +5,7 @@ docs/er.md をベースに、キャスト詳細ページ実装時に前提とな
 ## 1. テーブル前提
 - **Area**: `id`, `todofuken_name`, `downtime_name`。店舗は必ず所属エリアを参照するため、キャストページでは `Store.area_id` を辿って表示する。
 - **Store**: `id`, `area_id`, `name`, `google_map_link`, `phone`。キャスト所属店舗の基本情報を提供。
-- **StoreBasePricing**: `store_id` と 1:1。`nomination_price`, `service_fee_rate`, `tax_rate`, `extension_price`, `light_drink_price`, `cheapest_champagne_price` を保持し、指名料・サービス料算出に利用。
+- **StoreBasePricing**: `store_id` と 1:1。`nomination_price`, `service_fee_rate`, `extension_price`, `light_drink_price`, `cheapest_champagne_price` を保持し、指名料・サービス料算出に利用。消費税は DB で保持せず 10% 固定で計算。
 - **StoreTimeSlotPricing**: `store_id` と 1:多。`time_slot`, `main_price`, `vip_price` を保持し、予算計算時に 2h 分のベース料金を求める。
 - **Cast**: `store_id` と 1:多。`name`, `age`, `image_url` を保持。詳細ページのメイン情報。
 - **CastSNS**: `cast_id` と 1:多。`platform`, `url` を保持し、プロフィール欄に表示するリンクを抽出。
@@ -28,7 +28,6 @@ type Store = {
 type StoreBasePricing = {
   nominationPrice: number;
   serviceFeeRate: number;
-  taxRate: number;
   extensionPrice: number;
   lightDrinkPrice: number;
   cheapestChampagnePrice: number;
@@ -59,7 +58,7 @@ type Cast = {
 2. **人数料金**: `main_price` × `来店人数`。VIP 指定時は `vip_price` を利用。
 3. **指名キャスト数**: `nomination_price` × `指名人数` × 2h。
 4. **キャストドリンク**: 1杯 2,000 円（`light_drink_price` が定義されていればそれを優先）。
-5. **サービス料/税**: 合計小計に `service_fee_rate` と `tax_rate` を逐次乗算。
+5. **サービス料/税**: 合計小計に `service_fee_rate` を乗算し、最後に消費税 (10%) を掛ける。
 6. **延長料金**: 延長操作が追加された場合 `extension_price` × 延長回数で加算できるよう開口部を残す。
 
 ## 4. データ取得計画
