@@ -4,7 +4,7 @@ export type StoreBasePricing = {
   taxRate: number;
   extensionPrice: number;
   lightDrinkPrice?: number;
-  cheapestChampagnePrice: number;
+  cheapestChampagnePrice?: number;
 };
 
 export type StoreTimeSlotPricing = {
@@ -15,7 +15,6 @@ export type StoreTimeSlotPricing = {
 
 export type Store = {
   id: string;
-  slug: string;
   areaId: number;
   name: string;
   googleMapLink: string;

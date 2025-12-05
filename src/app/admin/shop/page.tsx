@@ -8,12 +8,7 @@ import { AdminFooter } from "@/components/AdminFooter";
 import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
-import {
-  MAIN_PRICE_OPTIONS,
-  SERVICE_FEE_OPTIONS,
-  TIME_SLOT_OPTIONS,
-  VIP_PRICE_OPTIONS,
-} from "@/lib/adminOptions";
+import { SERVICE_FEE_OPTIONS, TIME_SLOT_OPTIONS } from "@/lib/adminOptions";
 
 type AreaOption = {
   id: number;
@@ -70,8 +65,8 @@ const createDefaultFormState = (): StoreFormState => ({
   serviceFeeRate: "",
   taxRate: "0.10",
   extensionPrice: "",
-  lightDrinkPrice: "2000",
-  cheapestChampagnePrice: "25000",
+  lightDrinkPrice: "",
+  cheapestChampagnePrice: "",
   timeSlots: createInitialTimeSlots(),
 });
 
@@ -120,10 +115,18 @@ export default function AdminShopPage() {
   }, [client]);
 
   const fetchStores = useCallback(async () => {
+    if (!isAuthenticated) {
+      return;
+    }
     setIsLoadingStores(true);
     setStoresError(null);
     try {
       const response = await fetch("/api/admin/stores", { credentials: "include" });
+      if (response.status === 401) {
+        setStoresError("管理者セッションの有効期限が切れました。再度ログインしてください。");
+        await logout();
+        return;
+      }
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
         throw new Error(payload?.error ?? "店舗一覧の取得に失敗しました");
@@ -135,11 +138,14 @@ export default function AdminShopPage() {
     } finally {
       setIsLoadingStores(false);
     }
-  }, []);
+  }, [isAuthenticated, logout]);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
     fetchStores();
-  }, [fetchStores]);
+  }, [fetchStores, isAuthenticated]);
 
   const areaMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -153,6 +159,17 @@ export default function AdminShopPage() {
     }
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const isHundredUnit = (value: string) => {
+    if (!value) {
+      return true;
+    }
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric < 0) {
+      return false;
+    }
+    return numeric % 100 === 0;
   };
 
   const updateTimeSlotField = (slot: number, field: "main" | "vip", value: string) => {
@@ -172,6 +189,11 @@ export default function AdminShopPage() {
     event.preventDefault();
     setFormSuccess(null);
     setFormError(null);
+
+    if (!isAuthenticated) {
+      setFormError("管理者セッションを確認できませんでした。再度ログインしてください。");
+      return;
+    }
 
     if (!client) {
       setFormError(clientError ?? "Supabase クライアントを初期化できませんでした");
@@ -196,6 +218,24 @@ export default function AdminShopPage() {
     );
     if (missingSlot !== undefined) {
       setFormError(`${missingSlot}:00 のメイン料金を入力してください`);
+      return;
+    }
+
+    const invalidSlot = TIME_SLOT_OPTIONS.find((slot) => {
+      const current = formState.timeSlots[slot];
+      if (!current) {
+        return true;
+      }
+      if (!isHundredUnit(current.main)) {
+        return true;
+      }
+      if (current.vip && !isHundredUnit(current.vip)) {
+        return true;
+      }
+      return false;
+    });
+    if (invalidSlot !== undefined) {
+      setFormError(`${invalidSlot}:00 の料金は100円刻みで入力してください`);
       return;
     }
 
@@ -228,6 +268,13 @@ export default function AdminShopPage() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
+
+      if (response.status === 401) {
+        setFormError("管理者セッションの有効期限が切れました。再度ログインしてください。");
+        await logout();
+        setIsSubmitting(false);
+        return;
+      }
 
       if (!response.ok) {
         const data = await response.json().catch(() => null);
@@ -383,22 +430,25 @@ export default function AdminShopPage() {
                   <div key={slot} className="rounded-2xl border border-white/10 bg-black/30 p-4">
                     <p className="text-sm font-semibold text-white">{slot}:00 帯</p>
                     <div className="mt-3 grid gap-4 md:grid-cols-2">
-                      <SelectField
+                      <Field
                         label="メイン料金 (必須)"
                         value={formState.timeSlots[slot]?.main ?? ""}
                         onChange={(value) => updateTimeSlotField(slot, "main", value)}
-                        options={MAIN_PRICE_OPTIONS}
-                        unit="円"
-                        placeholder="金額を選択"
-                        required
+                        type="number"
+                        inputMode="numeric"
+                        step="100"
+                        min="0"
+                        placeholder="例: 7800"
                       />
-                      <SelectField
+                      <Field
                         label="VIP料金 (任意)"
                         value={formState.timeSlots[slot]?.vip ?? ""}
                         onChange={(value) => updateTimeSlotField(slot, "vip", value)}
-                        options={VIP_PRICE_OPTIONS}
-                        unit="円"
-                        placeholder="金額を選択"
+                        type="number"
+                        inputMode="numeric"
+                        step="100"
+                        min="0"
+                        placeholder="例: 10200"
                       />
                     </div>
                   </div>

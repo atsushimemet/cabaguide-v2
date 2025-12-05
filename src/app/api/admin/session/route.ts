@@ -1,7 +1,15 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { ADMIN_SESSION_COOKIE } from "@/lib/adminAuth";
+import { ADMIN_SESSION_COOKIE, ensureAdminSession } from "@/lib/adminAuth";
+
+export async function GET() {
+  const unauthorized = await ensureAdminSession();
+  if (unauthorized) {
+    return unauthorized;
+  }
+  return NextResponse.json({ ok: true });
+}
 export async function POST(request: Request) {
   const { password } = await request.json().catch(() => ({ password: null }));
   const adminPassword = process.env.ADMIN_PASSWORD ?? process.env.NEXT_PUBLIC_ADMIN_PASSWORD;

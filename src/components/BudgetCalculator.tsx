@@ -56,7 +56,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
     }
     return Math.round(result.total / 5000) * 5000;
   }, [result.total]);
-  const storePageHref = store.slug ? `/stores/${store.slug}` : undefined;
+  const storePageHref = store.id ? `/stores/${store.id}` : undefined;
 
   const handleSelectChange = (field: NumericField) => (event: ChangeEvent<HTMLSelectElement>) => {
     const value = Number(event.target.value);
@@ -85,7 +85,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           <p className="text-xs uppercase tracking-[0.4em] text-fuchsia-200">BUDGET</p>
           <h3 className="text-2xl font-semibold">2時間滞在の概算</h3>
           <p className="text-sm text-white/70">
-            人数・時間を調整して予算感を掴みましょう。開始時間から連続した2時間分の料金を表示しています。料金概算のため詳細は
+            人数・時間を調整して予算感を掴みましょう。開始時間から連続した2時間分の料金を参照します。料金概算のため詳細は
             {storePageHref ? (
               <>
                 {" "}

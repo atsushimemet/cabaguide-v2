@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
-import { topCasts } from "@/data/topCasts";
+import { getTopCasts } from "@/lib/casts";
 
 type AreaSearchCTAProps = {
   sectionId?: string;
 };
 
-export default function Home() {
+export default async function Home() {
+  const topCasts = await getTopCasts();
   return (
     <PageFrame>
       <AreaSearchCTA sectionId="area-search" />
