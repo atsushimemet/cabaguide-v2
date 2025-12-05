@@ -1,3 +1,4 @@
+import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 import { Store, StoreTimeSlotPricing } from "@/types/store";
 
 export type BudgetParams = {
@@ -74,7 +75,7 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
   const subtotal = guestTotal + nominationTotal + drinkTotal + extensionTotal;
   const serviceFee = Math.round(subtotal * store.basePricing.serviceFeeRate);
   const afterService = subtotal + serviceFee;
-  const tax = Math.round(afterService * store.basePricing.taxRate);
+  const tax = Math.round(afterService * CONSUMPTION_TAX_RATE);
   const total = afterService + tax;
 
   return {

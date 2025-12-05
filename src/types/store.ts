@@ -1,7 +1,6 @@
 export type StoreBasePricing = {
   nominationPrice: number;
   serviceFeeRate: number;
-  taxRate: number;
   extensionPrice: number;
   lightDrinkPrice?: number;
   cheapestChampagnePrice?: number;

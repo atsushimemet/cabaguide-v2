@@ -43,7 +43,6 @@ type StoreFormState = {
   phone: string;
   nominationPrice: string;
   serviceFeeRate: string;
-  taxRate: string;
   extensionPrice: string;
   lightDrinkPrice: string;
   cheapestChampagnePrice: string;
@@ -63,7 +62,6 @@ const createDefaultFormState = (): StoreFormState => ({
   phone: "",
   nominationPrice: "",
   serviceFeeRate: "",
-  taxRate: "0.10",
   extensionPrice: "",
   lightDrinkPrice: "",
   cheapestChampagnePrice: "",
@@ -248,7 +246,6 @@ export default function AdminShopPage() {
       phone: formState.phone,
       nominationPrice: parseNumber(formState.nominationPrice),
       serviceFeeRate: parseNumber(formState.serviceFeeRate),
-      taxRate: parseNumber(formState.taxRate),
       extensionPrice: parseNumber(formState.extensionPrice),
       lightDrinkPrice: parseNumber(formState.lightDrinkPrice),
       cheapestChampagnePrice: parseNumber(formState.cheapestChampagnePrice),
@@ -383,15 +380,6 @@ export default function AdminShopPage() {
               unit="%"
               formatter={(value) => `${(Number(value) * 100).toFixed(0)}%`}
               placeholder="未設定"
-            />
-
-            <Field
-              label="税率"
-              value={formState.taxRate}
-              type="number"
-              step="0.01"
-              onChange={(value) => setFormState((prev) => ({ ...prev, taxRate: value }))}
-              placeholder="0.10"
             />
 
             <Field

@@ -17,7 +17,6 @@ id
 store_id FK to Store.id
 nomination_price 指名料金
 service_fee_rate サービス料パーセンテージ
-tax_rate 税率パーセンテージ
 extension_price 延長料金
 light_drink_price 軽ドリンク目安価格
 cheapest_champagne_price 最安シャンパン価格

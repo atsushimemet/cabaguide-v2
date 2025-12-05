@@ -34,7 +34,7 @@ issue_6 の要求に基づき、管理者向けログイン〜店舗/キャス�
 | 電話番号 | ✔ | `<input type="tel">` | `^\d{2,4}-\d{2,4}-\d{3,4}$` を想定 |
 | 指名料金 | ✖ | ピッカー (`select` 1000〜10000, 1000 刻み) | `StoreBasePricing.nomination_price` |
 | サービス料率 | ✖ | ピッカー (0.10〜0.50, 0.05 刻み) | `StoreBasePricing.service_fee_rate` |
-| 税率 | ✖ | 数値入力 (デフォ 0.10) | 任意小数。`step="0.01"` |
+| 消費税 | - | 入力フィールド不要 (10%) | `store_base_pricings` に保持しない。計算時に固定値を適用 |
 | 延長料金 | ✖ | ピッカー (1000〜10000, 1000 刻み) | `StoreBasePricing.extension_price` |
 | 軽ドリンク価格 | ✖ | 数値入力 (デフォ 2000) | `StoreBasePricing.light_drink_price` |
 | 最安シャンパン価格 | ✖ | 数値入力 (デフォ 25000) | `StoreBasePricing.cheapest_champagne_price` |
