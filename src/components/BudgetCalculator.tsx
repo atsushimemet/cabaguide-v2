@@ -21,7 +21,6 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
 
   return {
     startTime,
-    guestCount: 2,
     nominationCount: 1,
     useVipSeat: false,
   };
@@ -35,8 +34,7 @@ const tooltipDetails = [
   "最後にサービス料→消費税(10%)の順に乗算します。",
 ];
 
-type NumericField = "guestCount" | "nominationCount";
-const guestCountOptions = [1, 2, 3, 4, 5];
+type NumericField = "nominationCount";
 const zeroToFiveOptions = [0, 1, 2, 3, 4, 5];
 
 export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
@@ -133,21 +131,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           </select>
         </label>
         <label className="space-y-1 text-sm">
-          <span className="font-medium text-white/80">来店人数</span>
-          <select
-            value={params.guestCount}
-            onChange={handleSelectChange("guestCount")}
-            className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          >
-            {guestCountOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}名
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="space-y-1 text-sm">
           <span className="font-medium text-white/80">指名キャスト数</span>
           <select
             value={params.nominationCount}
@@ -187,7 +170,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
       <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-purple-900/60 via-fuchsia-800/40 to-cyan-900/40 p-6 shadow-2xl shadow-purple-900/30">
         <p className="text-sm uppercase tracking-[0.3em] text-white/70">TIME SLOT</p>
         <p className="mt-1 text-sm text-white/70">
-          {params.useVipSeat ? "VIP" : "通常席"} / {params.guestCount}名 / 2時間滞在 の想定で、以下 2 時間分の料金を参照します。
+          {params.useVipSeat ? "VIP" : "通常席"} / 1名 / 2時間滞在 の想定で、以下 2 時間分の料金を参照します。
         </p>
         <div className="mt-4 space-y-2 text-sm text-white/80">
           {result.timeSlots.map((slot) => (
@@ -207,7 +190,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             </div>
             <div>
               <p className="text-3xl font-semibold text-white">{formatYen(scenario.total)}</p>
-              <p className="text-xs text-white/60">税込 / {params.useVipSeat ? "VIP" : "通常席"} / {params.guestCount}名 / 2時間</p>
+              <p className="text-xs text-white/60">税込 / {params.useVipSeat ? "VIP" : "通常席"} / 1名 / 2時間</p>
             </div>
             <ul className="space-y-2">
               <li className="flex items-center justify-between">

@@ -103,9 +103,16 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
     pricePerPerson: params.useVipSeat ? slot.vipPrice : slot.mainPrice,
   }));
 
+  const baseScenarioParams = {
+    guestCount: 1,
+    nominationCount: params.nominationCount,
+    timeSlots: selectedSlots,
+    useVipSeat: params.useVipSeat,
+  };
+
   const drinksOnly = createScenario(
     store,
-    { guestCount: params.guestCount, nominationCount: params.nominationCount, timeSlots: selectedSlots, useVipSeat: params.useVipSeat },
+    baseScenarioParams,
     0,
     {
       id: "drinks",
@@ -116,7 +123,7 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
 
   const withChampagne = createScenario(
     store,
-    { guestCount: params.guestCount, nominationCount: params.nominationCount, timeSlots: selectedSlots, useVipSeat: params.useVipSeat },
+    baseScenarioParams,
     CHAMPAGNE_PRICE,
     {
       id: "drinks_and_champagne",
