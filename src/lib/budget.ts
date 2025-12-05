@@ -6,7 +6,6 @@ export type BudgetParams = {
   guestCount: number;
   nominationCount: number;
   castDrinkCountPerGuest: number;
-  extensionCount: number;
   useVipSeat: boolean;
 };
 
@@ -15,7 +14,6 @@ export type BudgetBreakdown = {
   guestTotal: number;
   nominationTotal: number;
   drinkTotal: number;
-  extensionTotal: number;
   subtotal: number;
   serviceFee: number;
   tax: number;
@@ -53,7 +51,6 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
   const guestCount = Math.max(1, ensurePositiveInteger(params.guestCount, 1));
   const nominationCount = ensurePositiveInteger(params.nominationCount, 0);
   const castDrinkCountPerGuest = ensurePositiveInteger(params.castDrinkCountPerGuest, 0);
-  const extensionCount = ensurePositiveInteger(params.extensionCount, 0);
 
   const sortedSlots = normalizeTimeSlots(store.timeSlots);
   const selectedSlots = pickTwoHours(sortedSlots, params.startTime);
@@ -70,9 +67,7 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
   const drinkUnitPrice = store.basePricing.lightDrinkPrice ?? 2000;
   const totalDrinkCount = castDrinkCountPerGuest * guestCount;
   const drinkTotal = drinkUnitPrice * totalDrinkCount;
-  const extensionTotal = store.basePricing.extensionPrice * extensionCount;
-
-  const subtotal = guestTotal + nominationTotal + drinkTotal + extensionTotal;
+  const subtotal = guestTotal + nominationTotal + drinkTotal;
   const serviceFee = Math.round(subtotal * store.basePricing.serviceFeeRate);
   const afterService = subtotal + serviceFee;
   const tax = Math.round(afterService * CONSUMPTION_TAX_RATE);
@@ -83,7 +78,6 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
     guestTotal,
     nominationTotal,
     drinkTotal,
-    extensionTotal,
     subtotal,
     serviceFee,
     tax,

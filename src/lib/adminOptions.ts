@@ -15,7 +15,6 @@ const createDecimalRange = (start: number, end: number, step: number) => {
 };
 
 export const NOMINATION_PRICE_OPTIONS = createRange(1000, 10000, 1000);
-export const EXTENSION_PRICE_OPTIONS = createRange(1000, 10000, 1000);
 export const MAIN_PRICE_OPTIONS = createRange(1000, 20000, 1000);
 export const VIP_PRICE_OPTIONS = createRange(5000, 50000, 1000);
 export const TIME_SLOT_OPTIONS = createRange(20, 24, 1);

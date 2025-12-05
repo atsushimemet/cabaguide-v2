@@ -23,7 +23,6 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
     guestCount: 2,
     nominationCount: 1,
     castDrinkCountPerGuest: 1,
-    extensionCount: 0,
     useVipSeat: false,
   };
 };
@@ -33,10 +32,10 @@ const tooltipDetails = [
   "時間帯料金 × 来店人数で小計を計算します。",
   "指名料は1名あたり指名料金 × 2時間で計算します。",
   "ドリンクは店舗設定(なければ2,000円) × 杯数で加算します。",
-  "延長は回数 × 延長料金、最後にサービス料→消費税(10%)の順に乗算します。",
+  "最後にサービス料→消費税(10%)の順に乗算します。",
 ];
 
-type NumericField = "guestCount" | "nominationCount" | "castDrinkCountPerGuest" | "extensionCount";
+type NumericField = "guestCount" | "nominationCount" | "castDrinkCountPerGuest";
 const guestCountOptions = [1, 2, 3, 4, 5];
 const zeroToFiveOptions = [0, 1, 2, 3, 4, 5];
 
@@ -184,21 +183,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           </select>
         </label>
 
-        <label className="space-y-1 text-sm">
-          <span className="font-medium text-white/80">延長回数</span>
-          <select
-            value={params.extensionCount}
-            onChange={handleSelectChange("extensionCount")}
-            className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          >
-            {zeroToFiveOptions.map((option) => (
-              <option key={`extension-${option}`} value={option}>
-                {option}回
-              </option>
-            ))}
-          </select>
-        </label>
-
         <div className="space-y-2 text-sm">
           <span className="font-medium text-white/80">席タイプ</span>
           <button
@@ -248,10 +232,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           <li className="flex items-center justify-between">
             <span>キャストドリンク ({result.drinkUnitPrice.toLocaleString("ja-JP")}円 x {result.totalDrinkCount}杯)</span>
             <strong>{formatYen(result.drinkTotal)}</strong>
-          </li>
-          <li className="flex items-center justify-between">
-            <span>延長 ({params.extensionCount}回)</span>
-            <strong>{formatYen(result.extensionTotal)}</strong>
           </li>
           <li className="flex items-center justify-between text-white/70">
             <span>サービス料 ({Math.round(store.basePricing.serviceFeeRate * 100)}%)</span>
