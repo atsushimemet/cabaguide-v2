@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChangeEvent, useMemo, useState } from "react";
 
 import { BudgetBreakdown, BudgetParams, calculateBudget } from "@/lib/budget";
+import { CHAMPAGNE_PRICE, LIGHT_DRINKS_PER_GUEST, LIGHT_DRINK_UNIT_PRICE } from "@/lib/pricing";
 import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 import { Store } from "@/types/store";
 
@@ -22,7 +23,6 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
     startTime,
     guestCount: 2,
     nominationCount: 1,
-    castDrinkCountPerGuest: 1,
     useVipSeat: false,
   };
 };
@@ -31,11 +31,11 @@ const tooltipDetails = [
   "開始時間から連続した2時間分の時間帯料金を取得し、VIP選択時はVIP料金、通常時はメイン料金を参照します。",
   "時間帯料金 × 来店人数で小計を計算します。",
   "指名料は1名あたり指名料金 × 2時間で計算します。",
-  "ドリンクは店舗設定(なければ2,000円) × 杯数で加算します。",
+  "キャストドリンクは 1 人あたり 2 杯（1 杯 2,000 円）を振る舞う想定で計算し、シャンパン 1 本 25,000 円のケースも併記します。",
   "最後にサービス料→消費税(10%)の順に乗算します。",
 ];
 
-type NumericField = "guestCount" | "nominationCount" | "castDrinkCountPerGuest";
+type NumericField = "guestCount" | "nominationCount";
 const guestCountOptions = [1, 2, 3, 4, 5];
 const zeroToFiveOptions = [0, 1, 2, 3, 4, 5];
 
@@ -50,12 +50,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const result: BudgetBreakdown = useMemo(() => calculateBudget(store, params), [store, params]);
-  const roundedTotal = useMemo(() => {
-    if (result.total === 0) {
-      return 0;
-    }
-    return Math.round(result.total / 5000) * 5000;
-  }, [result.total]);
   const storePageHref = store.id ? `/stores/${store.id}` : undefined;
 
   const handleSelectChange = (field: NumericField) => (event: ChangeEvent<HTMLSelectElement>) => {
@@ -168,20 +162,10 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           </select>
         </label>
 
-        <label className="space-y-1 text-sm">
-          <span className="font-medium text-white/80">キャストドリンク数（1人あたり）</span>
-          <select
-            value={params.castDrinkCountPerGuest}
-            onChange={handleSelectChange("castDrinkCountPerGuest")}
-            className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          >
-            {zeroToFiveOptions.map((option) => (
-              <option key={`drink-${option}`} value={option}>
-                {option}杯
-              </option>
-            ))}
-          </select>
-        </label>
+        <p className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-xs text-white/70">
+          ※ キャストドリンクは 1 人あたり {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）を想定し、
+          シャンパン 1 本 {formatYen(CHAMPAGNE_PRICE)} のケースも自動で算出します。
+        </p>
 
         <div className="space-y-2 text-sm">
           <span className="font-medium text-white/80">席タイプ</span>
@@ -201,13 +185,9 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-purple-900/60 via-fuchsia-800/40 to-cyan-900/40 p-6 shadow-2xl shadow-purple-900/30">
-        <p className="text-sm uppercase tracking-[0.3em] text-white/70">ESTIMATE</p>
-        <div className="mt-2 flex items-end gap-2">
-          <p className="text-4xl font-bold text-white">{formatYen(roundedTotal)}</p>
-          <span className="text-sm text-white/60">（税込）</span>
-        </div>
+        <p className="text-sm uppercase tracking-[0.3em] text-white/70">TIME SLOT</p>
         <p className="mt-1 text-sm text-white/70">
-          {params.useVipSeat ? "VIP" : "通常席"} / {params.guestCount}名 / 2時間滞在
+          {params.useVipSeat ? "VIP" : "通常席"} / {params.guestCount}名 / 2時間滞在 の想定で、以下 2 時間分の料金を参照します。
         </p>
         <div className="mt-4 space-y-2 text-sm text-white/80">
           {result.timeSlots.map((slot) => (
@@ -218,30 +198,47 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
         </div>
       </div>
 
-      <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
-        <h4 className="text-base font-semibold text-white">内訳</h4>
-        <ul className="space-y-2">
-          <li className="flex items-center justify-between">
-            <span>時間帯料金 x 人数</span>
-            <strong>{formatYen(result.guestTotal)}</strong>
-          </li>
-          <li className="flex items-center justify-between">
-            <span>指名料 ({params.nominationCount}名)</span>
-            <strong>{formatYen(result.nominationTotal)}</strong>
-          </li>
-          <li className="flex items-center justify-between">
-            <span>キャストドリンク ({result.drinkUnitPrice.toLocaleString("ja-JP")}円 x {result.totalDrinkCount}杯)</span>
-            <strong>{formatYen(result.drinkTotal)}</strong>
-          </li>
-          <li className="flex items-center justify-between text-white/70">
-            <span>サービス料 ({Math.round(store.basePricing.serviceFeeRate * 100)}%)</span>
-            <strong>{formatYen(result.serviceFee)}</strong>
-          </li>
-          <li className="flex items-center justify-between text-white/70">
-            <span>消費税 ({Math.round(CONSUMPTION_TAX_RATE * 100)}%)</span>
-            <strong>{formatYen(result.tax)}</strong>
-          </li>
-        </ul>
+      <div className="grid gap-4 md:grid-cols-2">
+        {result.scenarios.map((scenario) => (
+          <div key={scenario.id} className="space-y-3 rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-white/80">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/60">{scenario.label}</p>
+              <p className="mt-1 text-white/70">{scenario.description}</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold text-white">{formatYen(scenario.total)}</p>
+              <p className="text-xs text-white/60">税込 / {params.useVipSeat ? "VIP" : "通常席"} / {params.guestCount}名 / 2時間</p>
+            </div>
+            <ul className="space-y-2">
+              <li className="flex items-center justify-between">
+                <span>時間帯料金 x 人数</span>
+                <strong>{formatYen(scenario.guestTotal)}</strong>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>指名料 ({params.nominationCount}名)</span>
+                <strong>{formatYen(scenario.nominationTotal)}</strong>
+              </li>
+              <li className="flex items-center justify-between">
+                <span>ドリンク (1人 {LIGHT_DRINKS_PER_GUEST}杯)</span>
+                <strong>{formatYen(scenario.drinkTotal)}</strong>
+              </li>
+              {scenario.extrasAmount > 0 && (
+                <li className="flex items-center justify-between">
+                  <span>{scenario.extrasLabel ?? "追加"}</span>
+                  <strong>{formatYen(scenario.extrasAmount)}</strong>
+                </li>
+              )}
+              <li className="flex items-center justify-between text-white/70">
+                <span>サービス料 ({Math.round(store.basePricing.serviceFeeRate * 100)}%)</span>
+                <strong>{formatYen(scenario.serviceFee)}</strong>
+              </li>
+              <li className="flex items-center justify-between text-white/70">
+                <span>消費税 ({Math.round(CONSUMPTION_TAX_RATE * 100)}%)</span>
+                <strong>{formatYen(scenario.tax)}</strong>
+              </li>
+            </ul>
+          </div>
+        ))}
       </div>
     </section>
   );

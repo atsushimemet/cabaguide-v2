@@ -63,8 +63,6 @@ export async function POST(request: Request) {
     phone,
     nominationPrice,
     serviceFeeRate,
-    lightDrinkPrice,
-    cheapestChampagnePrice,
     timeSlots,
   } = body;
 
@@ -107,8 +105,6 @@ export async function POST(request: Request) {
       store_id: storeId,
       nomination_price: nominationPrice ?? null,
       service_fee_rate: serviceFeeRate ?? null,
-      light_drink_price: lightDrinkPrice ?? null,
-      cheapest_champagne_price: cheapestChampagnePrice ?? null,
     };
 
     const { error: baseError } = await supabase.from("store_base_pricings").insert(basePricingPayload);

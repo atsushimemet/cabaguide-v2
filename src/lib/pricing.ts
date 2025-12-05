@@ -1,0 +1,3 @@
+export const LIGHT_DRINKS_PER_GUEST = 2;
+export const LIGHT_DRINK_UNIT_PRICE = 2000;
+export const CHAMPAGNE_PRICE = 25000;

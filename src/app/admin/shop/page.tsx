@@ -43,8 +43,6 @@ type StoreFormState = {
   phone: string;
   nominationPrice: string;
   serviceFeeRate: string;
-  lightDrinkPrice: string;
-  cheapestChampagnePrice: string;
   timeSlots: TimeSlotForm;
 };
 
@@ -61,8 +59,6 @@ const createDefaultFormState = (): StoreFormState => ({
   phone: "",
   nominationPrice: "",
   serviceFeeRate: "",
-  lightDrinkPrice: "",
-  cheapestChampagnePrice: "",
   timeSlots: createInitialTimeSlots(),
 });
 
@@ -244,8 +240,6 @@ export default function AdminShopPage() {
       phone: formState.phone,
       nominationPrice: parseNumber(formState.nominationPrice),
       serviceFeeRate: parseNumber(formState.serviceFeeRate),
-      lightDrinkPrice: parseNumber(formState.lightDrinkPrice),
-      cheapestChampagnePrice: parseNumber(formState.cheapestChampagnePrice),
       timeSlots: TIME_SLOT_OPTIONS.map((slot) => ({
         timeSlot: slot,
         mainPrice: Number(formState.timeSlots[slot].main),
@@ -377,22 +371,6 @@ export default function AdminShopPage() {
               unit="%"
               formatter={(value) => `${(Number(value) * 100).toFixed(0)}%`}
               placeholder="未設定"
-            />
-
-            <Field
-              label="軽ドリンク目安価格"
-              value={formState.lightDrinkPrice}
-              type="number"
-              onChange={(value) => setFormState((prev) => ({ ...prev, lightDrinkPrice: value }))}
-              placeholder="2000"
-            />
-
-            <Field
-              label="最安シャンパン目安価格"
-              value={formState.cheapestChampagnePrice}
-              type="number"
-              onChange={(value) => setFormState((prev) => ({ ...prev, cheapestChampagnePrice: value }))}
-              placeholder="25000"
             />
 
             <div className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
