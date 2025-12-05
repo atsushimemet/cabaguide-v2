@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { getStoreById } from "@/lib/stores";
-import { CHAMPAGNE_PRICE, LIGHT_DRINKS_PER_GUEST, LIGHT_DRINK_UNIT_PRICE } from "@/lib/pricing";
 import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 
 type StoreDetailPageProps = {
@@ -81,18 +80,6 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
           </div>
         </div>
 
-        <div className="grid gap-4 text-sm text-white/80 md:grid-cols-2">
-          <div className="space-y-2 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">ドリンク</p>
-            <p>
-              キャストには 1 人あたり {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）のドリンクを振る舞う想定です。
-            </p>
-          </div>
-          <div className="space-y-2 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">シャンパン</p>
-            <p>参考価格: {formatYen(CHAMPAGNE_PRICE)}</p>
-          </div>
-        </div>
       </section>
 
       <section className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">

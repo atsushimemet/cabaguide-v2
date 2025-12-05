@@ -5,7 +5,6 @@ import { Store, StoreTimeSlotPricing } from "@/types/store";
 export type BudgetParams = {
   startTime: string;
   guestCount: number;
-  nominationCount: number;
   useVipSeat: boolean;
 };
 
@@ -56,12 +55,11 @@ const pickTwoHours = (sortedSlots: StoreTimeSlotPricing[], startTime: string): S
 
 const createScenario = (
   store: Store,
-  params: Pick<BudgetParams, "guestCount" | "nominationCount"> & { timeSlots: StoreTimeSlotPricing[]; useVipSeat: boolean },
+  params: Pick<BudgetParams, "guestCount"> & { timeSlots: StoreTimeSlotPricing[]; useVipSeat: boolean },
   extraCost: number,
   meta: { id: BudgetScenario["id"]; label: string; description: string; extrasLabel?: string }
 ): BudgetScenario => {
   const guestCount = Math.max(1, ensurePositiveInteger(params.guestCount, 1));
-  const nominationCount = ensurePositiveInteger(params.nominationCount, 0);
 
   const perHourTotal = params.timeSlots.reduce((sum, slot) => {
     const pricePerPerson = params.useVipSeat ? slot.vipPrice : slot.mainPrice;
@@ -69,7 +67,7 @@ const createScenario = (
   }, 0);
   const guestTotal = perHourTotal * guestCount;
 
-  const nominationTotal = store.basePricing.nominationPrice * nominationCount * 2;
+  const nominationTotal = store.basePricing.nominationPrice * 2; // 指名は常に1名で計算
   const drinkTotal = LIGHT_DRINKS_PER_GUEST * LIGHT_DRINK_UNIT_PRICE * guestCount;
 
   const subtotal = guestTotal + nominationTotal + drinkTotal + extraCost;
@@ -105,7 +103,6 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
 
   const baseScenarioParams = {
     guestCount: 1,
-    nominationCount: params.nominationCount,
     timeSlots: selectedSlots,
     useVipSeat: params.useVipSeat,
   };
@@ -117,7 +114,7 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
     {
       id: "drinks",
       label: "ドリンクのみ",
-      description: `キャストに1人あたり${LIGHT_DRINKS_PER_GUEST}杯（${LIGHT_DRINK_UNIT_PRICE.toLocaleString("ja-JP")}円/杯）を振る舞う想定`,
+      description: `キャストに${LIGHT_DRINKS_PER_GUEST}杯（${LIGHT_DRINK_UNIT_PRICE.toLocaleString("ja-JP")}円/杯）を振る舞う想定`,
     }
   );
 
