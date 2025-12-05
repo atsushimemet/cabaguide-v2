@@ -4,7 +4,6 @@ import { Store, StoreBasePricing, StoreTimeSlotPricing } from "@/types/store";
 type BasePricingRow = {
   nomination_price: number | null;
   service_fee_rate: number | string | null;
-  extension_price: number | null;
   light_drink_price: number | null;
   cheapest_champagne_price: number | null;
 };
@@ -25,7 +24,6 @@ const toBasePricing = (row?: BasePricingRow | null): StoreBasePricing => {
   return {
     nominationPrice: row?.nomination_price ?? 0,
     serviceFeeRate: row?.service_fee_rate ? Number(row.service_fee_rate) : 0,
-    extensionPrice: row?.extension_price ?? 0,
     lightDrinkPrice: row?.light_drink_price ?? undefined,
     cheapestChampagnePrice: row?.cheapest_champagne_price ?? undefined,
   };
@@ -68,7 +66,7 @@ export const getStoreById = async (storeId: string): Promise<Store | null> => {
 
   const { data: baseRow, error: baseError } = await supabase
     .from("store_base_pricings")
-    .select("nomination_price, service_fee_rate, extension_price, light_drink_price, cheapest_champagne_price")
+    .select("nomination_price, service_fee_rate, light_drink_price, cheapest_champagne_price")
     .eq("store_id", storeId)
     .maybeSingle();
 

@@ -43,7 +43,6 @@ type StoreFormState = {
   phone: string;
   nominationPrice: string;
   serviceFeeRate: string;
-  extensionPrice: string;
   lightDrinkPrice: string;
   cheapestChampagnePrice: string;
   timeSlots: TimeSlotForm;
@@ -62,7 +61,6 @@ const createDefaultFormState = (): StoreFormState => ({
   phone: "",
   nominationPrice: "",
   serviceFeeRate: "",
-  extensionPrice: "",
   lightDrinkPrice: "",
   cheapestChampagnePrice: "",
   timeSlots: createInitialTimeSlots(),
@@ -246,7 +244,6 @@ export default function AdminShopPage() {
       phone: formState.phone,
       nominationPrice: parseNumber(formState.nominationPrice),
       serviceFeeRate: parseNumber(formState.serviceFeeRate),
-      extensionPrice: parseNumber(formState.extensionPrice),
       lightDrinkPrice: parseNumber(formState.lightDrinkPrice),
       cheapestChampagnePrice: parseNumber(formState.cheapestChampagnePrice),
       timeSlots: TIME_SLOT_OPTIONS.map((slot) => ({
@@ -380,16 +377,6 @@ export default function AdminShopPage() {
               unit="%"
               formatter={(value) => `${(Number(value) * 100).toFixed(0)}%`}
               placeholder="未設定"
-            />
-
-            <Field
-              label="延長料金"
-              value={formState.extensionPrice}
-              onChange={(value) => setFormState((prev) => ({ ...prev, extensionPrice: value }))}
-              placeholder="5000"
-              type="number"
-              inputMode="numeric"
-              min="0"
             />
 
             <Field

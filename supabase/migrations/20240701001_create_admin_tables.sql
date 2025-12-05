@@ -18,7 +18,6 @@ create table if not exists public.store_base_pricings (
   store_id uuid not null references public.stores (id) on delete cascade,
   nomination_price integer,
   service_fee_rate numeric(4,3),
-  extension_price integer,
   light_drink_price integer,
   cheapest_champagne_price integer,
   created_at timestamptz not null default timezone('utc'::text, now())

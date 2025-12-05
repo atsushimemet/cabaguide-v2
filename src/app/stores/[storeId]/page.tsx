@@ -89,8 +89,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
 
         <div className="grid gap-4 text-sm text-white/80 md:grid-cols-2">
           <div className="space-y-2 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">延長・ドリンク</p>
-            <p>延長料金: {formatYen(store.basePricing.extensionPrice)}</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-white/50">ドリンク</p>
             <p>キャストドリンク: {formatOptionalYen(store.basePricing.lightDrinkPrice)}</p>
           </div>
           <div className="space-y-2 rounded-2xl border border-white/10 bg-black/30 p-4">
