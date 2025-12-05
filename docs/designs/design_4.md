@@ -28,8 +28,6 @@ type Store = {
 type StoreBasePricing = {
   nominationPrice: number;
   serviceFeeRate: number;
-  lightDrinkPrice: number;
-  cheapestChampagnePrice: number;
 };
 
 type StoreTimeSlotPricing = {
@@ -56,7 +54,7 @@ type Cast = {
 1. **時間帯料金**: `StoreTimeSlotPricing` から開始時間に最も近い `time_slot` を 2h 分引用する（例: 21時開始なら 21〜23 時スロットの `main_price` を使用）。
 2. **人数料金**: `main_price` × `来店人数`。VIP 指定時は `vip_price` を利用。
 3. **指名キャスト数**: `nomination_price` × `指名人数` × 2h。
-4. **キャストドリンク**: 1杯 2,000 円（`light_drink_price` が定義されていればそれを優先）。
+4. **キャストドリンク**: 1名あたり 2 杯 × 1 杯 2,000 円を固定で加算し、別パターンとしてシャンパン 1 本 25,000 円を追加したケースも同時に算出する。
 5. **サービス料/税**: 合計小計に `service_fee_rate` を乗算し、最後に消費税 (10%) を掛ける。
 ## 4. データ取得計画
 - **API 層**: Supabase もしくは mock から `Cast` を取得 -> `store_id` で `Store` をフェッチ -> さらに `StoreBasePricing` / `StoreTimeSlotPricing` を `select('*')` + `eq('store_id', storeId)` で取得。

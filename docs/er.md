@@ -17,8 +17,6 @@ id
 store_id FK to Store.id
 nomination_price 指名料金
 service_fee_rate サービス料パーセンテージ
-light_drink_price 軽ドリンク目安価格
-cheapest_champagne_price 最安シャンパン価格
 
 ### StoreTimeSlotPricing: 時間帯によって変わる料金
 id
