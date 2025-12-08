@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { SVGProps } from "react";
 
 import { BudgetCalculator } from "@/components/BudgetCalculator";
 import { PageFrame } from "@/components/PageFrame";
@@ -17,6 +18,23 @@ type CastDetailPageProps = {
 const numberFormatter = new Intl.NumberFormat("ja-JP");
 
 const formatFollowers = (value: number) => `${numberFormatter.format(value)}人`;
+
+const InstagramIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+    <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="2" />
+    <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+    <circle cx="17" cy="7" r="1.4" fill="currentColor" />
+  </svg>
+);
+
+const TikTokIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+    <path
+      d="M14 4.5c.4 2 1.8 3.2 3.8 3.3v3.1a8 8 0 0 1-3.8-1.2v6c0 2.8-2.3 5.1-5.1 5.1S4 18.5 4 15.7s2.3-5.1 5.1-5.1c.3 0 .6 0 .9.1v3.1c-.3-.1-.6-.1-.9-.1-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2V4.5z"
+      fill="currentColor"
+    />
+  </svg>
+);
 
 export default async function CastDetailPage({ params }: CastDetailPageProps) {
   const paramsData = await params;
@@ -75,11 +93,15 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
 
           <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/60">Instagram</p>
+              <div className="text-white/60" aria-label="Instagram">
+                <InstagramIcon className="h-5 w-5" />
+              </div>
               <p className="text-2xl font-semibold">{formatFollowers(instagramFollowers)}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/60">TikTok</p>
+              <div className="text-white/60" aria-label="TikTok">
+                <TikTokIcon className="h-5 w-5" />
+              </div>
               <p className="text-2xl font-semibold">{formatFollowers(tiktokFollowers)}</p>
             </div>
             <div>
