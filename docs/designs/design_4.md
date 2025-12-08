@@ -6,7 +6,7 @@ docs/er.md をベースに、キャスト詳細ページ実装時に前提とな
 - **Area**: `id`, `todofuken_name`, `downtime_name`。店舗は必ず所属エリアを参照するため、キャストページでは `Store.area_id` を辿って表示する。
 - **Store**: `id`, `area_id`, `name`, `google_map_link`, `phone`。キャスト所属店舗の基本情報を提供。
 - **StoreBasePricing**: `store_id` と 1:1。`nomination_price`, `service_fee_rate`, `light_drink_price`, `cheapest_champagne_price` を保持し、指名料・サービス料算出に利用。消費税は DB で保持せず 10% 固定で計算。
-- **StoreTimeSlotPricing**: `store_id` と 1:多。`time_slot`, `main_price`, `vip_price` を保持し、予算計算時に 2h 分のベース料金を求める。
+- **StoreTimeSlotPricing**: `store_id` と 1:多。`time_slot`, `main_price` を保持し、予算計算時に 2h 分のベース料金を求める。
 - **Cast**: `store_id` と 1:多。`name`, `age`, `image_url` を保持。詳細ページのメイン情報。
 - **CastSNS**: `cast_id` と 1:多。`platform`, `url` を保持し、プロフィール欄に表示するリンクを抽出。
 - **CastFollowerSnapshot**: `cast_id` と 1:多。`platform`, `followers`, `captured_at` を持ち、最新レコードを Instagram/TikTok 別に抽出して表示。総フォロワー数はプラットフォームごとの最新値合算。
@@ -33,7 +33,6 @@ type StoreBasePricing = {
 type StoreTimeSlotPricing = {
   timeSlot: string; // '20:00', '22:00' etc.
   mainPrice: number;
-  vipPrice: number;
 };
 
 type Cast = {
@@ -52,7 +51,7 @@ type Cast = {
 
 ## 3. 予算計算ロジックとテーブル活用
 1. **時間帯料金**: `StoreTimeSlotPricing` から開始時間に最も近い `time_slot` を 2h 分引用する（例: 21時開始なら 21〜23 時スロットの `main_price` を使用）。
-2. **人数料金**: `main_price` × `来店人数`。VIP 指定時は `vip_price` を利用。
+2. **人数料金**: `main_price` × `来店人数`（通常席を前提）。
 3. **指名キャスト数**: `nomination_price` × `指名人数` × 2h。
 4. **キャストドリンク**: 1名あたり 2 杯 × 1 杯 2,000 円を固定で加算し、別パターンとしてシャンパン 1 本 25,000 円を追加したケースも同時に算出する。
 5. **サービス料/税**: 合計小計に `service_fee_rate` を乗算し、最後に消費税 (10%) を掛ける。

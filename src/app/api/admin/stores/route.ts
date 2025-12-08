@@ -6,7 +6,6 @@ import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabas
 type TimeSlotInput = {
   timeSlot: number;
   mainPrice: number;
-  vipPrice?: number | null;
 };
 
 export async function GET() {
@@ -116,7 +115,6 @@ export async function POST(request: Request) {
       store_id: storeId,
       time_slot: slot.timeSlot,
       main_price: slot.mainPrice,
-      vip_price: slot.vipPrice ?? null,
     }));
 
     const { error: slotError } = await supabase.from("store_time_slot_pricings").insert(slotPayloads);

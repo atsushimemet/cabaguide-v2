@@ -6,7 +6,6 @@ export type StoreBasePricing = {
 export type StoreTimeSlotPricing = {
   timeSlot: string;
   mainPrice: number;
-  vipPrice: number;
 };
 
 export type Store = {

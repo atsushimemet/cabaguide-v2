@@ -9,7 +9,6 @@ type BasePricingRow = {
 type TimeSlotRow = {
   time_slot: number | null;
   main_price: number | null;
-  vip_price: number | null;
 };
 
 const formatTimeSlotLabel = (value: number | null) => {
@@ -34,7 +33,6 @@ const toTimeSlots = (rows?: TimeSlotRow[] | null): StoreTimeSlotPricing[] => {
     .map((row) => ({
       timeSlot: formatTimeSlotLabel(row.time_slot),
       mainPrice: row.main_price ?? 0,
-      vipPrice: row.vip_price ?? row.main_price ?? 0,
     }))
     .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot, "ja"));
 };
@@ -72,7 +70,7 @@ export const getStoreById = async (storeId: string): Promise<Store | null> => {
 
   const { data: slotRows, error: slotError } = await supabase
     .from("store_time_slot_pricings")
-    .select("time_slot, main_price, vip_price")
+    .select("time_slot, main_price")
     .eq("store_id", storeId)
     .order("time_slot", { ascending: true });
 

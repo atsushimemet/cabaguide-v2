@@ -37,13 +37,13 @@ issue_6 の要求に基づき、管理者向けログイン〜店舗/キャス�
 | 消費税 | - | 入力フィールド不要 (10%) | `store_base_pricings` に保持しない。計算時に固定値を適用 |
 | タイムスロット | ✔ | 20〜24 時まで 1h ごとにまとめ入力 | `StoreTimeSlotPricing.time_slot` |
 | メイン料金 | ✔ | 各タイムスロットごとにピッカー (1000〜20000, 1000 刻み) | `StoreTimeSlotPricing.main_price` |
-| VIP 料金 | ✖ | 各タイムスロットごとにピッカー (5000〜50000, 1000 刻み) | `StoreTimeSlotPricing.vip_price` (未入力可) |
 
 - `Store`, `StoreBasePricing`, `StoreTimeSlotPricing` への insert 3 件を 1 トランザクションで実行。Supabase RPC もしくは `supabase.from(...).insert([...]).select()` を順次叩く。
 - モバイルピッカーは `<select>` をベースにし、`inputmode="numeric"` で数値キーボードを出す。
 - バリデーション失敗時は toast or inline メッセージ。
 - `/admin` トップでは簡易フォームを表示し、より詳細な編集や既存店舗の一覧/検索は `/admin/shop` に分離して扱う。`/admin/shop` で登録完了後に最新版リストが確認できるようテーブル/カードを表示する。
 - タイムスロットは 20/21/22/23/24 時の 5 件を同時に登録するコンポーネントを用意し、一括で `store_time_slot_pricings` へ insert する。
+- 席タイプは通常席のみ扱うため、メイン料金のみ入力すればよい。
 
 ## 5. キャスト登録導線 (/admin)
 1. 店舗登録カードとキャスト登録カードの 2 カラム (モバイルでは縦並び)。
