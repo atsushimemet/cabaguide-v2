@@ -60,6 +60,8 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
   const instagramFollowers = followers.instagram?.followers ?? 0;
   const tiktokFollowers = followers.tiktok?.followers ?? 0;
   const totalFollowers = instagramFollowers + tiktokFollowers;
+  const instagramUrl = detail.sns.find((sns) => sns.platform === "instagram")?.url;
+  const tiktokUrl = detail.sns.find((sns) => sns.platform === "tiktok")?.url;
 
   return (
     <PageFrame mainClassName="gap-8">
@@ -93,15 +95,39 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
 
           <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 sm:grid-cols-3">
             <div>
-              <div className="text-white/60" aria-label="Instagram">
-                <InstagramIcon className="h-5 w-5" />
-              </div>
+              {instagramUrl ? (
+                <Link
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex text-white/60 transition hover:text-white"
+                  aria-label="Instagram"
+                >
+                  <InstagramIcon className="h-5 w-5" aria-hidden="true" />
+                </Link>
+              ) : (
+                <div className="text-white/60" aria-label="Instagram">
+                  <InstagramIcon className="h-5 w-5" aria-hidden="true" />
+                </div>
+              )}
               <p className="text-2xl font-semibold">{formatFollowers(instagramFollowers)}</p>
             </div>
             <div>
-              <div className="text-white/60" aria-label="TikTok">
-                <TikTokIcon className="h-5 w-5" />
-              </div>
+              {tiktokUrl ? (
+                <Link
+                  href={tiktokUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex text-white/60 transition hover:text-white"
+                  aria-label="TikTok"
+                >
+                  <TikTokIcon className="h-5 w-5" aria-hidden="true" />
+                </Link>
+              ) : (
+                <div className="text-white/60" aria-label="TikTok">
+                  <TikTokIcon className="h-5 w-5" aria-hidden="true" />
+                </div>
+              )}
               <p className="text-2xl font-semibold">{formatFollowers(tiktokFollowers)}</p>
             </div>
             <div>
@@ -123,22 +149,6 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
                 Google Mapで開く ↗
               </Link>
               <p>電話番号: {detail.store.phone}</p>
-            </div>
-            <div className="space-y-1 text-sm text-white/80">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">SNS</p>
-              <div className="flex flex-wrap gap-2">
-                {detail.sns.map((sns) => (
-                  <Link
-                    key={`${sns.castId}-${sns.platform}`}
-                    href={sns.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border border-white/15 px-4 py-1 text-sm transition hover:border-fuchsia-400/60 hover:text-white"
-                  >
-                    {sns.platform === "instagram" ? "Instagram" : "TikTok"}
-                  </Link>
-                ))}
-              </div>
             </div>
           </div>
         </section>
