@@ -32,7 +32,7 @@ issue_5 で指摘されたスマホ入力の UX 課題を解消するため、Bu
 - `src/components/BudgetCalculator.tsx`
   - 数値入力部分をセレクトへ置換。
   - state の更新関数を `handleSelectChange(field)` に差し替え。
-  - デフォルト値/`BudgetParams` の型は現行通り。
+  - `BudgetParams` は `startTime`/`guestCount` のみを保持する前提で実装する。
 - テストは Lint/TS チェックのみで OK (UI 変更のため手動確認推奨)。
 
 ## 5. タスク

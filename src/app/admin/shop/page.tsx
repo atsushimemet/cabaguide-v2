@@ -32,7 +32,6 @@ type TimeSlotForm = Record<
   number,
   {
     main: string;
-    vip: string;
   }
 >;
 
@@ -48,7 +47,7 @@ type StoreFormState = {
 
 const createInitialTimeSlots = (): TimeSlotForm =>
   TIME_SLOT_OPTIONS.reduce((acc, slot) => {
-    acc[slot] = { main: "", vip: "" };
+    acc[slot] = { main: "" };
     return acc;
   }, {} as TimeSlotForm);
 
@@ -164,14 +163,14 @@ export default function AdminShopPage() {
     return numeric % 100 === 0;
   };
 
-  const updateTimeSlotField = (slot: number, field: "main" | "vip", value: string) => {
+  const updateTimeSlotField = (slot: number, value: string) => {
     setFormState((prev) => ({
       ...prev,
       timeSlots: {
         ...prev.timeSlots,
         [slot]: {
           ...prev.timeSlots[slot],
-          [field]: value,
+          main: value,
         },
       },
     }));
@@ -221,9 +220,6 @@ export default function AdminShopPage() {
       if (!isHundredUnit(current.main)) {
         return true;
       }
-      if (current.vip && !isHundredUnit(current.vip)) {
-        return true;
-      }
       return false;
     });
     if (invalidSlot !== undefined) {
@@ -243,7 +239,6 @@ export default function AdminShopPage() {
       timeSlots: TIME_SLOT_OPTIONS.map((slot) => ({
         timeSlot: slot,
         mainPrice: Number(formState.timeSlots[slot].main),
-        vipPrice: formState.timeSlots[slot].vip ? Number(formState.timeSlots[slot].vip) : null,
       })),
     };
 
@@ -376,32 +371,22 @@ export default function AdminShopPage() {
             <div className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
               <div>
                 <p className="text-base font-semibold text-white">タイムスロット料金 (20:00〜24:00)</p>
-                <p className="text-sm text-white/60">各時間帯のメイン/VIP料金を入力してください。</p>
+                <p className="text-sm text-white/60">各時間帯の通常席（メイン）料金を入力してください。</p>
               </div>
               <div className="space-y-4">
                 {TIME_SLOT_OPTIONS.map((slot) => (
                   <div key={slot} className="rounded-2xl border border-white/10 bg-black/30 p-4">
                     <p className="text-sm font-semibold text-white">{slot}:00 帯</p>
-                    <div className="mt-3 grid gap-4 md:grid-cols-2">
+                    <div className="mt-3">
                       <Field
                         label="メイン料金 (必須)"
                         value={formState.timeSlots[slot]?.main ?? ""}
-                        onChange={(value) => updateTimeSlotField(slot, "main", value)}
+                        onChange={(value) => updateTimeSlotField(slot, value)}
                         type="number"
                         inputMode="numeric"
                         step="100"
                         min="0"
                         placeholder="例: 7800"
-                      />
-                      <Field
-                        label="VIP料金 (任意)"
-                        value={formState.timeSlots[slot]?.vip ?? ""}
-                        onChange={(value) => updateTimeSlotField(slot, "vip", value)}
-                        type="number"
-                        inputMode="numeric"
-                        step="100"
-                        min="0"
-                        placeholder="例: 10200"
                       />
                     </div>
                   </div>

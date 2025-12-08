@@ -5,7 +5,6 @@ import { Store, StoreTimeSlotPricing } from "@/types/store";
 export type BudgetParams = {
   startTime: string;
   guestCount: number;
-  useVipSeat: boolean;
 };
 
 export type BudgetScenario = {
@@ -55,15 +54,14 @@ const pickTwoHours = (sortedSlots: StoreTimeSlotPricing[], startTime: string): S
 
 const createScenario = (
   store: Store,
-  params: Pick<BudgetParams, "guestCount"> & { timeSlots: StoreTimeSlotPricing[]; useVipSeat: boolean },
+  params: Pick<BudgetParams, "guestCount"> & { timeSlots: StoreTimeSlotPricing[] },
   extraCost: number,
   meta: { id: BudgetScenario["id"]; label: string; description: string; extrasLabel?: string }
 ): BudgetScenario => {
   const guestCount = Math.max(1, ensurePositiveInteger(params.guestCount, 1));
 
   const perHourTotal = params.timeSlots.reduce((sum, slot) => {
-    const pricePerPerson = params.useVipSeat ? slot.vipPrice : slot.mainPrice;
-    return sum + pricePerPerson;
+    return sum + slot.mainPrice;
   }, 0);
   const guestTotal = perHourTotal * guestCount;
 
@@ -98,13 +96,12 @@ export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreak
 
   const timeSlots = selectedSlots.map((slot) => ({
     label: slot.timeSlot,
-    pricePerPerson: params.useVipSeat ? slot.vipPrice : slot.mainPrice,
+    pricePerPerson: slot.mainPrice,
   }));
 
   const baseScenarioParams = {
-    guestCount: 1,
+    guestCount: params.guestCount,
     timeSlots: selectedSlots,
-    useVipSeat: params.useVipSeat,
   };
 
   const drinksOnly = createScenario(

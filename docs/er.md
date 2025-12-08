@@ -22,8 +22,7 @@ service_fee_rate サービス料パーセンテージ
 id
 store_id FK to Store.id
 time_slot 例 20 22 など開始時間
-main_price メイン料金
-vip_price VIP料金
+main_price 通常席料金
 
 ### Cast
 id

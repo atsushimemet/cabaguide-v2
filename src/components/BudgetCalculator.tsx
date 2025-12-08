@@ -5,9 +5,9 @@ import { ChangeEvent, useMemo, useState } from "react";
 
 import { BudgetBreakdown, BudgetParams, calculateBudget } from "@/lib/budget";
 import {
-    CHAMPAGNE_PRICE,
-    LIGHT_DRINKS_PER_GUEST,
-    LIGHT_DRINK_UNIT_PRICE,
+  CHAMPAGNE_PRICE,
+  LIGHT_DRINKS_PER_GUEST,
+  LIGHT_DRINK_UNIT_PRICE,
 } from "@/lib/pricing";
 import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 import { Store } from "@/types/store";
@@ -27,17 +27,8 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
   return {
     startTime,
     guestCount: 1,
-    useVipSeat: false,
   };
 };
-
-const tooltipDetails = [
-  "開始時間から連続した2時間分の時間帯料金を取得し、VIP選択時はVIP料金、通常時はメイン料金を参照します。",
-  "時間帯料金 × 来店人数で小計を計算します。",
-  "指名料は1名あたり指名料金 × 2時間で計算します。",
-  "キャストドリンクは 2 杯（1 杯 2,000 円）を振る舞う想定で計算し、シャンパン 1 本 25,000 円のケースも併記します。",
-  "最後にサービス料→消費税(10%)の順に乗算します。",
-];
 
 export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
   const slotLabels = useMemo(
@@ -52,7 +43,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
   const [params, setParams] = useState<BudgetParams>(() =>
     defaultParams(startOptions)
   );
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const result: BudgetBreakdown = useMemo(
     () => calculateBudget(store, params),
@@ -68,10 +59,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
     }));
   };
 
-  const toggleVip = () => {
-    setParams((prev) => ({ ...prev, useVipSeat: !prev.useVipSeat }));
-  };
-
   return (
     <section className="space-y-6 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -80,8 +67,22 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             BUDGET
           </p>
           <h3 className="text-2xl font-semibold">2時間滞在の概算</h3>
-          <p className="text-sm text-white/70">
-            時間を調整して予算感を掴みましょう。開始時間から連続した2時間分の料金を参照します。料金概算のため詳細は
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowDetails((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-fuchsia-400/60 hover:text-white"
+          aria-expanded={showDetails}
+        >
+          {showDetails ? "前提を隠す" : "概算の前提"}
+        </button>
+      </header>
+      <div className="space-y-4">
+        {showDetails && (
+          <div className="rounded-2xl border border-white/15 bg-black/50 p-4 text-sm text-white/80">
+            開始時間を選ぶと 2 時間滞在の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
+            {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）とシャンパン 1 本{" "}
+            {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。VIP や特別席が必要な場合は直接店舗へご確認ください。料金詳細は
             {storePageHref ? (
               <>
                 {" "}
@@ -97,34 +98,15 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             ) : (
               " 店舗ページをご確認ください。"
             )}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowTooltip((prev) => !prev)}
-          className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-fuchsia-400/60 hover:text-white"
-        >
-          {showTooltip ? "ロジックを隠す" : "算出ロジック"}
-        </button>
-      </header>
+          </div>
+        )}
 
-      {showTooltip && (
-        <div className="rounded-2xl border border-fuchsia-500/30 bg-fuchsia-500/10 p-4 text-sm text-fuchsia-100">
-          <p className="mb-2 font-semibold">計算ルール</p>
-          <ul className="list-disc space-y-1 pl-5">
-            {tooltipDetails.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-1 text-sm">
-          <span className="font-medium text-white/80">開始時間</span>
-          <select
-            value={params.startTime}
-            onChange={handleStartChange}
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-1 text-sm">
+            <span className="font-medium text-white/80">開始時間</span>
+            <select
+              value={params.startTime}
+              onChange={handleStartChange}
             className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
           >
             {startOptions.map((slot) => (
@@ -135,28 +117,6 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           </select>
         </label>
 
-        <p className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-xs text-white/70">
-          ※ キャストドリンクは {LIGHT_DRINKS_PER_GUEST} 杯（1 杯{" "}
-          {formatYen(LIGHT_DRINK_UNIT_PRICE)}）を想定し、 シャンパン 1 本{" "}
-          {formatYen(CHAMPAGNE_PRICE)} のケースも自動で算出します。
-        </p>
-
-        <div className="space-y-2 text-sm">
-          <span className="font-medium text-white/80">席タイプ</span>
-          <button
-            type="button"
-            onClick={toggleVip}
-            className={`flex w-full items-center justify-center rounded-2xl border px-4 py-2 font-semibold transition ${
-              params.useVipSeat
-                ? "border-yellow-400/60 bg-yellow-300/20 text-yellow-100"
-                : "border-white/10 bg-black/60 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
-            }`}
-          >
-            {params.useVipSeat ? "VIP料金で計算中" : "通常席で計算中"}
-          </button>
-          <p className="text-xs text-white/50">
-            ※VIP選択時はvipPriceを参照します。
-          </p>
         </div>
       </div>
 
@@ -164,10 +124,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
         <p className="text-sm uppercase tracking-[0.3em] text-white/70">
           TIME SLOT
         </p>
-        <p className="mt-1 text-sm text-white/70">
-          {params.useVipSeat ? "VIP" : "通常席"} / 1名 / 2時間滞在
-          の想定で、以下 2 時間分の料金を参照します。
-        </p>
+        <p className="mt-1 text-sm text-white/70">通常席 / 1名 / 2時間滞在の想定で、以下 2 時間分の料金を参照します。</p>
         <div className="mt-4 space-y-2 text-sm text-white/80">
           {result.timeSlots.map((slot) => (
             <p key={slot.label}>
@@ -194,9 +151,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
               <p className="text-3xl font-semibold text-white">
                 {formatYen(scenario.total)}
               </p>
-              <p className="text-xs text-white/60">
-                税込 / {params.useVipSeat ? "VIP" : "通常席"} / 1名 / 2時間
-              </p>
+              <p className="text-xs text-white/60">税込 / 通常席 / 1名 / 2時間</p>
             </div>
             <ul className="space-y-2">
               <li className="flex items-center justify-between">

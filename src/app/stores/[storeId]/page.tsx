@@ -86,7 +86,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">TIME SLOT</p>
           <h2 className="mt-2 text-2xl font-semibold">時間帯別料金</h2>
-          <p className="text-sm text-white/70">1時間ごとのメイン/VIP料金を参考値として掲載しています。</p>
+          <p className="text-sm text-white/70">1時間ごとの通常席（メイン）料金を参考値として掲載しています。</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -95,12 +95,8 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
               <p className="text-xs uppercase tracking-[0.3em] text-white/60">{slot.timeSlot}</p>
               <p className="text-lg font-semibold">{formatTimeRange(slot.timeSlot)}</p>
               <div className="flex items-center justify-between text-sm text-white/80">
-                <span>メイン</span>
+                <span>通常席</span>
                 <span className="font-semibold text-white">{formatYen(slot.mainPrice)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-white/80">
-                <span>VIP</span>
-                <span className="font-semibold text-white">{formatYen(slot.vipPrice)}</span>
               </div>
             </div>
           ))}
