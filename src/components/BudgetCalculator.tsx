@@ -43,6 +43,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
   const [params, setParams] = useState<BudgetParams>(() =>
     defaultParams(startOptions)
   );
+  const [showDetails, setShowDetails] = useState(false);
 
   const result: BudgetBreakdown = useMemo(
     () => calculateBudget(store, params),
@@ -66,7 +67,19 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             BUDGET
           </p>
           <h3 className="text-2xl font-semibold">2時間滞在の概算</h3>
-          <p className="text-sm text-white/70">
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowDetails((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-fuchsia-400/60 hover:text-white"
+          aria-expanded={showDetails}
+        >
+          {showDetails ? "前提を隠す" : "概算の前提"}
+        </button>
+      </header>
+      <div className="space-y-4">
+        {showDetails && (
+          <div className="rounded-2xl border border-white/15 bg-black/50 p-4 text-sm text-white/80">
             開始時間を選ぶと 2 時間滞在の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
             {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）とシャンパン 1 本{" "}
             {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。VIP や特別席が必要な場合は直接店舗へご確認ください。料金詳細は
@@ -85,16 +98,15 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             ) : (
               " 店舗ページをご確認ください。"
             )}
-          </p>
-        </div>
-      </header>
+          </div>
+        )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-1 text-sm">
-          <span className="font-medium text-white/80">開始時間</span>
-          <select
-            value={params.startTime}
-            onChange={handleStartChange}
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-1 text-sm">
+            <span className="font-medium text-white/80">開始時間</span>
+            <select
+              value={params.startTime}
+              onChange={handleStartChange}
             className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
           >
             {startOptions.map((slot) => (
@@ -105,6 +117,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           </select>
         </label>
 
+        </div>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-purple-900/60 via-fuchsia-800/40 to-cyan-900/40 p-6 shadow-2xl shadow-purple-900/30">
