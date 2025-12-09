@@ -72,6 +72,22 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
   const source = searchParamsData.from;
   const pageFromList = Number(searchParamsData.page ?? "");
   const hasValidPage = Number.isFinite(pageFromList) && pageFromList > 0;
+  const castDetailBasePath = `/casts/${downtownId}/${castId}`;
+  const castDetailQuery = new URLSearchParams();
+  if (searchParamsData.from) {
+    castDetailQuery.set("from", searchParamsData.from);
+  }
+  if (searchParamsData.page) {
+    castDetailQuery.set("page", searchParamsData.page);
+  }
+  const castDetailPath = castDetailQuery.toString()
+    ? `${castDetailBasePath}?${castDetailQuery.toString()}`
+    : castDetailBasePath;
+  const storeBackParams = new URLSearchParams({
+    returnTo: castDetailPath,
+    returnLabel: "キャスト詳細に戻る",
+  });
+  const storeDetailHref = `/stores/${detail.store.id}?${storeBackParams.toString()}`;
 
   const defaultBackLink = {
     href: `/casts/${downtownId}`,
@@ -165,7 +181,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
             <div className="flex flex-col gap-1 text-sm text-white/80">
               <span className="text-xs uppercase tracking-[0.3em] text-white/50">STORE</span>
               <Link
-                href={`/stores/${detail.store.id}`}
+                href={storeDetailHref}
                 className="text-lg font-semibold transition hover:text-white"
                 aria-label={`${detail.store.name} の店舗ページを開く`}
               >
@@ -184,7 +200,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
           </div>
         </section>
 
-        <BudgetCalculator store={detail.store} />
+        <BudgetCalculator store={detail.store} storePageHref={storeDetailHref} />
       </div>
     </PageFrame>
   );

@@ -21,6 +21,7 @@ import { Store } from "@/types/store";
 
 type BudgetCalculatorProps = {
   store: Store;
+  storePageHref?: string;
 };
 
 const currencyFormatter = new Intl.NumberFormat("ja-JP");
@@ -51,7 +52,7 @@ const formatStartLabel = (value: string) => {
   return `${hourLabel}${minute}分開始`;
 };
 
-export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
+export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps) => {
   const timeline = useMemo(
     () => createBudgetTimeline(store.timeSlots),
     [store.timeSlots]
@@ -70,7 +71,8 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
     () => calculateBudget(store, params),
     [store, params]
   );
-  const storePageHref = store.id ? `/stores/${store.id}` : undefined;
+  const storePageHrefValue =
+    storePageHref ?? (store.id ? `/stores/${store.id}` : undefined);
 
   const handleStartChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
@@ -106,11 +108,11 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
             開始時間を選ぶと選択した時間から 2 時間滞在した際の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
             {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）とシャンパン 1 本{" "}
             {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。料金詳細は
-            {storePageHref ? (
+            {storePageHrefValue ? (
               <>
                 {" "}
                 <Link
-                  href={storePageHref}
+                  href={storePageHrefValue}
                   className="text-fuchsia-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
                   aria-label={`${store.name} の店舗詳細ページを開く`}
                 >

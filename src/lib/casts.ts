@@ -111,7 +111,7 @@ const mapCastRowToCard = (
     storeName: store.name,
     image: row.image_url ?? PLACEHOLDER_IMAGE,
     castLink: `/casts/${store.area_id}/${row.id}`,
-    storeLink: store.google_map_link,
+    storeLink: `/stores/${store.id}`,
     accent: ACCENT_COLORS[accentIndex % ACCENT_COLORS.length],
     badgeText: area.downtownName,
   };
