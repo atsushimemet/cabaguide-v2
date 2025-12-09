@@ -127,7 +127,7 @@ export const getCastDetail = async (downtownId: number, castId: string): Promise
     storeName: store.name,
     image: castRow.image_url ?? PLACEHOLDER_IMAGE,
     castLink: `/casts/${store.areaId}/${castRow.id}`,
-    storeLink: store.googleMapLink,
+    storeLink: `/stores/${store.id}`,
     accent: DEFAULT_ACCENT,
     badgeText: area.downtownName,
   };

@@ -38,12 +38,7 @@ export const CastCard = ({ cast, detailHref }: CastCardProps) => {
       </Link>
       <div className="mt-4 flex flex-col gap-2 text-sm text-white/80">
         <p className="font-medium text-fuchsia-100">{formatFollowers(cast.followers)}</p>
-        <Link
-          href={cast.storeLink}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 text-base font-semibold text-cyan-200 transition hover:text-white"
-        >
+        <Link href={cast.storeLink} className="inline-flex items-center gap-2 text-base font-semibold text-cyan-200 transition hover:text-white">
           {cast.storeName}
           <span aria-hidden>↗</span>
         </Link>
