@@ -105,7 +105,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           <div className="rounded-2xl border border-white/15 bg-black/50 p-4 text-sm text-white/80">
             開始時間を選ぶと選択した時間から 2 時間滞在した際の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
             {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）とシャンパン 1 本{" "}
-            {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。VIP や特別席が必要な場合は直接店舗へご確認ください。料金詳細は
+            {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。料金詳細は
             {storePageHref ? (
               <>
                 {" "}
