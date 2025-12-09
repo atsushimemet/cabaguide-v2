@@ -11,6 +11,10 @@ type StoreDetailPageProps = {
   params: Promise<{
     storeId: string;
   }>;
+  searchParams?: Promise<{
+    returnTo?: string;
+    returnLabel?: string;
+  }>;
 };
 
 const currencyFormatter = new Intl.NumberFormat("ja-JP");
@@ -37,7 +41,7 @@ const formatDisplayRange = (startLabel: string, startMinutes: number, nextStartM
   return `${startLabel} ~ 25:00`;
 };
 
-export default async function StoreDetailPage({ params }: StoreDetailPageProps) {
+export default async function StoreDetailPage({ params, searchParams }: StoreDetailPageProps) {
   const { storeId } = await params;
   if (!storeId) {
     notFound();
@@ -53,14 +57,24 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
   const locationLabel = area ? `${area.todofukenName} ${area.downtownName}` : `エリアID: ${store.areaId}`;
 
   const timeline = createBudgetTimeline(store.timeSlots);
+  const searchParamsData = (await searchParams) ?? {};
+  const defaultBackLink = {
+    href: "/todofuken-choice",
+    label: "繁華街を選び直す",
+  };
+  const hasCustomReturn = typeof searchParamsData.returnTo === "string" && searchParamsData.returnTo.startsWith("/");
+  const backLink = {
+    href: hasCustomReturn ? searchParamsData.returnTo! : defaultBackLink.href,
+    label: searchParamsData.returnLabel ?? defaultBackLink.label,
+  };
 
   return (
     <PageFrame mainClassName="gap-8">
       <Link
-        href="/todofuken-choice"
+        href={backLink.href}
         className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
       >
-        ← 繁華街を選び直す
+        ← {backLink.label}
       </Link>
 
       <section className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_18px_50px_rgba(5,3,18,0.65)] backdrop-blur-xl">

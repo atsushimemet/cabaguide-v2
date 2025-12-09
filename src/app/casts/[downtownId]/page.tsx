@@ -56,13 +56,20 @@ export default async function CastListPage({ params, searchParams }: CastListPag
 
       <section className="space-y-4">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {casts.map((cast) => (
-            <CastCard
-              key={cast.id}
-              cast={cast}
-              detailHref={`${cast.castLink}?from=list&page=${currentPage}`}
-            />
-          ))}
+          {casts.map((cast) => {
+            const storeReturnParams = new URLSearchParams({
+              returnTo: `/casts/${downtownId}?page=${currentPage}`,
+              returnLabel: `${area.todofukenName} ${area.downtownName} のキャスト一覧に戻る`,
+            });
+            return (
+              <CastCard
+                key={cast.id}
+                cast={cast}
+                detailHref={`${cast.castLink}?from=list&page=${currentPage}`}
+                storeHref={`${cast.storeLink}?${storeReturnParams.toString()}`}
+              />
+            );
+          })}
         </div>
 
         <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-white/80">
