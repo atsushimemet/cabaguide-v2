@@ -13,6 +13,10 @@ type CastDetailPageProps = {
     downtownId: string;
     castId: string;
   }>;
+  searchParams: Promise<{
+    from?: string;
+    page?: string;
+  }>;
 };
 
 const numberFormatter = new Intl.NumberFormat("ja-JP");
@@ -36,7 +40,7 @@ const TikTokIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default async function CastDetailPage({ params }: CastDetailPageProps) {
+export default async function CastDetailPage({ params, searchParams }: CastDetailPageProps) {
   const paramsData = await params;
   const downtownId = Number(paramsData.downtownId);
   const castId = paramsData.castId;
@@ -49,6 +53,8 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
   if (!area) {
     notFound();
   }
+
+  const searchParamsData = (await searchParams) ?? {};
 
   const detail = await getCastDetail(downtownId, castId);
 
@@ -63,13 +69,32 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
   const instagramUrl = detail.sns.find((sns) => sns.platform === "instagram")?.url;
   const tiktokUrl = detail.sns.find((sns) => sns.platform === "tiktok")?.url;
 
+  const source = searchParamsData.from;
+  const pageFromList = Number(searchParamsData.page ?? "");
+  const hasValidPage = Number.isFinite(pageFromList) && pageFromList > 0;
+
+  const defaultBackLink = {
+    href: `/casts/${downtownId}`,
+    label: `${area.todofukenName} ${area.downtownName} のキャスト一覧に戻る`,
+  };
+
+  const backLink =
+    source === "home"
+      ? { href: "/", label: "トップページに戻る" }
+      : source === "list"
+        ? {
+            href: hasValidPage ? `/casts/${downtownId}?page=${pageFromList}` : `/casts/${downtownId}`,
+            label: `${area.todofukenName} ${area.downtownName} のキャスト一覧に戻る`,
+          }
+        : defaultBackLink;
+
   return (
     <PageFrame mainClassName="gap-8">
       <Link
-        href={`/casts/${downtownId}`}
+        href={backLink.href}
         className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
       >
-        ← {area.todofukenName} {area.downtownName} のキャスト一覧に戻る
+        ← {backLink.label}
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">

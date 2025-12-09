@@ -44,7 +44,7 @@ export default async function Home() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {topCasts.map((cast) => (
-            <CastCard key={cast.id} cast={cast} />
+            <CastCard key={cast.id} cast={cast} detailHref={`${cast.castLink}?from=home`} />
           ))}
         </div>
       </section>

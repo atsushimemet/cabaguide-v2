@@ -9,12 +9,14 @@ export const formatFollowers = (value: number) => {
 
 export type CastCardProps = {
   cast: Cast;
+  detailHref?: string;
 };
 
-export const CastCard = ({ cast }: CastCardProps) => {
+export const CastCard = ({ cast, detailHref }: CastCardProps) => {
+  const href = detailHref ?? cast.castLink;
   return (
     <article className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_45px_rgba(15,6,33,0.65)] backdrop-blur-xl">
-      <Link href={cast.castLink} className="relative block overflow-hidden rounded-2xl">
+      <Link href={href} className="relative block overflow-hidden rounded-2xl">
         <span
           className="absolute right-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-black"
           style={{ backgroundColor: cast.accent }}
