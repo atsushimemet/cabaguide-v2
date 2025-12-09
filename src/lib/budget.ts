@@ -166,7 +166,7 @@ const createScenario = (
   }, 0);
   const guestTotal = perHourTotal * guestCount;
 
-  const nominationTotal = store.basePricing.nominationPrice * 2; // 指名は常に1名で計算
+  const nominationTotal = store.basePricing.nominationPrice;
   const drinkTotal = LIGHT_DRINKS_PER_GUEST * LIGHT_DRINK_UNIT_PRICE * guestCount;
 
   const subtotal = guestTotal + nominationTotal + drinkTotal + extraCost;
