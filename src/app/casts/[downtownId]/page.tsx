@@ -57,7 +57,11 @@ export default async function CastListPage({ params, searchParams }: CastListPag
       <section className="space-y-4">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {casts.map((cast) => (
-            <CastCard key={cast.id} cast={cast} />
+            <CastCard
+              key={cast.id}
+              cast={cast}
+              detailHref={`${cast.castLink}?from=list&page=${currentPage}`}
+            />
           ))}
         </div>
 
