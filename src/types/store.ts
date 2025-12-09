@@ -4,7 +4,10 @@ export type StoreBasePricing = {
 };
 
 export type StoreTimeSlotPricing = {
-  timeSlot: string;
+  hour: number;
+  minute: number;
+  label: string;
+  startMinutes: number;
   mainPrice: number;
 };
 

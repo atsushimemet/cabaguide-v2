@@ -31,6 +31,7 @@ type StoreRow = {
 type TimeSlotForm = Record<
   number,
   {
+    minute: string;
     main: string;
   }
 >;
@@ -45,9 +46,11 @@ type StoreFormState = {
   timeSlots: TimeSlotForm;
 };
 
+const TIME_SLOT_MINUTE_OPTIONS = ["00", "15", "30", "45"];
+
 const createInitialTimeSlots = (): TimeSlotForm =>
   TIME_SLOT_OPTIONS.reduce((acc, slot) => {
-    acc[slot] = { main: "" };
+    acc[slot] = { minute: "00", main: "" };
     return acc;
   }, {} as TimeSlotForm);
 
@@ -163,14 +166,14 @@ export default function AdminShopPage() {
     return numeric % 100 === 0;
   };
 
-  const updateTimeSlotField = (slot: number, value: string) => {
+  const updateTimeSlotField = (slot: number, field: keyof TimeSlotForm[number], value: string) => {
     setFormState((prev) => ({
       ...prev,
       timeSlots: {
         ...prev.timeSlots,
         [slot]: {
           ...prev.timeSlots[slot],
-          main: value,
+          [field]: value,
         },
       },
     }));
@@ -217,6 +220,9 @@ export default function AdminShopPage() {
       if (!current) {
         return true;
       }
+      if (!TIME_SLOT_MINUTE_OPTIONS.includes(current.minute ?? "")) {
+        return true;
+      }
       if (!isHundredUnit(current.main)) {
         return true;
       }
@@ -237,7 +243,8 @@ export default function AdminShopPage() {
       nominationPrice: parseNumber(formState.nominationPrice),
       serviceFeeRate: parseNumber(formState.serviceFeeRate),
       timeSlots: TIME_SLOT_OPTIONS.map((slot) => ({
-        timeSlot: slot,
+        timeSlotHour: slot,
+        timeSlotMinute: Number(formState.timeSlots[slot].minute ?? "0"),
         mainPrice: Number(formState.timeSlots[slot].main),
       })),
     };
@@ -371,17 +378,31 @@ export default function AdminShopPage() {
             <div className="space-y-4 rounded-3xl border border-white/10 bg-black/20 p-4">
               <div>
                 <p className="text-base font-semibold text-white">タイムスロット料金 (20:00〜24:00)</p>
-                <p className="text-sm text-white/60">各時間帯の通常席（メイン）料金を入力してください。</p>
+                <p className="text-sm text-white/60">各時間帯の開始分と通常席（メイン）料金を入力してください。</p>
               </div>
               <div className="space-y-4">
                 {TIME_SLOT_OPTIONS.map((slot) => (
                   <div key={slot} className="rounded-2xl border border-white/10 bg-black/30 p-4">
                     <p className="text-sm font-semibold text-white">{slot}:00 帯</p>
-                    <div className="mt-3">
+                    <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_2fr]">
+                      <label className="text-sm text-white/70">
+                        開始分
+                        <select
+                          className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2"
+                          value={formState.timeSlots[slot]?.minute ?? "00"}
+                          onChange={(event) => updateTimeSlotField(slot, "minute", event.target.value)}
+                        >
+                          {TIME_SLOT_MINUTE_OPTIONS.map((minute) => (
+                            <option key={minute} value={minute}>
+                              {minute}分
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                       <Field
                         label="メイン料金 (必須)"
                         value={formState.timeSlots[slot]?.main ?? ""}
-                        onChange={(value) => updateTimeSlotField(slot, value)}
+                        onChange={(value) => updateTimeSlotField(slot, "main", value)}
                         type="number"
                         inputMode="numeric"
                         step="100"

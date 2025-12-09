@@ -4,7 +4,8 @@ import { ensureAdminSession } from "@/lib/adminAuth";
 import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
 type TimeSlotInput = {
-  timeSlot: number;
+  timeSlotHour: number;
+  timeSlotMinute: number;
   mainPrice: number;
 };
 
@@ -113,7 +114,8 @@ export async function POST(request: Request) {
 
     const slotPayloads = (timeSlots as TimeSlotInput[]).map((slot) => ({
       store_id: storeId,
-      time_slot: slot.timeSlot,
+      time_slot_hour: slot.timeSlotHour,
+      time_slot_minute: slot.timeSlotMinute,
       main_price: slot.mainPrice,
     }));
 

@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { ChangeEvent, useMemo, useState } from "react";
 
-import { BudgetBreakdown, BudgetParams, calculateBudget } from "@/lib/budget";
+import {
+  BudgetBreakdown,
+  BudgetParams,
+  BudgetStartOption,
+  calculateBudget,
+  createBudgetTimeline,
+  getBudgetStartOptions,
+} from "@/lib/budget";
 import {
   CHAMPAGNE_PRICE,
   LIGHT_DRINKS_PER_GUEST,
@@ -21,8 +28,8 @@ const currencyFormatter = new Intl.NumberFormat("ja-JP");
 const formatYen = (value: number) =>
   `${currencyFormatter.format(Math.max(0, Math.round(value)))}円`;
 
-const defaultParams = (timeSlots: string[]): BudgetParams => {
-  const startTime = timeSlots[0] ?? "20:00";
+const defaultParams = (options: BudgetStartOption[]): BudgetParams => {
+  const startTime = options[0]?.value ?? "20:00";
 
   return {
     startTime,
@@ -30,15 +37,29 @@ const defaultParams = (timeSlots: string[]): BudgetParams => {
   };
 };
 
+const formatStartLabel = (value: string) => {
+  const [hourString, minuteString = "00"] = value.split(":");
+  const hour = Number(hourString);
+  const minute = Number(minuteString);
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return `${value}開始`;
+  }
+  const hourLabel = `${hour}時`;
+  if (minute === 0) {
+    return `${hourLabel}開始`;
+  }
+  return `${hourLabel}${minute}分開始`;
+};
+
 export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
-  const slotLabels = useMemo(
-    () => store.timeSlots.map((slot) => slot.timeSlot),
+  const timeline = useMemo(
+    () => createBudgetTimeline(store.timeSlots),
     [store.timeSlots]
   );
-  const startOptions = useMemo(() => {
-    const filtered = slotLabels.filter((slot) => slot !== "24:00");
-    return filtered.length > 0 ? filtered : slotLabels;
-  }, [slotLabels]);
+  const startOptions = useMemo(
+    () => getBudgetStartOptions(timeline),
+    [timeline]
+  );
 
   const [params, setParams] = useState<BudgetParams>(() =>
     defaultParams(startOptions)
@@ -58,6 +79,8 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
       startTime: value,
     }));
   };
+
+  const hasStartOptions = startOptions.length > 0;
 
   return (
     <section className="space-y-6 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
@@ -80,7 +103,7 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
       <div className="space-y-4">
         {showDetails && (
           <div className="rounded-2xl border border-white/15 bg-black/50 p-4 text-sm text-white/80">
-            開始時間を選ぶと 2 時間滞在の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
+            開始時間を選ぶと選択した時間から 2 時間滞在した際の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
             {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）とシャンパン 1 本{" "}
             {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。VIP や特別席が必要な場合は直接店舗へご確認ください。料金詳細は
             {storePageHref ? (
@@ -105,33 +128,22 @@ export const BudgetCalculator = ({ store }: BudgetCalculatorProps) => {
           <label className="space-y-1 text-sm">
             <span className="font-medium text-white/80">開始時間</span>
             <select
-              value={params.startTime}
+              value={hasStartOptions ? params.startTime : ""}
               onChange={handleStartChange}
-            className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
-          >
-            {startOptions.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot} ~ {slot === "24:00" ? "24:59" : `${slot.slice(0, 2)}:59`}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-purple-900/60 via-fuchsia-800/40 to-cyan-900/40 p-6 shadow-2xl shadow-purple-900/30">
-        <p className="text-sm uppercase tracking-[0.3em] text-white/70">
-          TIME SLOT
-        </p>
-        <p className="mt-1 text-sm text-white/70">通常席 / 1名 / 2時間滞在の想定で、以下 2 時間分の料金を参照します。</p>
-        <div className="mt-4 space-y-2 text-sm text-white/80">
-          {result.timeSlots.map((slot) => (
-            <p key={slot.label}>
-              {slot.label} の席料: {formatYen(slot.pricePerPerson)}{" "}
-              <span className="text-white/60"></span>
-            </p>
-          ))}
+              className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
+              disabled={!hasStartOptions}
+            >
+              {hasStartOptions ? (
+                startOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {formatStartLabel(option.value)}
+                  </option>
+                ))
+              ) : (
+                <option value="">料金情報が登録されていません</option>
+              )}
+            </select>
+          </label>
         </div>
       </div>
 
