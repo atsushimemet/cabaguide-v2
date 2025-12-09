@@ -27,41 +27,142 @@ export type BudgetBreakdown = {
   scenarios: BudgetScenario[];
 };
 
+export type BudgetTimelineSlot = StoreTimeSlotPricing & {
+  endMinutes: number;
+  durationMinutes: number;
+  rangeLabel: string;
+};
+
+export type BudgetStartOption = {
+  value: string;
+};
+
+const DEFAULT_SLOT_DURATION = 60;
+const MINUTES_LIMIT = 25 * 60;
+const HOUR_BLOCK_MINUTES = 60;
+const VISIT_HOURS = 2;
 const ensurePositiveInteger = (value: number, fallback: number) => {
   return Number.isFinite(value) && value >= 0 ? Math.floor(value) : fallback;
 };
 
-const normalizeTimeSlots = (timeSlots: StoreTimeSlotPricing[]) => {
-  return [...timeSlots].sort((a, b) => a.timeSlot.localeCompare(b.timeSlot, "ja"));
+const formatMinutesToLabel = (minutes: number) => {
+  const normalized = Math.max(0, Math.floor(minutes));
+  const hour = Math.floor(normalized / 60);
+  const minute = normalized % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 };
 
-const pickTwoHours = (sortedSlots: StoreTimeSlotPricing[], startTime: string): StoreTimeSlotPricing[] => {
-  if (sortedSlots.length <= 2) {
-    return sortedSlots.slice(0, 2);
+const formatTimelineRangeLabel = (slot: StoreTimeSlotPricing, endMinutes: number) => {
+  const clampedEnd = Math.min(endMinutes, MINUTES_LIMIT);
+  const endLabel = formatMinutesToLabel(clampedEnd);
+  return `${slot.label} ~ ${endLabel}`;
+};
+
+const parseStartLabelToMinutes = (value: string) => {
+  const [hourString, minuteString] = value.split(":");
+  const hour = Number(hourString);
+  const minute = Number(minuteString);
+  const safeHour = Number.isFinite(hour) ? Math.max(0, Math.min(24, hour)) : 0;
+  const safeMinute = Number.isFinite(minute) ? Math.max(0, Math.min(59, minute)) : 0;
+  return safeHour * 60 + safeMinute;
+};
+
+export const createBudgetTimeline = (timeSlots: StoreTimeSlotPricing[]): BudgetTimelineSlot[] => {
+  if (!timeSlots || timeSlots.length === 0) {
+    return [];
   }
 
-  let startIndex = sortedSlots.findIndex((slot) => slot.timeSlot === startTime);
-  if (startIndex === -1) {
-    startIndex = 0;
+  const sorted = [...timeSlots].sort((a, b) => a.startMinutes - b.startMinutes);
+
+  return sorted.map((slot, index) => {
+    const nextStart = sorted[index + 1]?.startMinutes;
+    const safeNext =
+      typeof nextStart === "number" && nextStart > slot.startMinutes ? nextStart : undefined;
+    const fallbackEnd =
+      index === sorted.length - 1 ? MINUTES_LIMIT : slot.startMinutes + DEFAULT_SLOT_DURATION;
+    let endMinutes = safeNext ?? fallbackEnd;
+    if (endMinutes <= slot.startMinutes) {
+      endMinutes = fallbackEnd;
+    }
+    const durationMinutes = Math.max(1, endMinutes - slot.startMinutes);
+    const rangeLabel = formatTimelineRangeLabel(slot, endMinutes);
+
+    return {
+      ...slot,
+      endMinutes,
+      durationMinutes,
+      rangeLabel,
+    };
+  });
+};
+
+export const getBudgetStartOptions = (
+  timeline: BudgetTimelineSlot[],
+): BudgetStartOption[] => {
+  if (timeline.length === 0) {
+    return [];
   }
 
-  if (startIndex > sortedSlots.length - 2) {
-    startIndex = Math.max(0, sortedSlots.length - 2);
+  const minHour = timeline.reduce((min, slot) => Math.min(min, slot.hour), timeline[0].hour);
+  const startHour = Math.max(0, Math.min(23, minHour));
+  const options: BudgetStartOption[] = [];
+
+  for (let hour = startHour; hour <= 23; hour += 1) {
+    options.push({
+      value: `${String(hour).padStart(2, "0")}:00`,
+    });
   }
 
-  return sortedSlots.slice(startIndex, startIndex + 2);
+  return options;
+};
+
+const findSlotForMinute = (timeline: BudgetTimelineSlot[], minute: number): BudgetTimelineSlot => {
+  const clamped = Math.max(0, Math.min(MINUTES_LIMIT, minute));
+  for (let index = timeline.length - 1; index >= 0; index -= 1) {
+    if (clamped >= timeline[index].startMinutes) {
+      return timeline[index];
+    }
+  }
+  return timeline[0];
+};
+
+type HourSegment = {
+  label: string;
+  price: number;
+};
+
+const createHourSegments = (
+  timeline: BudgetTimelineSlot[],
+  startMinutes: number,
+  hours = VISIT_HOURS
+): HourSegment[] => {
+  if (timeline.length === 0) {
+    return [];
+  }
+
+  const segments: HourSegment[] = [];
+  for (let offset = 0; offset < hours; offset += 1) {
+    const hourStart = Math.min(startMinutes + offset * HOUR_BLOCK_MINUTES, MINUTES_LIMIT);
+    const slot = findSlotForMinute(timeline, hourStart);
+    const hourEnd = Math.min(hourStart + HOUR_BLOCK_MINUTES, MINUTES_LIMIT);
+    segments.push({
+      label: `${formatMinutesToLabel(hourStart)} ~ ${formatMinutesToLabel(hourEnd)}`,
+      price: slot.mainPrice,
+    });
+  }
+  return segments;
 };
 
 const createScenario = (
   store: Store,
-  params: Pick<BudgetParams, "guestCount"> & { timeSlots: StoreTimeSlotPricing[] },
+  params: Pick<BudgetParams, "guestCount"> & { hourlyPrices: number[] },
   extraCost: number,
   meta: { id: BudgetScenario["id"]; label: string; description: string; extrasLabel?: string }
 ): BudgetScenario => {
   const guestCount = Math.max(1, ensurePositiveInteger(params.guestCount, 1));
 
-  const perHourTotal = params.timeSlots.reduce((sum, slot) => {
-    return sum + slot.mainPrice;
+  const perHourTotal = params.hourlyPrices.reduce((sum, price) => {
+    return sum + price;
   }, 0);
   const guestTotal = perHourTotal * guestCount;
 
@@ -91,17 +192,18 @@ const createScenario = (
 };
 
 export const calculateBudget = (store: Store, params: BudgetParams): BudgetBreakdown => {
-  const sortedSlots = normalizeTimeSlots(store.timeSlots);
-  const selectedSlots = pickTwoHours(sortedSlots, params.startTime);
+  const timeline = createBudgetTimeline(store.timeSlots);
+  const startMinutes = parseStartLabelToMinutes(params.startTime);
+  const hourSegments = createHourSegments(timeline, startMinutes);
 
-  const timeSlots = selectedSlots.map((slot) => ({
-    label: slot.timeSlot,
-    pricePerPerson: slot.mainPrice,
+  const timeSlots = hourSegments.map((segment) => ({
+    label: segment.label,
+    pricePerPerson: segment.price,
   }));
 
   const baseScenarioParams = {
     guestCount: params.guestCount,
-    timeSlots: selectedSlots,
+    hourlyPrices: hourSegments.map((segment) => segment.price),
   };
 
   const drinksOnly = createScenario(

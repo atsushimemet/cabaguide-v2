@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageFrame } from "@/components/PageFrame";
+import { createBudgetTimeline } from "@/lib/budget";
 import { getAreaById } from "@/lib/areas";
 import { getStoreById } from "@/lib/stores";
 import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
@@ -21,10 +22,19 @@ const formatPercent = (value: number) => {
   return `${percent.replace(/\.0$/, "")}%`;
 };
 
-const formatTimeRange = (slot: string) => {
-  const [hour] = slot.split(":").map((value) => Number(value));
-  const nextHour = (hour + 1) % 24;
-  return `${slot} - ${String(nextHour).padStart(2, "0")}:00`;
+const formatMinutesLabel = (minutes: number) => {
+  const normalized = Math.max(0, Math.floor(minutes));
+  const hour = Math.floor(normalized / 60);
+  const minute = normalized % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+};
+
+const formatDisplayRange = (startLabel: string, startMinutes: number, nextStartMinutes?: number) => {
+  if (typeof nextStartMinutes === "number") {
+    const endMinutes = Math.max(startMinutes, nextStartMinutes - 1);
+    return `${startLabel} ~ ${formatMinutesLabel(endMinutes)}`;
+  }
+  return `${startLabel} ~ 25:00`;
 };
 
 export default async function StoreDetailPage({ params }: StoreDetailPageProps) {
@@ -41,6 +51,8 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
 
   const area = getAreaById(store.areaId);
   const locationLabel = area ? `${area.todofukenName} ${area.downtownName}` : `エリアID: ${store.areaId}`;
+
+  const timeline = createBudgetTimeline(store.timeSlots);
 
   return (
     <PageFrame mainClassName="gap-8">
@@ -90,16 +102,20 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {store.timeSlots.map((slot) => (
-            <div key={slot.timeSlot} className="space-y-2 rounded-2xl border border-white/10 bg-black/60 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/60">{slot.timeSlot}</p>
-              <p className="text-lg font-semibold">{formatTimeRange(slot.timeSlot)}</p>
-              <div className="flex items-center justify-between text-sm text-white/80">
-                <span>通常席</span>
-                <span className="font-semibold text-white">{formatYen(slot.mainPrice)}</span>
+          {timeline.map((slot, index) => {
+            const nextSlot = timeline[index + 1];
+            const rangeLabel = formatDisplayRange(slot.label, slot.startMinutes, nextSlot?.startMinutes);
+            return (
+              <div key={slot.label} className="space-y-2 rounded-2xl border border-white/10 bg-black/60 p-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/60">{slot.label}</p>
+                <p className="text-lg font-semibold">{rangeLabel}</p>
+                <div className="flex items-center justify-between text-sm text-white/80">
+                  <span>通常席</span>
+                  <span className="font-semibold text-white">{formatYen(slot.mainPrice)}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </PageFrame>
