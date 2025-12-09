@@ -139,7 +139,13 @@ export default async function CastDetailPage({ params }: CastDetailPageProps) {
           <div className="space-y-3 rounded-2xl border border-white/10 bg-black/40 p-4">
             <div className="flex flex-col gap-1 text-sm text-white/80">
               <span className="text-xs uppercase tracking-[0.3em] text-white/50">STORE</span>
-              <p className="text-lg font-semibold">{detail.store.name}</p>
+              <Link
+                href={`/stores/${detail.store.id}`}
+                className="text-lg font-semibold transition hover:text-white"
+                aria-label={`${detail.store.name} の店舗ページを開く`}
+              >
+                {detail.store.name}
+              </Link>
               <Link
                 href={detail.store.googleMapLink}
                 target="_blank"
