@@ -1,14 +1,14 @@
 import Link from "next/link";
 
 const footerLinks = [
-  "ホーム",
-  "これはなに？",
-  "広告プラン",
-  "更新情報",
-  "FAQ",
-  "お問い合わせ",
-  "利用規約",
-  "障害情報",
+  { label: "ホーム", href: "/" },
+  { label: "これはなに？", href: "/about" },
+  { label: "広告プラン", href: "#" },
+  { label: "更新情報", href: "#" },
+  { label: "FAQ", href: "#" },
+  { label: "お問い合わせ", href: "#" },
+  { label: "利用規約", href: "#" },
+  { label: "障害情報", href: "#" },
 ];
 
 type PageFrameProps = {
@@ -17,7 +17,7 @@ type PageFrameProps = {
 };
 
 export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
-  const mainClasses = ["flex flex-col gap-12", mainClassName].filter(Boolean).join(" ");
+  const mainClasses = ["flex flex-col", mainClassName].filter(Boolean).join(" ");
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050312] text-white">
@@ -51,13 +51,13 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
             </p>
           </div>
           <div className="mt-6 grid gap-4 text-center text-sm text-white/80 sm:grid-cols-2 lg:grid-cols-4 lg:text-left">
-            {footerLinks.map((link) => (
+            {footerLinks.map(({ label, href }) => (
               <Link
-                key={link}
-                href="#"
+                key={label}
+                href={href}
                 className="rounded-full border border-white/10 px-4 py-2 font-medium transition hover:border-fuchsia-400/60 hover:text-white"
               >
-                {link}
+                {label}
               </Link>
             ))}
           </div>
