@@ -1,17 +1,15 @@
-import fs from "fs/promises";
-import path from "path";
-
 import { PageFrame } from "@/components/PageFrame";
+import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
 type UpdateEntry = {
   slug: string;
-  title: string;
+  title: string | null;
   body: string;
-  updatedAt: Date;
+  created_at: string;
 };
 
 export default async function UpdatesPage() {
-  const updates = await getUpdates();
+  const updates = await getUpdatesFromDatabase();
 
   return (
     <PageFrame mainClassName="space-y-6">
@@ -37,9 +35,9 @@ export default async function UpdatesPage() {
           >
             <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
               <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                {formatDate(entry.updatedAt)}
+                {formatDate(entry.created_at)}
               </p>
-              {entry.title && entry.title !== "更新情報" && (
+              {entry.title && (
                 <h2 className="text-2xl font-semibold text-white">{entry.title}</h2>
               )}
             </div>
@@ -51,55 +49,30 @@ export default async function UpdatesPage() {
   );
 }
 
-async function getUpdates(): Promise<UpdateEntry[]> {
-  const updatesDir = path.join(process.cwd(), "docs", "updates");
-  let files: string[];
+async function getUpdatesFromDatabase(): Promise<UpdateEntry[]> {
+  let client;
   try {
-    files = await fs.readdir(updatesDir);
-  } catch {
+    client = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      console.error(error.message);
+    } else {
+      console.error(error);
+    }
     return [];
   }
 
-  const markdownFiles = files.filter((file) => file.endsWith(".md"));
+  const { data, error } = await client
+    .from("updates")
+    .select("slug, title, body, created_at")
+    .order("created_at", { ascending: false });
 
-  const entries = await Promise.all(
-    markdownFiles.map(async (fileName) => {
-      const filePath = path.join(updatesDir, fileName);
-      const [rawContent, stats] = await Promise.all([fs.readFile(filePath, "utf-8"), fs.stat(filePath)]);
-      const { title, body } = extractTitleAndBody(rawContent);
-
-      return {
-        slug: fileName.replace(/\.md$/, ""),
-        title,
-        body,
-        updatedAt: stats.mtime,
-      };
-    })
-  );
-
-  return entries.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-}
-
-function extractTitleAndBody(markdown: string) {
-  const lines = markdown.split(/\r?\n/);
-  let title = "更新情報";
-  const bodyLines: string[] = [];
-  let titleCaptured = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!titleCaptured && trimmed.startsWith("# ")) {
-      title = trimmed.replace(/^#\s*/, "").trim() || title;
-      titleCaptured = true;
-      continue;
-    }
-    bodyLines.push(line);
+  if (error) {
+    console.error("Failed to load updates from Supabase:", error.message);
+    return [];
   }
 
-  return {
-    title,
-    body: bodyLines.join("\n").trim(),
-  };
+  return data ?? [];
 }
 
 type MarkdownBlock =
@@ -193,7 +166,7 @@ function renderMarkdown(markdown: string) {
   });
 }
 
-function formatDate(date: Date) {
+function formatDate(date: string) {
   return new Intl.DateTimeFormat("ja-JP", {
     year: "numeric",
     month: "2-digit",
@@ -202,5 +175,5 @@ function formatDate(date: Date) {
     minute: "2-digit",
     second: "2-digit",
     timeZone: "Asia/Tokyo",
-  }).format(date);
+  }).format(new Date(date));
 }

@@ -2,23 +2,6 @@ import { CopyButton } from "@/components/CopyButton";
 import { PageFrame } from "@/components/PageFrame";
 
 const mailAddress = "noap3b69n@gmail.com";
-const mailSubject = encodeURIComponent("cabaguide お問い合わせ");
-const mailBody = encodeURIComponent(
-  [
-    "以下テンプレートを編集のうえ、そのまま送信してください。",
-    "",
-    "【お問い合わせ種別】（例：広告掲載 / 取材依頼 / その他）",
-    "【企業名・店舗名・アカウント名など】",
-    "【担当者名】",
-    "【電話番号】",
-    "【連絡希望手段】（メール / 電話 / DM など）",
-    "【お問い合わせ内容】",
-    "",
-    "※企業・店舗ではない個人様からの問い合わせも歓迎です。必要に応じて資料・画像をメールへ添付してください。",
-  ].join("\n")
-);
-const mailHref = `mailto:${mailAddress}?subject=${mailSubject}&body=${mailBody}`;
-
 const mailTemplate = `件名: cabaguide お問い合わせ
 
 宛先: ${mailAddress}
@@ -37,16 +20,18 @@ const mailTemplate = `件名: cabaguide お問い合わせ
 const supportTips = [
   {
     title: "一次応答",
-    detail: "営業時間内（平日10:00〜18:00）であれば2営業日以内にメールへ返信します。",
+    detail:
+      "営業時間内（平日10:00〜18:00）であれば2営業日以内にメール返信を目指しますが、案件状況により前後する場合があります。",
   },
   {
     title: "対応範囲",
-    detail: "広告プランのご相談、掲載中トラブル、取材・パートナーシップ等を受け付けています。",
+    detail:
+      "広告プランのご相談、掲載中トラブル、取材・パートナーシップ等を受け付けています。ベストエフォートでの対応となります。",
   },
   {
     title: "必要情報",
     detail:
-      "お問い合わせ種別と概要が明記されていると、よりスムーズに対応できます。スクリーンショット添付も歓迎です。",
+      "お問い合わせ種別と概要が明記されていると、よりスムーズに対応できます。スクリーンショット添付も歓迎です。すべてベストエフォートで対応しています。",
   },
 ];
 
