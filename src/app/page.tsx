@@ -11,7 +11,7 @@ type AreaSearchCTAProps = {
 export default async function Home() {
   const topCasts = await getTopCasts();
   return (
-    <PageFrame>
+    <PageFrame mainClassName="gap-12">
       <AreaSearchCTA sectionId="area-search" />
 
       <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:flex lg:items-center lg:text-left">
