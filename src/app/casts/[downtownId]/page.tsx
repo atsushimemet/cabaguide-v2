@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AdBanner } from "@/components/AdBanner";
 import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
@@ -53,6 +54,13 @@ export default async function CastListPage({ params, searchParams }: CastListPag
           合計 {totalCount} 名のキャストが登録されています。ページネーションで気になるキャストをチェックしましょう。
         </p>
       </header>
+
+      <AdBanner
+        label="繁華街プラン"
+        title={`${area.todofukenName} ${area.downtownName} スポット広告`}
+        description="この繁華街を閲覧している来店候補ユーザーに、店舗限定プランや特典をピンポイントで訴求できます。応募枠は月ごとに抽選されるため、出稿希望の方は早めにご相談ください。"
+        href="/ads"
+      />
 
       <section className="space-y-4">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
