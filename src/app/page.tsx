@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdBanner } from "@/components/AdBanner";
 import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getTopCasts } from "@/lib/casts";
@@ -14,23 +15,12 @@ export default async function Home() {
     <PageFrame mainClassName="gap-12">
       <AreaSearchCTA sectionId="area-search" />
 
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:flex lg:items-center lg:text-left">
-        <div className="flex-1 space-y-3">
-          <p className="text-xs font-semibold tracking-[0.3em] text-cyan-200">
-            広告エリア（TOP）
-          </p>
-          <h3 className="text-2xl font-semibold text-white">
-            今月限定のフルカラー広告枠
-          </h3>
-          <p className="text-sm text-white/80">
-            夜の街を彩るネオンのように、キャスト/店舗も集客の特等席へ。
-            リアルタイム訴求で集客力を底上げしませんか？
-          </p>
-        </div>
-        <button className="mt-6 inline-flex items-center justify-center rounded-full border border-white/40 px-6 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10 lg:mt-0">
-          広告掲載について
-        </button>
-      </section>
+      <AdBanner
+        label="広告エリア（TOP）"
+        title="トッププレミアムバナー"
+        description="新プランやイベントを打ち出す店舗専用のTOP枠。SNSやLINE配信と連動させた最新情報を、サイト最上部から発信して来店アクションへ直結させましょう。"
+        href="/ads"
+      />
 
       <section className="space-y-6">
         <div>
@@ -60,20 +50,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-purple-800/80 via-fuchsia-700/60 to-blue-700/70 p-6 text-center shadow-[0_0_45px_rgba(147,51,234,0.45)] backdrop-blur-xl lg:flex lg:items-center lg:justify-between lg:text-left">
-        <div className="max-w-xl space-y-3">
-          <p className="text-xs font-semibold tracking-[0.3em] text-white/70">
-            広告エリア（BOTTOM）
-          </p>
-          <h3 className="text-2xl font-semibold">BOTTOMプレミアムバナー</h3>
-          <p className="text-sm text-white/80">
-            フッター直前で一番印象に残るゾーン。フェア情報や期間限定クーポンに◎
-          </p>
-        </div>
-        <button className="mt-6 inline-flex items-center justify-center rounded-full bg-white/20 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-900/30 transition hover:bg-white/30 lg:mt-0">
-          資料をダウンロード
-        </button>
-      </section>
+      <AdBanner
+        label="広告エリア（BOTTOM）"
+        title="BOTTOMプレミアムバナー"
+        description="フッター直前で一番印象に残るゾーン。フェア / クーポン、指名強化キャンペーンなど、来店直前のユーザーへ確実に届けたい情報を掲載できます。"
+        href="/ads"
+      />
 
       <AreaSearchCTA />
     </PageFrame>

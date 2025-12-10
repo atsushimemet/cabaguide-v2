@@ -3,7 +3,7 @@ import Link from "next/link";
 const footerLinks = [
   { label: "ホーム", href: "/" },
   { label: "これはなに？", href: "/about" },
-  { label: "広告プラン", href: "#" },
+  { label: "広告プラン", href: "/ads" },
   { label: "更新情報", href: "#" },
   { label: "FAQ", href: "#" },
   { label: "お問い合わせ", href: "#" },
