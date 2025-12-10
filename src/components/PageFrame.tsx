@@ -5,7 +5,7 @@ const footerLinks = [
   { label: "これはなに？", href: "/about" },
   { label: "広告プラン", href: "/ads" },
   { label: "更新情報", href: "/updates" },
-  { label: "FAQ", href: "#" },
+  { label: "FAQ", href: "/faq" },
   { label: "お問い合わせ", href: "#" },
   { label: "利用規約", href: "#" },
   { label: "障害情報", href: "#" },
