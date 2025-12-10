@@ -1,5 +1,5 @@
-import { PageFrame } from "@/components/PageFrame";
 import { CopyButton } from "@/components/CopyButton";
+import { PageFrame } from "@/components/PageFrame";
 
 const adPlans = [
   {
@@ -91,7 +91,7 @@ const flowSteps = [
   {
     title: "掲載開始（毎月1日）",
     description:
-      "全工程が完了した翌月1日から掲載を開始します。掲載期間は月末までの月額固定です。",
+      "全工程が完了した翌月1日から掲載を開始します。掲載期間は翌月1日 ~ 翌月末までとなります。",
     timeline: "当月1日",
   },
 ];
