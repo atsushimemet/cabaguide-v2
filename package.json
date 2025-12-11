@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:updates": "node scripts/sync-updates.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.2",
+    "dotenv": "^17.2.3",
     "next": "^16.0.7",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
