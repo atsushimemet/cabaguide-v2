@@ -82,7 +82,7 @@ const policySections: PolicySection[] = [
     title: "6. キャスト向けポリシー",
     body: (
       <ul className="list-disc space-y-2 pl-6 text-sm leading-relaxed text-white/80">
-        <li>キャストプロフィール（名前、所属店舗、画像、SNSリンク、フォロワー数等）は公表済み情報をもとに掲載し、無断での新規掲載は行っていません。</li>
+        <li>キャストプロフィール（名前、所属店舗、画像、SNSリンク、フォロワー数等）は公表済み情報をもとに掲載しております。</li>
         <li>
           掲載内容は可能な限り最新化しますが、画像差し替えやSNSアカウント変更反映まで時間を要する場合があります。誤りを見つけた場合は{" "}
           <a href="/inquery" className="text-fuchsia-200 underline transition hover:text-white">
