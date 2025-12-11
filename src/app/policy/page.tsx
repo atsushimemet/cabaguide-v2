@@ -61,7 +61,13 @@ const policySections: PolicySection[] = [
     body: (
       <ul className="list-disc space-y-2 pl-6 text-sm leading-relaxed text-white/80">
         <li>店舗情報（店舗名、連絡先、Google Mapリンク、指名料・サービス料・時間帯別メイン席料金などDBに登録される数値）は、店舗から提供された最新データを反映するよう努めますが、反映までのタイムラグや入力ミスにより実際と異なる場合があります。</li>
-        <li>本サービスに掲載する文章・画像・数値データは、著作権者・権利者から同意を得たもの、もしくは同意を要しない素材のみを使用しています。権利関係に疑義がある場合は速やかにお問い合わせからご連絡ください。</li>
+        <li>
+          本サービスに掲載する文章・画像・数値データは、著作権者・権利者から同意を得たもの、もしくは同意を要しない素材のみを使用しています。権利関係に疑義がある場合は速やかに{" "}
+          <a href="/inquery" className="text-fuchsia-200 underline transition hover:text-white">
+            お問い合わせ
+          </a>{" "}
+          からご連絡ください。
+        </li>
         <li>
           広告枠や{" "}
           <a href="/inquery" className="text-fuchsia-200 underline transition hover:text-white">
