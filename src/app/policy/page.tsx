@@ -39,9 +39,8 @@ const policySections: PolicySection[] = [
     title: "3. 利用者共通のルール",
     body: (
       <ul className="list-disc space-y-2 pl-6 text-sm leading-relaxed text-white/80">
-        <li>法令、公序良俗、本規約、各ページに表示する注意書きや運用ガイドに従って本サービスを利用してください。</li>
+        <li>法令、公序良俗、本規約、各ページに表示する注意書きに従って本サービスを利用してください。</li>
         <li>掲載情報やレイアウトは予告なく変更される場合があります。常に最新表示を確認してください。</li>
-        <li>無断転載、スクレイピング等の迷惑行為は禁止します。</li>
       </ul>
     ),
   },
