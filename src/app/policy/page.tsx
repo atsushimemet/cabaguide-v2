@@ -72,7 +72,13 @@ const policySections: PolicySection[] = [
     body: (
       <ul className="list-disc space-y-2 pl-6 text-sm leading-relaxed text-white/80">
         <li>キャストプロフィール（名前、所属店舗、画像、SNSリンク、フォロワー数等）は公表済み情報をもとに掲載し、無断での新規掲載は行っていません。</li>
-        <li>掲載内容は可能な限り最新化しますが、画像差し替えやSNSアカウント変更反映まで時間を要する場合があります。誤りを見つけた場合はお問い合わせフォーム経由で修正依頼をお送りください。</li>
+        <li>
+          掲載内容は可能な限り最新化しますが、画像差し替えやSNSアカウント変更反映まで時間を要する場合があります。誤りを見つけた場合は{" "}
+          <a href="/inquery" className="text-fuchsia-200 underline transition hover:text-white">
+            お問い合わせ
+          </a>{" "}
+          経由で修正依頼をお送りください。
+        </li>
         <li>SNSリンクが無効になっている場合や掲載停止を希望される場合は、ご本人確認のうえ速やかに対応します。</li>
       </ul>
     ),
@@ -110,7 +116,13 @@ const policySections: PolicySection[] = [
     title: "10. 規約の変更・お問い合わせ",
     body: (
       <div className="space-y-2 text-sm leading-relaxed text-white/80">
-        <p>法令改正やサービス内容の変更に応じて、本規約を予告なく改定する場合があります。重要な変更は更新情報ページでお知らせします。</p>
+        <p>
+          法令改正やサービス内容の変更に応じて、本規約を予告なく改定する場合があります。重要な変更は{" "}
+          <a href="/updates" className="text-fuchsia-200 underline transition hover:text-white">
+            更新情報
+          </a>{" "}
+          ページでお知らせします。
+        </p>
         <p>
           本規約や掲載内容に関するご連絡は{" "}
           <a href="/inquery" className="text-fuchsia-200 underline transition hover:text-white">
