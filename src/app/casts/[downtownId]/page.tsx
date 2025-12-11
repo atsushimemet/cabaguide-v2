@@ -50,9 +50,6 @@ export default async function CastListPage({ params, searchParams }: CastListPag
         <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">
           {area.todofukenName} {area.downtownName} のキャスト
         </h1>
-        <p className="mt-3 text-sm text-white/80">
-          合計 {totalCount} 名のキャストが登録されています。ページネーションで気になるキャストをチェックしましょう。
-        </p>
       </header>
 
       <AdBanner
