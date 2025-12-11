@@ -13,7 +13,7 @@ const policySections: PolicySection[] = [
     body: (
       <div className="space-y-2 text-sm leading-relaxed text-white/80">
         <p>
-          cabaguide（以下「本サービス」）は、店舗選びで失敗しない、新しい夜のスタンダード。「店舗」ではなく「人」で選ぶ、次世代のキャバクラ・マッチングプラットフォームを提供します。本規約は、本サービスを閲覧・掲載・宣伝するすべての方（一般ユーザー、店舗運営者、キャスト、代理人）に適用されます。
+          cabaguide（以下「本サービス」）は、店舗選びで失敗しない、新しい夜のスタンダード。「店舗」ではなく「人」で選ぶ、次世代のキャバクラ・マッチングプラットフォームを提供します。本規約は、本サービスを閲覧・掲載・宣伝するすべての方（一般ユーザー、店舗、キャスト、代理人）に適用されます。
         </p>
         <p>本規約に同意できない場合は、本サービスの利用・掲載・広告出稿を行うことはできません。</p>
       </div>
@@ -27,7 +27,7 @@ const policySections: PolicySection[] = [
           <span className="font-semibold text-white">一般ユーザー</span>：本サービスを閲覧し、来店検討の参考にする個人。
         </li>
         <li>
-          <span className="font-semibold text-white">店舗等掲載者</span>：店舗情報や広告枠を提供する法人・個人、ならびにその代理人。
+          <span className="font-semibold text-white">店舗</span>：店舗情報や広告枠を提供する法人・個人、ならびにその代理人。
         </li>
         <li>
           <span className="font-semibold text-white">キャスト</span>：店舗に所属し、プロフィール・SNSリンク・フォロワー数等の情報が掲載される本人または代理人。
@@ -58,7 +58,7 @@ const policySections: PolicySection[] = [
     ),
   },
   {
-    title: "5. 店舗・運営者向けポリシー",
+    title: "5. 店舗向けポリシー",
     body: (
       <ul className="list-disc space-y-2 pl-6 text-sm leading-relaxed text-white/80">
         <li>店舗情報（店舗名、連絡先、Google Mapリンク、指名料・サービス料・時間帯別メイン席料金などDBに登録される数値）は、店舗から提供された最新データを反映するよう努めますが、反映までのタイムラグや入力ミスにより実際と異なる場合があります。</li>
