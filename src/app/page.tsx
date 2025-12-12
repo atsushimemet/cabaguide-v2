@@ -5,6 +5,8 @@ import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getTopCasts } from "@/lib/casts";
 
+export const dynamic = "force-dynamic";
+
 type AreaSearchCTAProps = {
   sectionId?: string;
 };
