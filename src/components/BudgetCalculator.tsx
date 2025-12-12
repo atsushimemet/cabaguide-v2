@@ -189,7 +189,10 @@ export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps
               <li className="flex items-center justify-between text-white/70">
                 <span>
                   サービス料 (
-                  {Math.round(store.basePricing.serviceFeeRate * 100)}%)
+                  {store.basePricing.serviceFeeRate != null
+                    ? `${Math.round(store.basePricing.serviceFeeRate * 100)}%`
+                    : "未設定"}
+                  )
                 </span>
                 <strong>{formatYen(scenario.serviceFee)}</strong>
               </li>
