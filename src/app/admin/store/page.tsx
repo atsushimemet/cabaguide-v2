@@ -43,6 +43,7 @@ type StoreFormState = {
   name: string;
   googleMapUrl: string;
   phone: string;
+  homepageLink: string;
   nominationPrice: string;
   serviceFeeRate: string;
   timeSlots: TimeSlotForm;
@@ -96,6 +97,7 @@ const createDefaultFormState = (): StoreFormState => ({
   name: "",
   googleMapUrl: "",
   phone: "",
+  homepageLink: "",
   nominationPrice: "",
   serviceFeeRate: "",
   timeSlots: createInitialTimeSlots(),
@@ -309,6 +311,7 @@ export default function AdminShopPage() {
       name: formState.name,
       googleMapUrl: formState.googleMapUrl,
       phone: formState.phone,
+      homepageLink: formState.homepageLink || null,
       nominationPrice: parseNumber(formState.nominationPrice),
       serviceFeeRate: parseNumber(formState.serviceFeeRate),
       timeSlots: formState.timeSlots.map((slot) => ({
@@ -422,6 +425,13 @@ export default function AdminShopPage() {
               value={formState.phone}
               onChange={(value) => setFormState((prev) => ({ ...prev, phone: value }))}
               placeholder="03-1234-5678"
+            />
+
+            <Field
+              label="ホームページ URL"
+              value={formState.homepageLink}
+              onChange={(value) => setFormState((prev) => ({ ...prev, homepageLink: value }))}
+              placeholder="https://example.com"
             />
 
             <Field
