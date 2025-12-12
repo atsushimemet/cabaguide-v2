@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
+import { parse } from "csv-parse/sync";
+import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { parse } from "csv-parse/sync";
 
 const DATA_DIR = path.resolve(process.cwd(), "data");
 const CHUNK_SIZE = 500;
@@ -33,8 +33,8 @@ async function main() {
     };
   });
 
-  const storeRows = readCsv("store.csv").map((row, index) => {
-    const ctx = { fileName: "store.csv", rowNumber: index + 2 };
+  const storeRows = readCsv("stores.csv").map((row, index) => {
+    const ctx = { fileName: "stores.csv", rowNumber: index + 2 };
     return {
       id: getOptionalString(row, "id", ctx),
       area_id: getInt(row, "area_id", { required: true, ...ctx }),
