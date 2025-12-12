@@ -61,7 +61,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
     notFound();
   }
 
-  const area = getAreaById(store.areaId);
+  const area = await getAreaById(store.areaId);
   const locationLabel = area ? `${area.todofukenName} ${area.downtownName}` : `エリアID: ${store.areaId}`;
 
   const timeline = createBudgetTimeline(store.timeSlots);

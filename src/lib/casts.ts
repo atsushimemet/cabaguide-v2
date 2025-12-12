@@ -1,6 +1,7 @@
-import { getAreaById } from "@/lib/areas";
+import { getAreaMap } from "@/lib/areas";
 import { getServiceSupabaseClient } from "@/lib/supabaseServer";
 import { Cast } from "@/types/cast";
+import { Area } from "@/types/area";
 
 export const PAGE_SIZE = 10;
 
@@ -88,6 +89,7 @@ const fetchLatestFollowerTotals = async (castIds: string[]): Promise<Record<stri
 const mapCastRowToCard = (
   row: CastRow,
   store: StoreRow | undefined,
+  areaMap: Map<number, Area>,
   followers: number,
   accentIndex: number
 ): Cast | null => {
@@ -95,7 +97,7 @@ const mapCastRowToCard = (
     return null;
   }
 
-  const area = getAreaById(store.area_id);
+  const area = areaMap.get(store.area_id);
   if (!area) {
     return null;
   }
@@ -193,13 +195,20 @@ export const getPaginatedCasts = async (
   const storeIds = storeRows.map((store) => store.id);
   const storeMap = buildStoreMap(storeRows);
 
+  const areaMap = await getAreaMap();
   const castRows = await fetchCastRowsByStoreIds(storeIds);
   const castIds = castRows.map((row) => row.id);
   const followerTotals = await fetchLatestFollowerTotals(castIds);
 
   const allCasts: Cast[] = [];
   castRows.forEach((row, index) => {
-    const cast = mapCastRowToCard(row, storeMap.get(row.store_id), followerTotals[row.id] ?? 0, index);
+    const cast = mapCastRowToCard(
+      row,
+      storeMap.get(row.store_id),
+      areaMap,
+      followerTotals[row.id] ?? 0,
+      index
+    );
     if (cast) {
       allCasts.push(cast);
     }
@@ -222,6 +231,7 @@ export const getPaginatedCasts = async (
 };
 
 export const getTopCasts = async (limit = 10): Promise<Cast[]> => {
+  const areaMap = await getAreaMap();
   const castRows = await fetchAllCastRows();
   const storeIds = Array.from(new Set(castRows.map((row) => row.store_id)));
   const storeRows = await fetchStoreRowsByIds(storeIds);
@@ -230,7 +240,13 @@ export const getTopCasts = async (limit = 10): Promise<Cast[]> => {
 
   const mapped: Cast[] = [];
   castRows.forEach((row, index) => {
-    const cast = mapCastRowToCard(row, storeMap.get(row.store_id), followerTotals[row.id] ?? 0, index);
+    const cast = mapCastRowToCard(
+      row,
+      storeMap.get(row.store_id),
+      areaMap,
+      followerTotals[row.id] ?? 0,
+      index
+    );
     if (cast) {
       mapped.push(cast);
     }

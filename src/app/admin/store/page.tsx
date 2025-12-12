@@ -6,7 +6,6 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
 import { PageFrame } from "@/components/PageFrame";
-import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { SERVICE_FEE_OPTIONS, TIME_SLOT_OPTIONS } from "@/lib/adminOptions";
 
@@ -115,16 +114,6 @@ export default function AdminShopPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const areaOptions: AreaOption[] = fallbackAreas.map((area) => ({
-      id: area.id,
-      label: `${area.todofukenName} / ${area.downtownName}`,
-      todofukenName: area.todofukenName,
-      downtownName: area.downtownName,
-    }));
-    setAreas(areaOptions);
-  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {

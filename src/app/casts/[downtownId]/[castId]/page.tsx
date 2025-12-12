@@ -49,7 +49,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
     notFound();
   }
 
-  const area = getAreaById(downtownId);
+  const area = await getAreaById(downtownId);
   if (!area) {
     notFound();
   }
