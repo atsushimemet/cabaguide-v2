@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { PageFrame } from "@/components/PageFrame";
 import { hasAdminSession, persistAdminSession } from "@/hooks/useAdminSession";
 
 export default function AdminLoginPage() {
@@ -82,7 +83,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10 text-white">
+    <PageFrame mainClassName="items-center justify-center">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-lg"
@@ -120,6 +121,6 @@ export default function AdminLoginPage() {
           {isSubmitting ? "認証中..." : "ログイン"}
         </button>
       </form>
-    </div>
+    </PageFrame>
   );
 }

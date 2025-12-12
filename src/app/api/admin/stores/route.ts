@@ -61,6 +61,7 @@ export async function POST(request: Request) {
     name,
     googleMapUrl,
     phone,
+    homepageLink,
     nominationPrice,
     serviceFeeRate,
     timeSlots,
@@ -88,6 +89,7 @@ export async function POST(request: Request) {
         name,
         google_map_link: googleMapUrl,
         phone,
+        homepage_link: homepageLink ?? null,
       })
       .select("id")
       .single();
