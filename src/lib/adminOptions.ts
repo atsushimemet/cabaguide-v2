@@ -18,4 +18,4 @@ export const NOMINATION_PRICE_OPTIONS = createRange(1000, 10000, 1000);
 export const MAIN_PRICE_OPTIONS = createRange(1000, 20000, 1000);
 export const TIME_SLOT_OPTIONS = createRange(19, 24, 1);
 export const AGE_OPTIONS = createRange(18, 40, 1);
-export const SERVICE_FEE_OPTIONS = createDecimalRange(0.1, 0.5, 0.05);
+export const SERVICE_FEE_OPTIONS = createDecimalRange(0.1, 0.5, 0.01);
