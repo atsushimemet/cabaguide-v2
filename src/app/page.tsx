@@ -18,7 +18,7 @@ export default async function Home() {
       <AdBanner
         label="広告エリア（TOP）"
         title="トッププレミアムバナー"
-        description="新プランやイベントを打ち出す店舗専用のTOP枠。SNSやLINE配信と連動させた最新情報を、サイト最上部から発信して来店アクションへ直結させましょう。"
+        description="店舗専用TOP枠で最新情報を発信"
         href="/ads"
       />
 
@@ -53,7 +53,7 @@ export default async function Home() {
       <AdBanner
         label="広告エリア（BOTTOM）"
         title="BOTTOMプレミアムバナー"
-        description="フッター直前で一番印象に残るゾーン。フェア / クーポン、指名強化キャンペーンなど、来店直前のユーザーへ確実に届けたい情報を掲載できます。"
+        description="店舗専用BOTTOM枠で最新情報を発信"
         href="/ads"
       />
 
