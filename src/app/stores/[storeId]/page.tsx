@@ -125,23 +125,19 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
             <p>消費税: {formatPercent(CONSUMPTION_TAX_RATE)}</p>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">店舗HP</p>
-            {store.homepageLink ? (
-              <>
-                <Link
-                  href={store.homepageLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-cyan-200 transition hover:text-white"
-                >
-                  店舗ホームページ ↗
-                </Link>
-              </>
-            ) : (
-              <p className="text-xs text-white/50">店舗HPは登録されていません。</p>
-            )}
-          </div>
+          {store.homepageLink && (
+            <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50">店舗HP</p>
+              <Link
+                href={store.homepageLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-cyan-200 transition hover:text-white"
+              >
+                店舗ホームページ ↗
+              </Link>
+            </div>
+          )}
         </div>
 
       </section>

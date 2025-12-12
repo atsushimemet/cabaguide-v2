@@ -55,7 +55,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
       <AdBanner
         label="繁華街プラン"
         title={`${area.todofukenName} ${area.downtownName} スポット広告`}
-        description="この繁華街を閲覧している来店候補ユーザーに、店舗限定プランや特典をピンポイントで訴求できます。応募枠は月ごとに抽選されるため、出稿希望の方は早めにご相談ください。"
+        description="来店候補ユーザーに、ピンポイントで訴求できます。"
         href="/ads"
       />
 

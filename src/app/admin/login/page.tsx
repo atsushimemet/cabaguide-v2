@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 
 import { PageFrame } from "@/components/PageFrame";
 import { hasAdminSession, persistAdminSession } from "@/hooks/useAdminSession";
@@ -89,7 +89,6 @@ export default function AdminLoginPage() {
         className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-lg"
       >
         <h1 className="text-2xl font-semibold">管理者ログイン</h1>
-        <p className="mt-2 text-sm text-white/70">営業メンバー専用ページです。</p>
 
         <label className="mt-8 block text-sm font-medium text-white/80">
           パスワード

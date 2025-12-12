@@ -118,6 +118,17 @@ const isMissingHomepageLinkError = (message?: string) => {
   return message.includes("homepage_link");
 };
 
+const normalizeHomepageLink = (value?: string | null): string | undefined => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.toLowerCase() === "null") {
+    return undefined;
+  }
+  return trimmed;
+};
+
 export const getStoreById = async (storeId: string): Promise<Store | null> => {
   if (!storeId) {
     return null;
@@ -209,7 +220,7 @@ export const getStoreById = async (storeId: string): Promise<Store | null> => {
     name: storeRow.name,
     googleMapLink: storeRow.google_map_link,
     phone: storeRow.phone,
-    homepageLink: storeRow.homepage_link ?? undefined,
+    homepageLink: normalizeHomepageLink(storeRow.homepage_link),
     basePricing: toBasePricing(baseRow),
     timeSlots,
   };
