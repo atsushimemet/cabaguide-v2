@@ -9,6 +9,14 @@ type TimeSlotInput = {
   mainPrice: number;
 };
 
+type StoreListRow = {
+  id: string;
+  name: string;
+  area_id: number | null;
+  phone?: string | null;
+  created_at?: string;
+};
+
 export async function GET() {
   const unauthorized = await ensureAdminSession();
   if (unauthorized) {
@@ -26,17 +34,30 @@ export async function GET() {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("stores")
-      .select("id, name, area_id, phone, created_at")
-      .order("created_at", { ascending: false })
-      .limit(20);
+    const pageSize = 1000;
+    const stores: StoreListRow[] = [];
 
-    if (error) {
-      throw new Error(error.message);
+    let from = 0;
+    while (true) {
+      const { data, error } = await supabase
+        .from("stores")
+        .select("id, name, area_id, phone, created_at")
+        .order("created_at", { ascending: false })
+        .range(from, from + pageSize - 1);
+      if (error) {
+        throw new Error(error.message);
+      }
+      if (!data || data.length === 0) {
+        break;
+      }
+      stores.push(...data);
+      if (data.length < pageSize) {
+        break;
+      }
+      from += pageSize;
     }
 
-    return NextResponse.json({ stores: data ?? [] });
+    return NextResponse.json({ stores });
   } catch (error) {
     console.error("[admin/stores][GET]", error);
     const message = error instanceof Error ? error.message : "店舗一覧の取得に失敗しました";
