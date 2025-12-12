@@ -166,11 +166,12 @@ const createScenario = (
   }, 0);
   const guestTotal = perHourTotal * guestCount;
 
-  const nominationTotal = store.basePricing.nominationPrice;
+  const nominationTotal = store.basePricing.nominationPrice ?? 0;
   const drinkTotal = LIGHT_DRINKS_PER_GUEST * LIGHT_DRINK_UNIT_PRICE * guestCount;
 
   const subtotal = guestTotal + nominationTotal + drinkTotal + extraCost;
-  const serviceFee = Math.round(subtotal * store.basePricing.serviceFeeRate);
+  const serviceFeeRate = store.basePricing.serviceFeeRate ?? 0;
+  const serviceFee = Math.round(subtotal * serviceFeeRate);
   const afterService = subtotal + serviceFee;
   const tax = Math.round(afterService * CONSUMPTION_TAX_RATE);
   const total = afterService + tax;

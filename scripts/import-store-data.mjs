@@ -21,8 +21,14 @@ const client = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false },
 });
 
+const shouldReset = process.argv.includes("--reset");
+
 async function main() {
   console.log("=== Start importing store data ===");
+
+  if (shouldReset) {
+    await resetTables();
+  }
 
   const areaRows = readCsv("area.csv").map((row, index) => {
     const ctx = { fileName: "area.csv", rowNumber: index + 2 };
@@ -50,7 +56,7 @@ async function main() {
     return {
       id: getOptionalString(row, "id", ctx),
       store_id: getString(row, "store_id", { required: true, ...ctx }),
-      nomination_price: getInt(row, "nomination_price", { required: false, ...ctx }),
+      nomination_price: getInt(row, "nomination_price", { required: false, allowNullLiteral: true, ...ctx }),
       service_fee_rate: getDecimal(row, "service_fee_rate", ctx),
     };
   });
@@ -60,16 +66,17 @@ async function main() {
     return {
       id: getOptionalString(row, "id", ctx),
       store_id: getString(row, "store_id", { required: true, ...ctx }),
-      time_slot: getInt(row, "time_slot", { required: true, ...ctx }),
+      time_slot_hour: getInt(row, "time_slot_hour", { required: true, ...ctx }),
+      time_slot_minute: getInt(row, "time_slot_minute", { required: true, ...ctx }),
       main_price: getInt(row, "main_price", { required: true, ...ctx }),
-      vip_price: getInt(row, "vip_price", { required: false, ...ctx }),
     };
   });
+  const dedupedTimeSlotRows = dedupeTimeSlots(timeSlotRows);
 
   await upsertRows("area", areaRows, { onConflict: "id" });
   await upsertRows("stores", storeRows, { onConflict: "id" });
   await upsertRows("store_base_pricings", basePricingRows, { onConflict: "store_id" });
-  await upsertRows("store_time_slot_pricings", timeSlotRows, { onConflict: "store_id,time_slot" });
+  await upsertRows("store_time_slot_pricings", dedupedTimeSlotRows, { onConflict: "store_id,time_slot_hour,time_slot_minute" });
 
   console.log("=== Import completed successfully ===");
 }
@@ -112,9 +119,9 @@ function getOptionalString(row, column, ctx) {
   return value === "" ? undefined : value;
 }
 
-function getInt(row, column, { required, fileName, rowNumber }) {
+function getInt(row, column, { required, fileName, rowNumber, allowNullLiteral = false }) {
   const raw = getString(row, column, { required, fileName, rowNumber });
-  if (raw === "") {
+  if (raw === "" || (allowNullLiteral && raw.toLowerCase() === "null")) {
     return null;
   }
 
@@ -127,7 +134,7 @@ function getInt(row, column, { required, fileName, rowNumber }) {
 
 function getDecimal(row, column, ctx) {
   const raw = getString(row, column, { required: false, ...ctx });
-  if (raw === "") {
+  if (raw === "" || raw.toLowerCase() === "null") {
     return null;
   }
 
@@ -154,6 +161,56 @@ async function upsertRows(table, rows, { onConflict }) {
       throw new Error(`${table} への upsert に失敗しました: ${error.message}`);
     }
   }
+}
+
+async function resetTables() {
+  console.log("Resetting existing data before import...");
+  const steps = [
+    {
+      table: "store_time_slot_pricings",
+      filter: (query) => query.not("id", "is", null),
+    },
+    {
+      table: "store_base_pricings",
+      filter: (query) => query.not("id", "is", null),
+    },
+    {
+      table: "stores",
+      filter: (query) => query.not("id", "is", null),
+    },
+    {
+      table: "area",
+      filter: (query) => query.gte("id", 0),
+    },
+  ];
+
+  for (const step of steps) {
+    console.log(`- clearing ${step.table}`);
+    let query = client.from(step.table).delete();
+    query = step.filter(query);
+    const { error } = await query;
+    if (error) {
+      throw new Error(`${step.table} の削除に失敗しました: ${error.message}`);
+    }
+  }
+}
+
+function dedupeTimeSlots(rows) {
+  const map = new Map();
+  const duplicates = [];
+  for (const row of rows) {
+    const key = `${row.store_id}:${row.time_slot_hour}:${row.time_slot_minute}`;
+    if (map.has(key)) {
+      duplicates.push(key);
+    }
+    map.set(key, row);
+  }
+  if (duplicates.length > 0) {
+    console.warn(
+      `[warn] store_time_slot_pricings: ${duplicates.length} duplicate rows detected (store_id, hour, minute). Last occurrence kept.`
+    );
+  }
+  return Array.from(map.values());
 }
 
 main().catch((error) => {

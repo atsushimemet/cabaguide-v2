@@ -19,9 +19,17 @@ type StoreDetailPageProps = {
 
 const currencyFormatter = new Intl.NumberFormat("ja-JP");
 
-const formatYen = (value: number) => `${currencyFormatter.format(value)}円`;
+const formatYen = (value?: number | null) => {
+  if (value == null) {
+    return "未設定";
+  }
+  return `${currencyFormatter.format(value)}円`;
+};
 
-const formatPercent = (value: number) => {
+const formatPercent = (value?: number | null) => {
+  if (value == null) {
+    return "未設定";
+  }
   const percent = (value * 100).toFixed(1);
   return `${percent.replace(/\.0$/, "")}%`;
 };

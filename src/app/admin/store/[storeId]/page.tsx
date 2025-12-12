@@ -131,8 +131,8 @@ const populateFormState = (store: StoreData, areas: AreaOption[]): StoreFormStat
       googleMapUrl: store.googleMapUrl,
       phone: store.phone,
       homepageLink: store.homepageLink ?? "",
-      nominationPrice: store.nominationPrice ? String(store.nominationPrice) : "",
-      serviceFeeRate: store.serviceFeeRate ? String(store.serviceFeeRate) : "",
+      nominationPrice: store.nominationPrice != null ? String(store.nominationPrice) : "",
+      serviceFeeRate: store.serviceFeeRate != null ? String(store.serviceFeeRate) : "",
       timeSlots: createInitialTimeSlots(),
     };
   }
@@ -143,8 +143,8 @@ const populateFormState = (store: StoreData, areas: AreaOption[]): StoreFormStat
     googleMapUrl: store.googleMapUrl,
     phone: store.phone,
     homepageLink: store.homepageLink ?? "",
-    nominationPrice: store.nominationPrice ? String(store.nominationPrice) : "",
-    serviceFeeRate: store.serviceFeeRate ? String(store.serviceFeeRate) : "",
+    nominationPrice: store.nominationPrice != null ? String(store.nominationPrice) : "",
+    serviceFeeRate: store.serviceFeeRate != null ? String(store.serviceFeeRate) : "",
     timeSlots,
   };
 };

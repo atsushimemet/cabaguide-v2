@@ -1,6 +1,6 @@
 export type StoreBasePricing = {
-  nominationPrice: number;
-  serviceFeeRate: number;
+  nominationPrice: number | null;
+  serviceFeeRate: number | null;
 };
 
 export type StoreTimeSlotPricing = {

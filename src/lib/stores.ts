@@ -51,9 +51,15 @@ const toMinutes = (hour: number, minute: number) => {
 };
 
 const toBasePricing = (row?: BasePricingRow | null): StoreBasePricing => {
+  const rawRate = row?.service_fee_rate;
+  const rawNomination = row?.nomination_price;
   return {
-    nominationPrice: row?.nomination_price ?? 0,
-    serviceFeeRate: row?.service_fee_rate ? Number(row.service_fee_rate) : 0,
+    nominationPrice:
+      rawNomination === undefined || rawNomination === null ? null : Number(rawNomination),
+    serviceFeeRate:
+      rawRate === undefined || rawRate === null || rawRate === ""
+        ? null
+        : Number(rawRate),
   };
 };
 
