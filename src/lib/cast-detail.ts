@@ -77,7 +77,7 @@ export const getCastDetail = async (downtownId: number, castId: string): Promise
     return null;
   }
 
-  const area = getAreaById(store.areaId);
+  const area = await getAreaById(store.areaId);
   if (!area) {
     return null;
   }

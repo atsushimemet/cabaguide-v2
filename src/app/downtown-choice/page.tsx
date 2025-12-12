@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { PageFrame } from "@/components/PageFrame";
 import { findDowntownsByPrefecture } from "@/lib/areas";
 
+export const dynamic = "force-dynamic";
+
 type DowntownChoicePageProps = {
   searchParams: Promise<{
     prefecture?: string;
@@ -20,7 +22,7 @@ export default async function DowntownChoicePage({
     redirect("/todofuken-choice");
   }
 
-  const downtowns = findDowntownsByPrefecture(prefecture);
+  const downtowns = await findDowntownsByPrefecture(prefecture);
 
   if (downtowns.length === 0) {
     redirect("/todofuken-choice");

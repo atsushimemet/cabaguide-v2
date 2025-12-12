@@ -7,7 +7,6 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
 import { PageFrame } from "@/components/PageFrame";
-import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import { SERVICE_FEE_OPTIONS, TIME_SLOT_OPTIONS } from "@/lib/adminOptions";
@@ -77,8 +76,6 @@ const calculateTimeSlotRange = (timeSlots: TimeSlotForm): { min: string; max: st
   });
   
   const minMinutes = Math.min(...times);
-  const maxMinutes = Math.max(...times);
-  
   const minHour = Math.floor(minMinutes / 60);
   const minMin = minMinutes % 60;
   
@@ -113,7 +110,7 @@ const createDefaultFormState = (): StoreFormState => ({
   timeSlots: createInitialTimeSlots(),
 });
 
-const populateFormState = (store: StoreData, areas: AreaOption[]): StoreFormState => {
+const populateFormState = (store: StoreData): StoreFormState => {
   // 既存のタイムスロットデータをフォームに設定
   // データベースに存在するすべてのタイムスロットを含める
   const timeSlots: TimeSlotForm = store.timeSlots.map((slot) => ({
@@ -163,14 +160,6 @@ export default function AdminShopEditPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const areaOptions: AreaOption[] = fallbackAreas.map((area) => ({
-      id: area.id,
-      label: `${area.todofukenName} / ${area.downtownName}`,
-    }));
-    setAreas(areaOptions);
-  }, []);
 
   useEffect(() => {
     const fetchAreas = async () => {
@@ -235,10 +224,10 @@ export default function AdminShopEditPage() {
   }, [fetchStore, isAuthenticated]);
 
   useEffect(() => {
-    if (store && areas.length > 0) {
-      setFormState(populateFormState(store, areas));
+    if (store) {
+      setFormState(populateFormState(store));
     }
-  }, [store, areas]);
+  }, [store]);
 
   const parseNumber = (value: string) => {
     if (!value) {

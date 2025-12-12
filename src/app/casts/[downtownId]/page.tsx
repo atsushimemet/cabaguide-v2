@@ -25,7 +25,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
     notFound();
   }
 
-  const area = getAreaById(downtownId);
+  const area = await getAreaById(downtownId);
 
   if (!area) {
     notFound();

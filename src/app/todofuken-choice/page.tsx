@@ -3,9 +3,10 @@ import Link from "next/link";
 import { PageFrame } from "@/components/PageFrame";
 import { groupAreasByPrefecture } from "@/lib/areas";
 
-const prefectureGroups = groupAreasByPrefecture();
+export const dynamic = "force-dynamic";
 
-export default function TodofukenChoicePage() {
+export default async function TodofukenChoicePage() {
+  const prefectureGroups = await groupAreasByPrefecture();
   return (
     <PageFrame mainClassName="gap-10">
       <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
