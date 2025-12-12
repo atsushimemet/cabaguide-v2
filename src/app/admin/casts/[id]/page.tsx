@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
+import { PageFrame } from "@/components/PageFrame";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 
 const SOCIAL_PLATFORM_OPTIONS = [
@@ -239,7 +240,7 @@ export default function CastDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <PageFrame mainClassName="gap-6">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
         <header className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -450,9 +451,9 @@ export default function CastDetailPage() {
             )}
           </ul>
         </section>
-        <AdminFooter onLogout={logout} />
       </div>
-    </div>
+      <AdminFooter onLogout={logout} />
+    </PageFrame>
   );
 }
 
@@ -462,7 +463,7 @@ const getPlatformLabel = (value: string) => {
 };
 
 const AdminLoading = ({ message = "読み込み中" }: { message?: string }) => (
-  <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">
+  <PageFrame mainClassName="flex min-h-[320px] items-center justify-center">
     <p className="rounded-full border border-white/10 px-6 py-3 text-sm text-white/80">{message}</p>
-  </div>
+  </PageFrame>
 );

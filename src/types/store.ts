@@ -17,6 +17,7 @@ export type Store = {
   name: string;
   googleMapLink: string;
   phone: string;
+  homepageLink?: string;
   basePricing: StoreBasePricing;
   timeSlots: StoreTimeSlotPricing[];
 };

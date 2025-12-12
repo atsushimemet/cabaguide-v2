@@ -105,6 +105,13 @@ const isMissingNewColumnsError = (message?: string) => {
   return message.includes("time_slot_hour") || message.includes("time_slot_minute");
 };
 
+const isMissingHomepageLinkError = (message?: string) => {
+  if (!message) {
+    return false;
+  }
+  return message.includes("homepage_link");
+};
+
 export const getStoreById = async (storeId: string): Promise<Store | null> => {
   if (!storeId) {
     return null;
@@ -112,14 +119,40 @@ export const getStoreById = async (storeId: string): Promise<Store | null> => {
 
   const supabase = getServiceSupabaseClient();
 
-  const { data: storeRow, error: storeError } = await supabase
+  let storeRow: {
+    id: string;
+    area_id: number;
+    name: string;
+    google_map_link: string;
+    phone: string;
+    homepage_link?: string | null;
+  } | null = null;
+
+  const { data: storeRowWithHomepage, error: storeError } = await supabase
     .from("stores")
-    .select("id, area_id, name, google_map_link, phone")
+    .select("id, area_id, name, google_map_link, phone, homepage_link")
     .eq("id", storeId)
     .single();
 
   if (storeError) {
-    throw new Error(storeError.message);
+    if (isMissingHomepageLinkError(storeError.message)) {
+      // homepage_linkカラムが存在しない場合は、homepage_linkなしで再クエリ
+      const { data: storeRowWithoutHomepage, error: storeErrorWithoutHomepage } = await supabase
+        .from("stores")
+        .select("id, area_id, name, google_map_link, phone")
+        .eq("id", storeId)
+        .single();
+
+      if (storeErrorWithoutHomepage) {
+        throw new Error(storeErrorWithoutHomepage.message);
+      }
+
+      storeRow = storeRowWithoutHomepage ? { ...storeRowWithoutHomepage, homepage_link: null } : null;
+    } else {
+      throw new Error(storeError.message);
+    }
+  } else {
+    storeRow = storeRowWithHomepage;
   }
 
   if (!storeRow) {
@@ -170,6 +203,7 @@ export const getStoreById = async (storeId: string): Promise<Store | null> => {
     name: storeRow.name,
     googleMapLink: storeRow.google_map_link,
     phone: storeRow.phone,
+    homepageLink: storeRow.homepage_link ?? undefined,
     basePricing: toBasePricing(baseRow),
     timeSlots,
   };

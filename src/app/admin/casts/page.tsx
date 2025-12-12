@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
+import { PageFrame } from "@/components/PageFrame";
 import { useAdminGuard } from "@/hooks/useAdminSession";
 import { AGE_OPTIONS } from "@/lib/adminOptions";
 
@@ -159,7 +160,7 @@ export default function AdminCastsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <PageFrame mainClassName="gap-6">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <header className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
@@ -287,10 +288,9 @@ export default function AdminCastsPage() {
             )}
           </div>
         </section>
-
-        <AdminFooter onLogout={logout} />
       </div>
-    </div>
+      <AdminFooter onLogout={logout} />
+    </PageFrame>
   );
 }
 
@@ -347,7 +347,7 @@ const SelectField = ({
 );
 
 const AdminLoading = ({ message = "読み込み中" }: { message?: string }) => (
-  <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">
+  <PageFrame mainClassName="flex min-h-[320px] items-center justify-center">
     <p className="rounded-full border border-white/10 px-6 py-3 text-sm text-white/80">{message}</p>
-  </div>
+  </PageFrame>
 );
