@@ -8,12 +8,13 @@ import { AdminFooter } from "@/components/AdminFooter";
 import { PageFrame } from "@/components/PageFrame";
 import { areas as fallbackAreas } from "@/data/areas";
 import { useAdminGuard } from "@/hooks/useAdminSession";
-import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import { SERVICE_FEE_OPTIONS, TIME_SLOT_OPTIONS } from "@/lib/adminOptions";
 
 type AreaOption = {
   id: number;
   label: string;
+  todofukenName: string;
+  downtownName: string;
 };
 
 type AreaRow = {
@@ -67,8 +68,6 @@ const calculateTimeSlotRange = (timeSlots: TimeSlotForm): { min: string; max: st
   });
   
   const minMinutes = Math.min(...times);
-  const maxMinutes = Math.max(...times);
-  
   const minHour = Math.floor(minMinutes / 60);
   const minMin = minMinutes % 60;
   
@@ -105,11 +104,13 @@ const createDefaultFormState = (): StoreFormState => ({
 
 export default function AdminShopPage() {
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
-  const { client, error: clientError } = useSupabaseBrowserClient();
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [stores, setStores] = useState<StoreRow[]>([]);
+  const [prefectureFilter, setPrefectureFilter] = useState("");
+  const [downtownFilter, setDowntownFilter] = useState("");
   const [isLoadingStores, setIsLoadingStores] = useState(false);
   const [storesError, setStoresError] = useState<string | null>(null);
+  const [areasError, setAreasError] = useState<string | null>(null);
   const [formState, setFormState] = useState<StoreFormState>(() => createDefaultFormState());
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
@@ -119,33 +120,47 @@ export default function AdminShopPage() {
     const areaOptions: AreaOption[] = fallbackAreas.map((area) => ({
       id: area.id,
       label: `${area.todofukenName} / ${area.downtownName}`,
+      todofukenName: area.todofukenName,
+      downtownName: area.downtownName,
     }));
     setAreas(areaOptions);
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
     const fetchAreas = async () => {
-      if (!client) {
-        return;
-      }
-      const { data } = await client
-        .from("areas")
-        .select("id, todofuken_name, downtown_name")
-        .order("id", { ascending: true });
-      if (data && data.length > 0) {
-        setAreas(
-          data.map((row) => {
-            const typedRow = row as AreaRow;
-            return {
-              id: typedRow.id,
-              label: `${typedRow.todofuken_name} / ${typedRow.downtown_name}`,
-            };
-          })
-        );
+      setAreasError(null);
+      try {
+        const response = await fetch("/api/admin/areas", { credentials: "include" });
+        if (response.status === 401) {
+          setAreasError("管理者セッションの有効期限が切れました。再度ログインしてください。");
+          await logout();
+          return;
+        }
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "エリア一覧の取得に失敗しました");
+        }
+        const data = payload?.areas as AreaRow[] | undefined;
+        if (data && data.length > 0) {
+          setAreas(
+            data.map((row) => ({
+              id: row.id,
+              label: `${row.todofuken_name} / ${row.downtown_name}`,
+              todofukenName: row.todofuken_name,
+              downtownName: row.downtown_name,
+            }))
+          );
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "エリア一覧の取得に失敗しました";
+        setAreasError(message);
       }
     };
     fetchAreas();
-  }, [client]);
+  }, [isAuthenticated, logout]);
 
   const fetchStores = useCallback(async () => {
     if (!isAuthenticated) {
@@ -181,10 +196,59 @@ export default function AdminShopPage() {
   }, [fetchStores, isAuthenticated]);
 
   const areaMap = useMemo(() => {
-    const map = new Map<number, string>();
-    areas.forEach((area) => map.set(area.id, area.label));
+    const map = new Map<number, AreaOption>();
+    areas.forEach((area) => map.set(area.id, area));
     return map;
   }, [areas]);
+
+  const prefectureOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    areas.forEach((area) => {
+      if (!seen.has(area.todofukenName)) {
+        seen.add(area.todofukenName);
+        ordered.push(area.todofukenName);
+      }
+    });
+    return ordered;
+  }, [areas]);
+
+  const downtownOptions = useMemo(() => {
+    const targetAreas = prefectureFilter
+      ? areas.filter((area) => area.todofukenName === prefectureFilter)
+      : areas;
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    targetAreas.forEach((area) => {
+      if (!seen.has(area.downtownName)) {
+        seen.add(area.downtownName);
+        ordered.push(area.downtownName);
+      }
+    });
+    return ordered;
+  }, [areas, prefectureFilter]);
+
+  const filteredStores = useMemo(() => {
+    if (!prefectureFilter && !downtownFilter) {
+      return stores;
+    }
+    return stores.filter((store) => {
+      if (!store.area_id) {
+        return false;
+      }
+      const area = areaMap.get(store.area_id);
+      if (!area) {
+        return false;
+      }
+      if (prefectureFilter && area.todofukenName !== prefectureFilter) {
+        return false;
+      }
+      if (downtownFilter && area.downtownName !== downtownFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [stores, prefectureFilter, downtownFilter, areaMap]);
 
   const parseNumber = (value: string) => {
     if (!value) {
@@ -243,11 +307,6 @@ export default function AdminShopPage() {
 
     if (!isAuthenticated) {
       setFormError("管理者セッションを確認できませんでした。再度ログインしてください。");
-      return;
-    }
-
-    if (!client) {
-      setFormError(clientError ?? "Supabase クライアントを初期化できませんでした");
       return;
     }
 
@@ -564,10 +623,14 @@ export default function AdminShopPage() {
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold">登録済み店舗</h2>
-              <p className="mt-1 text-sm text-white/70">最新 20 件を表示しています。</p>
+              <p className="mt-1 text-sm text-white/70">
+                {prefectureFilter || downtownFilter
+                  ? `全 ${stores.length} 件中 ${filteredStores.length} 件を表示しています。`
+                  : `全 ${stores.length} 件の店舗を表示しています。`}
+              </p>
             </div>
             <button
               onClick={fetchStores}
@@ -578,6 +641,47 @@ export default function AdminShopPage() {
             </button>
           </div>
 
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="text-sm text-white/80">
+              都道府県で絞り込む
+              <select
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2"
+                value={prefectureFilter}
+                onChange={(event) => {
+                  setPrefectureFilter(event.target.value);
+                  setDowntownFilter("");
+                }}
+              >
+                <option value="">すべての都道府県</option>
+                {prefectureOptions.map((prefecture) => (
+                  <option key={prefecture} value={prefecture}>
+                    {prefecture}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm text-white/80">
+              繁華街で絞り込む
+              <select
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2"
+                value={downtownFilter}
+                onChange={(event) => setDowntownFilter(event.target.value)}
+              >
+                <option value="">すべての繁華街</option>
+                {downtownOptions.map((downtown) => (
+                  <option key={downtown} value={downtown}>
+                    {downtown}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {areasError && (
+            <p className="mt-3 rounded-xl border border-yellow-500/60 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-100">
+              {areasError}
+            </p>
+          )}
+
           <div className="mt-4 space-y-3">
             {storesError && (
               <p className="rounded-xl border border-yellow-500/60 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-100">
@@ -585,30 +689,33 @@ export default function AdminShopPage() {
               </p>
             )}
 
-            {stores.length === 0 && !isLoadingStores ? (
+            {filteredStores.length === 0 && !isLoadingStores ? (
               <p className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
-                まだ店舗が登録されていません。
+                {stores.length === 0 ? "まだ店舗が登録されていません。" : "選択した条件に一致する店舗がありません。"}
               </p>
             ) : (
               <ul className="space-y-3">
-                {stores.map((store) => (
-                  <li key={store.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <Link
-                      href={`/admin/store/${store.id}`}
-                      className="block transition hover:opacity-80"
-                    >
-                      <p className="text-base font-semibold text-white underline-offset-4 hover:underline">
-                        {store.name}
+                {filteredStores.map((store) => {
+                  const area = store.area_id ? areaMap.get(store.area_id) : null;
+                  return (
+                    <li key={store.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      <Link
+                        href={`/admin/store/${store.id}`}
+                        className="block transition hover:opacity-80"
+                      >
+                        <p className="text-base font-semibold text-white underline-offset-4 hover:underline">
+                          {store.name}
+                        </p>
+                      </Link>
+                      <p className="text-sm text-white/60">
+                        {area?.label ?? `area_id: ${store.area_id ?? "-"}`}
                       </p>
-                    </Link>
-                    <p className="text-sm text-white/60">
-                      {areaMap.get(store.area_id ?? 0) ?? `area_id: ${store.area_id ?? "-"}`}
-                    </p>
-                    {store.phone && (
-                      <p className="text-sm text-white/50">TEL: {store.phone}</p>
-                    )}
-                  </li>
-                ))}
+                      {store.phone && (
+                        <p className="text-sm text-white/50">TEL: {store.phone}</p>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
