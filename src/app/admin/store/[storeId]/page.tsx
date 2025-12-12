@@ -8,7 +8,6 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { AdminFooter } from "@/components/AdminFooter";
 import { PageFrame } from "@/components/PageFrame";
 import { useAdminGuard } from "@/hooks/useAdminSession";
-import { useSupabaseBrowserClient } from "@/hooks/useSupabaseBrowserClient";
 import { SERVICE_FEE_OPTIONS, TIME_SLOT_OPTIONS } from "@/lib/adminOptions";
 
 type AreaOption = {
@@ -151,7 +150,6 @@ export default function AdminShopEditPage() {
   const router = useRouter();
   const storeId = params?.storeId;
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
-  const { client } = useSupabaseBrowserClient();
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [store, setStore] = useState<StoreData | null>(null);
   const [isLoadingStore, setIsLoadingStore] = useState(false);
@@ -162,28 +160,35 @@ export default function AdminShopEditPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
     const fetchAreas = async () => {
-      if (!client) {
-        return;
-      }
-      const { data } = await client
-        .from("areas")
-        .select("id, todofuken_name, downtown_name")
-        .order("id", { ascending: true });
-      if (data && data.length > 0) {
-        setAreas(
-          data.map((row) => {
-            const typedRow = row as AreaRow;
-            return {
-              id: typedRow.id,
-              label: `${typedRow.todofuken_name} / ${typedRow.downtown_name}`,
-            };
-          })
-        );
+      try {
+        const response = await fetch("/api/admin/areas", { credentials: "include" });
+        if (response.status === 401) {
+          await logout();
+          return;
+        }
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "エリア一覧の取得に失敗しました");
+        }
+        const data = payload?.areas as AreaRow[] | undefined;
+        if (data && data.length > 0) {
+          setAreas(
+            data.map((row) => ({
+              id: row.id,
+              label: `${row.todofuken_name} / ${row.downtown_name}`,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("[admin/store/edit] fetchAreas", error);
       }
     };
     fetchAreas();
-  }, [client]);
+  }, [isAuthenticated, logout]);
 
   const fetchStore = useCallback(async () => {
     if (!storeId || !isAuthenticated) {
