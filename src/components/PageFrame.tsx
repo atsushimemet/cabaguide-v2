@@ -45,7 +45,7 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
               cabaguide
             </Link>
             <p className="text-sm text-fuchsia-200 sm:text-base">
-              「この子でよかった」を選べるネット案内所
+            「この子でよかった」と思える夜へ
             </p>
           </div>
         </header>
