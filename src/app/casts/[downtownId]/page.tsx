@@ -109,6 +109,8 @@ export default async function CastListPage({ params, searchParams }: CastListPag
           </span>
           <span className="mt-1 block text-xs text-white/60">
             広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。
+            <br />
+            Instagram/TikTokで有名・人気キャストを見つけよう！
           </span>
         </h1>
       </header>
