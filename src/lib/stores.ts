@@ -1,5 +1,6 @@
+import { getAreaMap } from "@/lib/areas";
 import { getServiceSupabaseClient } from "@/lib/supabaseServer";
-import { Store, StoreBasePricing, StoreTimeSlotPricing } from "@/types/store";
+import { Store, StoreBasePricing, StoreRankingEntry, StoreTimeSlotPricing } from "@/types/store";
 
 type BasePricingRow = {
   nomination_price: number | null;
@@ -129,6 +130,18 @@ const normalizeHomepageLink = (value?: string | null): string | undefined => {
   return trimmed;
 };
 
+type StoreRow = {
+  id: string;
+  area_id: number;
+  name: string;
+};
+
+type StoreFollowerSnapshotRow = {
+  store_id: string;
+  followers: number | null;
+  captured_at: string | null;
+};
+
 export const getStoreById = async (storeId: string): Promise<Store | null> => {
   if (!storeId) {
     return null;
@@ -224,4 +237,89 @@ export const getStoreById = async (storeId: string): Promise<Store | null> => {
     basePricing: toBasePricing(baseRow),
     timeSlots,
   };
+};
+
+export const getStoreFollowerRankingsByPrefecture = async (
+  prefectureName: string,
+  limit = 10
+): Promise<StoreRankingEntry[]> => {
+  if (!prefectureName) {
+    return [];
+  }
+
+  const areaMap = await getAreaMap();
+  const areaIds = Array.from(areaMap.entries())
+    .filter(([, area]) => area.todofukenName === prefectureName)
+    .map(([areaId]) => areaId);
+
+  if (areaIds.length === 0) {
+    return [];
+  }
+
+  const supabase = getServiceSupabaseClient();
+
+  const { data: storeRows, error: storeError } = await supabase
+    .from("stores")
+    .select("id, name, area_id")
+    .in("area_id", areaIds);
+
+  if (storeError) {
+    throw new Error(storeError.message);
+  }
+
+  const typedStoreRows = (storeRows ?? []) as StoreRow[];
+
+  if (typedStoreRows.length === 0) {
+    return [];
+  }
+
+  const storeIds = typedStoreRows.map((row) => row.id);
+
+  const { data: snapshotRows, error: snapshotError } = await supabase
+    .from("store_latest_follower_snapshots")
+    .select("store_id, followers, captured_at")
+    .in("store_id", storeIds);
+
+  if (snapshotError) {
+    throw new Error(snapshotError.message);
+  }
+
+  const latestMap = new Map<string, StoreFollowerSnapshotRow>();
+  (snapshotRows ?? []).forEach((row) => {
+    if (!row) {
+      return;
+    }
+    const typedRow = row as StoreFollowerSnapshotRow;
+    latestMap.set(typedRow.store_id, typedRow);
+  });
+
+  return typedStoreRows
+    .map((row) => {
+      const area = areaMap.get(row.area_id);
+      if (!area) {
+        return null;
+      }
+      const latest = latestMap.get(row.id);
+      if (!latest) {
+        return null;
+      }
+
+      return {
+        storeId: row.id,
+        storeName: row.name,
+        areaId: row.area_id,
+        todofukenName: area.todofukenName,
+        downtownName: area.downtownName,
+        followers: Number(latest.followers ?? 0),
+        capturedAt: latest.captured_at ?? undefined,
+      } satisfies StoreRankingEntry;
+    })
+    .filter((entry): entry is StoreRankingEntry => entry !== null)
+    .sort((a, b) => {
+      if (b.followers !== a.followers) {
+        return b.followers - a.followers;
+      }
+      return a.storeName.localeCompare(b.storeName, "ja");
+    })
+    .slice(0, Math.max(1, limit));
 };

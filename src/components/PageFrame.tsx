@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 
+import { DEFAULT_STORE_RANKING_PREFECTURE } from "@/constants/storeRanking";
+
 const footerLinks = [
   { label: "ホーム", href: "/" },
   { label: "これはなに？", href: "/about" },
   { label: "広告プラン", href: "/ads" },
+  {
+    label: "店舗ランキング",
+    href: `/stores/prefectures/${encodeURIComponent(DEFAULT_STORE_RANKING_PREFECTURE)}`,
+  },
   { label: "更新情報", href: "/updates" },
   { label: "FAQ", href: "/faq" },
   { label: "お問い合わせ", href: "/inquery" },
