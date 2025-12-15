@@ -93,6 +93,9 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
           <span className="block text-sm whitespace-nowrap sm:text-[0.75em] sm:ml-4">
             SNSフォロワー数で見る本当の人気店舗
           </span>
+          <span className="mt-1 block text-xs text-white/60">
+            広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。
+          </span>
         </h1>
       </section>
 
