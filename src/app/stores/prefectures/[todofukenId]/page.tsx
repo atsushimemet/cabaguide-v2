@@ -111,6 +111,8 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
           </span>
           <span className="mt-1 block text-xs text-white/60">
             広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。
+            <br />
+            Instagram/TikTokで有名・人気店舗を見つけよう！
           </span>
         </h1>
       </section>
