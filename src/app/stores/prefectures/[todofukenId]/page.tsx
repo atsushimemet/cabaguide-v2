@@ -6,6 +6,7 @@ import { PageFrame } from "@/components/PageFrame";
 import { DEFAULT_STORE_RANKING_PREFECTURE, STORE_RANKING_PAGE_SIZE } from "@/constants/storeRanking";
 import { getPrefectureList } from "@/lib/areas";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
+import { StructuredDataScript, buildStoreRankingStructuredData } from "@/lib/structuredData";
 import { getStoreFollowerRankingsByPrefecture } from "@/lib/stores";
 
 type StoreRankingPageProps = {
@@ -79,6 +80,18 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
   const year = new Date().getFullYear();
   const lastUpdatedLabel = await getRankingLastUpdatedLabel();
   const lastUpdatedText = `最終更新：${lastUpdatedLabel ?? "更新準備中"}`;
+  const structuredData =
+    rankings.length > 0
+      ? buildStoreRankingStructuredData({
+          name: `【${year}年最新】${prefecture}のキャバクラ店舗ランキング`,
+          description: `${prefecture}エリアのキャバクラ店舗を在籍キャストのSNSフォロワー数合計で順位付けしたcabaguideのランキングです。`,
+          url: `/stores/prefectures/${encodeURIComponent(prefecture)}`,
+          stores: rankings.map((entry) => ({
+            ...entry,
+            url: `/stores/${entry.storeId}`,
+          })),
+        })
+      : null;
 
   return (
     <PageFrame mainClassName="gap-10">
@@ -198,6 +211,8 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
           </div>
         )}
       </section>
+
+      {structuredData && <StructuredDataScript data={structuredData} />}
     </PageFrame>
   );
 }

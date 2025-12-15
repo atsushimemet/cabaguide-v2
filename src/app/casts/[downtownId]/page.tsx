@@ -8,6 +8,7 @@ import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { getPaginatedCasts, PAGE_SIZE } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
+import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
 
 type CastListPageParams = Promise<{
   downtownId: string;
@@ -76,6 +77,19 @@ export default async function CastListPage({ params, searchParams }: CastListPag
 
   const pageNumbers = Array.from({ length: totalPages }).map((_, index) => index + 1);
   const currentYear = new Date().getFullYear();
+  const areaLabel = `${area.todofukenName} ${area.downtownName}`;
+  const startPosition = (currentPage - 1) * PAGE_SIZE;
+  const pagePath = currentPage > 1 ? `/casts/${downtownId}?page=${currentPage}` : `/casts/${downtownId}`;
+  const structuredData =
+    casts.length > 0
+      ? buildCastRankingStructuredData({
+          name: `【${currentYear}年最新】${areaLabel}のキャバクラキャストランキング`,
+          description: `${areaLabel}のキャバクラキャストをSNSフォロワー数で順位付けしたcabaguide独自ランキングです。`,
+          url: pagePath,
+          casts,
+          startPosition,
+        })
+      : null;
 
   return (
     <PageFrame mainClassName="gap-10">
@@ -172,6 +186,8 @@ export default async function CastListPage({ params, searchParams }: CastListPag
           トップページに戻る
         </Link>
       </div>
+
+      {structuredData && <StructuredDataScript data={structuredData} />}
     </PageFrame>
   );
 }
