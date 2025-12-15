@@ -11,6 +11,16 @@ import { AGE_OPTIONS } from "@/lib/adminOptions";
 type StoreOption = {
   id: string;
   name: string;
+  areaId?: number | null;
+  todofukenName?: string | null;
+  downtownName?: string | null;
+};
+
+const formatStoreLabel = (store: StoreOption) => {
+  const prefecture = store.todofukenName?.trim();
+  const downtown = store.downtownName?.trim();
+  const areaLabel = [prefecture, downtown].filter(Boolean).join(" ");
+  return areaLabel ? `${areaLabel} ${store.name}` : store.name;
 };
 
 type CastRow = {
@@ -49,7 +59,7 @@ export default function AdminCastsPage() {
 
   const storeMap = useMemo(() => {
     const map = new Map<string, string>();
-    stores.forEach((store) => map.set(store.id, store.name));
+    stores.forEach((store) => map.set(store.id, formatStoreLabel(store)));
     return map;
   }, [stores]);
 
@@ -64,7 +74,14 @@ export default function AdminCastsPage() {
       }
 
       const storeRows = Array.isArray(payload?.stores) ? (payload.stores as StoreOption[]) : [];
-      const sortedRows = [...storeRows].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+      const sortedRows = [...storeRows].sort((a, b) => {
+        const areaA = Number.isFinite(a.areaId) ? Number(a.areaId) : Number.MAX_SAFE_INTEGER;
+        const areaB = Number.isFinite(b.areaId) ? Number(b.areaId) : Number.MAX_SAFE_INTEGER;
+        if (areaA !== areaB) {
+          return areaA - areaB;
+        }
+        return formatStoreLabel(a).localeCompare(formatStoreLabel(b), "ja");
+      });
       setStores(sortedRows);
     } catch (err) {
       const message = err instanceof Error ? err.message : "店舗一覧の取得に失敗しました";
@@ -192,7 +209,7 @@ export default function AdminCastsPage() {
                 <option value="">店舗を選択</option>
                 {stores.map((store) => (
                   <option key={store.id} value={store.id}>
-                    {store.name}
+                    {formatStoreLabel(store)}
                   </option>
                 ))}
               </select>

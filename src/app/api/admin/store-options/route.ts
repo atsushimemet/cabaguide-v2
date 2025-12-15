@@ -22,14 +22,24 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from("stores")
-      .select("id, name")
+      .select("id, name, area_id, area:area_id (id, todofuken_name, downtown_name)")
+      .order("area_id", { ascending: true })
       .order("name", { ascending: true });
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return NextResponse.json({ stores: data ?? [] });
+    const stores =
+      data?.map((row) => ({
+        id: row.id,
+        name: row.name,
+        areaId: row.area?.id ?? null,
+        todofukenName: row.area?.todofuken_name ?? null,
+        downtownName: row.area?.downtown_name ?? null,
+      })) ?? [];
+
+    return NextResponse.json({ stores });
   } catch (error) {
     console.error("[admin/store-options][GET]", error);
     const message = error instanceof Error ? error.message : "店舗一覧の取得に失敗しました";
