@@ -7,6 +7,7 @@ import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { getPaginatedCasts, PAGE_SIZE } from "@/lib/casts";
+import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 
 type CastListPageParams = Promise<{
   downtownId: string;
@@ -70,6 +71,8 @@ export default async function CastListPage({ params, searchParams }: CastListPag
     requestedPage,
     PAGE_SIZE
   );
+  const lastUpdatedLabel = await getRankingLastUpdatedLabel();
+  const lastUpdatedText = `最終更新：${lastUpdatedLabel ?? "更新準備中"}`;
 
   const pageNumbers = Array.from({ length: totalPages }).map((_, index) => index + 1);
   const currentYear = new Date().getFullYear();
@@ -104,6 +107,10 @@ export default async function CastListPage({ params, searchParams }: CastListPag
       />
 
       <section className="space-y-4">
+        <div className="space-y-1 text-sm text-white/70">
+          <p>キャスト画像をタップして、詳細プロフィールにアクセス。</p>
+          <p className="text-xs text-white/50">{lastUpdatedText}</p>
+        </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {casts.map((cast, index) => {
             const storeReturnParams = new URLSearchParams({
