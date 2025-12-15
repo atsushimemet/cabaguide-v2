@@ -73,7 +73,7 @@ const AreaSearchCTA = ({ sectionId }: AreaSearchCTAProps) => {
       <div className="flex flex-1 flex-col gap-2">
         <h2 className="text-2xl font-semibold text-white">エリアから探す</h2>
         <p className="text-sm text-white/70">
-          今夜のとっておきを北海道から九州まで一気にチェック。
+          今夜のとっておきを北海道から沖縄まで一気にチェック。
         </p>
       </div>
       <Link
