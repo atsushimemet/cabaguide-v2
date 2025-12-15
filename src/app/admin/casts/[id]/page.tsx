@@ -63,6 +63,11 @@ export default function CastDetailPage() {
   const [socialError, setSocialError] = useState<string | null>(null);
   const [isSocialSubmitting, setIsSocialSubmitting] = useState(false);
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [nameUpdateStatus, setNameUpdateStatus] = useState<string | null>(null);
+  const [nameUpdateError, setNameUpdateError] = useState<string | null>(null);
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
 
   const fetchCastDetail = useCallback(async () => {
     if (!castId) {
@@ -98,6 +103,10 @@ export default function CastDetailPage() {
   useEffect(() => {
     fetchCastDetail();
   }, [fetchCastDetail]);
+
+  useEffect(() => {
+    setNameInput(cast?.name ?? "");
+  }, [cast?.name]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -145,6 +154,65 @@ export default function CastDetailPage() {
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleStartNameEdit = () => {
+    if (!cast) {
+      return;
+    }
+    setNameInput(cast.name);
+    setIsEditingName(true);
+    setNameUpdateError(null);
+    setNameUpdateStatus(null);
+  };
+
+  const handleCancelNameEdit = () => {
+    setIsEditingName(false);
+    setNameInput(cast?.name ?? "");
+    setNameUpdateError(null);
+  };
+
+  const handleNameSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!castId) {
+      setNameUpdateError("cast_id が不明です");
+      return;
+    }
+    const trimmed = nameInput.trim();
+    if (!trimmed) {
+      setNameUpdateError("キャスト名を入力してください");
+      return;
+    }
+
+    setIsUpdatingName(true);
+    setNameUpdateError(null);
+    setNameUpdateStatus(null);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ name: trimmed }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "キャスト名の更新に失敗しました");
+      }
+
+      setNameUpdateStatus("キャスト名を更新しました");
+      setIsEditingName(false);
+      setCast((prev) => (prev ? { ...prev, name: trimmed } : prev));
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "キャスト名の更新に失敗しました";
+      setNameUpdateError(message);
+    } finally {
+      setIsUpdatingName(false);
     }
   };
 
@@ -246,7 +314,61 @@ export default function CastDetailPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-white/40">Cast detail</p>
-              <h1 className="text-2xl font-semibold">{cast?.name ?? "キャスト詳細"}</h1>
+              {isEditingName ? (
+                <form className="mt-2 space-y-3" onSubmit={handleNameSubmit}>
+                  <label className="block text-sm text-white/70">
+                    キャスト名を編集
+                    <input
+                      className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                      value={nameInput}
+                      onChange={(event) => setNameInput(event.target.value)}
+                      placeholder="キャスト名"
+                    />
+                  </label>
+                  {nameUpdateError && (
+                    <p className="text-sm text-red-300">{nameUpdateError}</p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="submit"
+                      className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white"
+                      disabled={isUpdatingName}
+                    >
+                      {isUpdatingName ? "更新中..." : "保存"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelNameEdit}
+                      className="rounded-full border border-white/30 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+                      disabled={isUpdatingName}
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={cast ? handleStartNameEdit : undefined}
+                    className="text-left"
+                    disabled={!cast}
+                  >
+                    <h1 className="text-2xl font-semibold text-white transition hover:text-indigo-200">
+                      {cast?.name ?? "キャスト詳細"}
+                    </h1>
+                    {cast && (
+                      <p className="text-xs text-white/60">キャスト名をクリックして編集</p>
+                    )}
+                  </button>
+                  {nameUpdateStatus && (
+                    <p className="mt-2 text-sm text-emerald-200">{nameUpdateStatus}</p>
+                  )}
+                  {nameUpdateError && !cast && (
+                    <p className="mt-2 text-sm text-red-300">{nameUpdateError}</p>
+                  )}
+                </>
+              )}
               {store && <p className="text-sm text-white/70">所属店舗: {store.name}</p>}
             </div>
             <div className="flex gap-2">

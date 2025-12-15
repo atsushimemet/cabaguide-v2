@@ -10,6 +10,10 @@ type SnapshotRow = {
   captured_at: string;
 };
 
+type CastUpdatePayload = {
+  name?: string;
+};
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> | { id: string } }
@@ -103,6 +107,62 @@ export async function GET(
   } catch (error) {
     console.error(`[admin/casts/${castId}]`, error);
     const message = error instanceof Error ? error.message : "キャスト詳細の取得に失敗しました";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  context: { params: Promise<{ id: string }> | { id: string } }
+) {
+  const unauthorized = await ensureAdminSession();
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  const params = await context.params;
+  const castId = params.id;
+
+  if (!castId) {
+    return NextResponse.json({ error: "cast_id が指定されていません" }, { status: 400 });
+  }
+
+  const payload = (await request.json().catch(() => null)) as CastUpdatePayload | null;
+  const name = typeof payload?.name === "string" ? payload.name.trim() : "";
+  if (!name) {
+    return NextResponse.json({ error: "キャスト名を入力してください" }, { status: 400 });
+  }
+
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("casts")
+      .update({ name })
+      .eq("id", castId)
+      .select("id, name")
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: "キャストが見つかりません" }, { status: 404 });
+    }
+
+    return NextResponse.json({ cast: data });
+  } catch (error) {
+    console.error(`[admin/casts/${castId}][PATCH]`, error);
+    const message = error instanceof Error ? error.message : "キャスト名の更新に失敗しました";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
