@@ -4,6 +4,7 @@ import { AdBanner } from "@/components/AdBanner";
 import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getTopCasts } from "@/lib/casts";
+import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,9 @@ type AreaSearchCTAProps = {
 
 export default async function Home() {
   const topCasts = await getTopCasts();
+  const lastUpdatedLabel = await getRankingLastUpdatedLabel();
+  const lastUpdatedText = `最終更新：${lastUpdatedLabel ?? "更新準備中"}`;
+
   return (
     <PageFrame mainClassName="gap-12">
       <AreaSearchCTA sectionId="area-search" />
@@ -33,6 +37,7 @@ export default async function Home() {
           <p className="text-sm text-white/70">
             キャスト画像をタップして、詳細プロフィールにアクセス。
           </p>
+          <p className="text-xs text-white/50">{lastUpdatedText}</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {topCasts.map((cast, index) => {

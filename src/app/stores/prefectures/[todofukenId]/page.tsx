@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PageFrame } from "@/components/PageFrame";
 import { DEFAULT_STORE_RANKING_PREFECTURE, STORE_RANKING_PAGE_SIZE } from "@/constants/storeRanking";
 import { getPrefectureList } from "@/lib/areas";
+import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 import { getStoreFollowerRankingsByPrefecture } from "@/lib/stores";
 
 type StoreRankingPageProps = {
@@ -76,6 +77,8 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
 
   const rankings = await getStoreFollowerRankingsByPrefecture(prefecture, STORE_RANKING_PAGE_SIZE);
   const year = new Date().getFullYear();
+  const lastUpdatedLabel = await getRankingLastUpdatedLabel();
+  const lastUpdatedText = `最終更新：${lastUpdatedLabel ?? "更新準備中"}`;
 
   return (
     <PageFrame mainClassName="gap-10">
@@ -131,9 +134,11 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
         <div className="flex flex-col gap-1">
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">TOP STORES</p>
           <h2 className="text-2xl font-semibold">{prefecture}の人気店舗 TOP {STORE_RANKING_PAGE_SIZE}</h2>
-          <p className="text-sm text-white/70">
-            キャバクラの在籍キャストSNSフォロワー合計をスコア化し、フォロワー数の多い順に並べています。
-          </p>
+          <div className="space-y-1 text-sm text-white/70">
+            <p>キャバクラの在籍キャストSNSフォロワー合計をスコア化し、フォロワー数の多い順に並べています。</p>
+            <p>店舗画像をタップして、詳細プロフィールにアクセス。</p>
+          </div>
+          <p className="text-xs text-white/50">{lastUpdatedText}</p>
         </div>
 
         {rankings.length === 0 ? (
