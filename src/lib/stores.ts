@@ -293,28 +293,31 @@ export const getStoreFollowerRankingsByPrefecture = async (
     latestMap.set(typedRow.store_id, typedRow);
   });
 
-  return typedStoreRows
-    .map((row) => {
-      const area = areaMap.get(row.area_id);
-      if (!area) {
-        return null;
-      }
-      const latest = latestMap.get(row.id);
-      if (!latest) {
-        return null;
-      }
+  const rankingEntries = typedStoreRows.reduce<StoreRankingEntry[]>((acc, row) => {
+    const area = areaMap.get(row.area_id);
+    if (!area) {
+      return acc;
+    }
 
-      return {
-        storeId: row.id,
-        storeName: row.name,
-        areaId: row.area_id,
-        todofukenName: area.todofukenName,
-        downtownName: area.downtownName,
-        followers: Number(latest.followers ?? 0),
-        capturedAt: latest.captured_at ?? undefined,
-      } satisfies StoreRankingEntry;
-    })
-    .filter((entry): entry is StoreRankingEntry => entry !== null)
+    const latest = latestMap.get(row.id);
+    if (!latest) {
+      return acc;
+    }
+
+    acc.push({
+      storeId: row.id,
+      storeName: row.name,
+      areaId: row.area_id,
+      todofukenName: area.todofukenName,
+      downtownName: area.downtownName,
+      followers: Number(latest.followers ?? 0),
+      capturedAt: latest.captured_at ?? undefined,
+    });
+
+    return acc;
+  }, []);
+
+  return rankingEntries
     .sort((a, b) => {
       if (b.followers !== a.followers) {
         return b.followers - a.followers;
