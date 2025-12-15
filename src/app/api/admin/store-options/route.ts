@@ -3,11 +3,17 @@ import { NextResponse } from "next/server";
 import { ensureAdminSession } from "@/lib/adminAuth";
 import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
+type StoreAreaRow = {
+  id: number;
+  todofuken_name: string;
+  downtown_name: string;
+};
+
 type StoreOptionRow = {
   id: string;
   name: string;
   area_id: number;
-  area: { id: number; todofuken_name: string; downtown_name: string } | null;
+  area: StoreAreaRow | StoreAreaRow[] | null;
 };
 
 export async function GET() {
@@ -38,13 +44,17 @@ export async function GET() {
     }
 
     const stores =
-      (data as StoreOptionRow[] | null)?.map((row) => ({
-        id: row.id,
-        name: row.name,
-        areaId: row.area?.id ?? row.area_id ?? null,
-        todofukenName: row.area?.todofuken_name ?? null,
-        downtownName: row.area?.downtown_name ?? null,
-      })) ?? [];
+      (data as StoreOptionRow[] | null)?.map((row) => {
+        const area = Array.isArray(row.area) ? row.area[0] ?? null : row.area ?? null;
+
+        return {
+          id: row.id,
+          name: row.name,
+          areaId: area?.id ?? row.area_id ?? null,
+          todofukenName: area?.todofuken_name ?? null,
+          downtownName: area?.downtown_name ?? null,
+        };
+      }) ?? [];
 
     return NextResponse.json({ stores });
   } catch (error) {
