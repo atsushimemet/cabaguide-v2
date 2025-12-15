@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -7,15 +8,46 @@ import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { getPaginatedCasts, PAGE_SIZE } from "@/lib/casts";
 
+type CastListPageParams = Promise<{
+  downtownId: string;
+}>;
+
+type CastListSearchParams = Promise<{
+  page?: string;
+  prefecture?: string;
+}>;
+
 type CastListPageProps = {
-  params: Promise<{
-    downtownId: string;
-  }>;
-  searchParams: Promise<{
-    page?: string;
-    prefecture?: string;
-  }>;
+  params: CastListPageParams;
+  searchParams: CastListSearchParams;
 };
+
+const buildCastRankingTitle = (year: number, todofuken: string, downtown: string) =>
+  `【${year}年最新】${todofuken} ${downtown}のキャバクラキャストランキング｜SNSフォロワー数で見る本当の人気キャスト`;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: CastListPageParams;
+}): Promise<Metadata> {
+  const paramsData = await params;
+  const downtownId = Number(paramsData.downtownId);
+
+  if (Number.isNaN(downtownId)) {
+    return { title: "キャストランキング" };
+  }
+
+  const area = await getAreaById(downtownId);
+
+  if (!area) {
+    return { title: "キャストランキング" };
+  }
+
+  const currentYear = new Date().getFullYear();
+  return {
+    title: buildCastRankingTitle(currentYear, area.todofukenName, area.downtownName),
+  };
+}
 
 export default async function CastListPage({ params, searchParams }: CastListPageProps) {
   const paramsData = await params;
@@ -40,6 +72,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
   );
 
   const pageNumbers = Array.from({ length: totalPages }).map((_, index) => index + 1);
+  const currentYear = new Date().getFullYear();
 
   return (
     <PageFrame mainClassName="gap-10">
@@ -47,8 +80,16 @@ export default async function CastListPage({ params, searchParams }: CastListPag
         <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
           STEP 3
         </p>
-        <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">
-          {area.todofukenName} {area.downtownName} のキャスト
+        <h1 className="mt-4 text-xl font-semibold leading-[1.4] sm:text-3xl">
+          <span className="block text-base whitespace-nowrap sm:text-[1em] sm:inline">
+            {`【${currentYear}年最新】${area.todofukenName} ${area.downtownName}`}
+          </span>
+          <span className="block text-base sm:inline sm:ml-2 sm:whitespace-nowrap sm:text-[1em]">
+            キャバクラキャストランキング
+          </span>
+          <span className="block text-sm whitespace-nowrap sm:text-[0.75em] sm:ml-4">
+            SNSフォロワー数で見る本当の人気キャスト
+          </span>
         </h1>
       </header>
 
