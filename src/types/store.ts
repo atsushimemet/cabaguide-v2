@@ -21,3 +21,13 @@ export type Store = {
   basePricing: StoreBasePricing;
   timeSlots: StoreTimeSlotPricing[];
 };
+
+export type StoreRankingEntry = {
+  storeId: string;
+  storeName: string;
+  areaId: number;
+  todofukenName: string;
+  downtownName: string;
+  followers: number;
+  capturedAt?: string;
+};

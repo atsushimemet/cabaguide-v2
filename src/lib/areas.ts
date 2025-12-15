@@ -77,9 +77,17 @@ export const findDowntownsByPrefecture = async (prefectureName: string): Promise
 
 export const getPrefectureList = async (): Promise<string[]> => {
   const areas = await fetchAreas();
-  return Array.from(new Set(areas.map((area) => area.todofukenName))).sort((a, b) =>
-    a.localeCompare(b, "ja")
-  );
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+
+  areas.forEach((area) => {
+    if (!seen.has(area.todofukenName)) {
+      seen.add(area.todofukenName);
+      ordered.push(area.todofukenName);
+    }
+  });
+
+  return ordered;
 };
 
 export const getAreaById = async (id: number): Promise<Area | undefined> => {

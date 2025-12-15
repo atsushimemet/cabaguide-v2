@@ -1,0 +1,2 @@
+export const DEFAULT_STORE_RANKING_PREFECTURE = "東京都";
+export const STORE_RANKING_PAGE_SIZE = 10;
