@@ -5,6 +5,7 @@ import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getTopCasts } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
+import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,15 @@ export default async function Home() {
   const topCasts = await getTopCasts();
   const lastUpdatedLabel = await getRankingLastUpdatedLabel();
   const lastUpdatedText = `最終更新：${lastUpdatedLabel ?? "更新準備中"}`;
+  const topCastStructuredData =
+    topCasts.length > 0
+      ? buildCastRankingStructuredData({
+          name: "cabaguide 今週のベスト10",
+          description: "Instagram・TikTokのフォロワー数で集計したcabaguideのキャストランキングTOP10。",
+          url: "/",
+          casts: topCasts,
+        })
+      : null;
 
   return (
     <PageFrame mainClassName="gap-12">
@@ -66,6 +76,8 @@ export default async function Home() {
       />
 
       <AreaSearchCTA />
+
+      {topCastStructuredData && <StructuredDataScript data={topCastStructuredData} />}
     </PageFrame>
   );
 }
