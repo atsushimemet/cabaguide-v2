@@ -3,6 +3,13 @@ import { NextResponse } from "next/server";
 import { ensureAdminSession } from "@/lib/adminAuth";
 import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
+type StoreOptionRow = {
+  id: string;
+  name: string;
+  area_id: number;
+  area: { id: number; todofuken_name: string; downtown_name: string } | null;
+};
+
 export async function GET() {
   const unauthorized = await ensureAdminSession();
   if (unauthorized) {
@@ -31,10 +38,10 @@ export async function GET() {
     }
 
     const stores =
-      data?.map((row) => ({
+      (data as StoreOptionRow[] | null)?.map((row) => ({
         id: row.id,
         name: row.name,
-        areaId: row.area?.id ?? null,
+        areaId: row.area?.id ?? row.area_id ?? null,
         todofukenName: row.area?.todofuken_name ?? null,
         downtownName: row.area?.downtown_name ?? null,
       })) ?? [];
