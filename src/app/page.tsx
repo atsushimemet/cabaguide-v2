@@ -35,7 +35,7 @@ export default async function Home() {
           </p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {topCasts.map((cast) => {
+          {topCasts.map((cast, index) => {
             const storeReturnParams = new URLSearchParams({
               returnTo: "/",
               returnLabel: "トップページに戻る",
@@ -46,6 +46,7 @@ export default async function Home() {
                 cast={cast}
                 detailHref={`${cast.castLink}?from=home`}
                 storeHref={`${cast.storeLink}?${storeReturnParams.toString()}`}
+                rank={index + 1}
               />
             );
           })}

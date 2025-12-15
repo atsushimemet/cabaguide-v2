@@ -142,13 +142,24 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
           </div>
         ) : (
           <div className="space-y-4">
-            {rankings.map((entry) => (
+            {rankings.map((entry, index) => (
               <article
                 key={entry.storeId}
                 className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-5 transition hover:border-fuchsia-400/40"
               >
                 <div className="flex flex-1 flex-col gap-3">
-                  <div className="h-32 w-full rounded-2xl bg-gradient-to-br from-fuchsia-500/40 via-purple-500/30 to-cyan-400/30" />
+                  <div className="relative h-32 w-full rounded-2xl bg-gradient-to-br from-fuchsia-500/40 via-purple-500/30 to-cyan-400/30">
+                    {index < 3 && (
+                      <span
+                        className={`absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${
+                          index === 0 ? "bg-[#fcd34d]" : "bg-white/90"
+                        }`}
+                      >
+                        <span aria-hidden>👑</span>
+                        <span className="sr-only">{`第${index + 1}位`}</span>
+                      </span>
+                    )}
+                  </div>
                   <div>
                     <Link
                       href={{

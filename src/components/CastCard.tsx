@@ -11,14 +11,25 @@ export type CastCardProps = {
   cast: Cast;
   detailHref?: string;
   storeHref?: string;
+  rank?: number;
 };
 
-export const CastCard = ({ cast, detailHref, storeHref }: CastCardProps) => {
+export const CastCard = ({ cast, detailHref, storeHref, rank }: CastCardProps) => {
   const href = detailHref ?? cast.castLink;
   const storeLink = storeHref ?? cast.storeLink;
+  const showCrown = typeof rank === "number" && rank >= 1 && rank <= 3;
+  const crownBg = rank === 1 ? "bg-[#fcd34d]" : "bg-white/90";
   return (
     <article className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_45px_rgba(15,6,33,0.65)] backdrop-blur-xl">
       <Link href={href} className="relative block overflow-hidden rounded-2xl">
+        {showCrown && (
+          <span
+            className={`absolute left-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${crownBg}`}
+          >
+            <span aria-hidden>👑</span>
+            <span className="sr-only">{`第${rank}位`}</span>
+          </span>
+        )}
         <span
           className="absolute right-3 top-3 z-10 rounded-full px-3 py-1 text-xs font-semibold text-black"
           style={{ backgroundColor: cast.accent }}

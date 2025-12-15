@@ -105,17 +105,19 @@ export default async function CastListPage({ params, searchParams }: CastListPag
 
       <section className="space-y-4">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {casts.map((cast) => {
+          {casts.map((cast, index) => {
             const storeReturnParams = new URLSearchParams({
               returnTo: `/casts/${downtownId}?page=${currentPage}`,
               returnLabel: `${area.todofukenName} ${area.downtownName} のキャスト一覧に戻る`,
             });
+            const globalRank = (currentPage - 1) * PAGE_SIZE + (index + 1);
             return (
               <CastCard
                 key={cast.id}
                 cast={cast}
                 detailHref={`${cast.castLink}?from=list&page=${currentPage}`}
                 storeHref={`${cast.storeLink}?${storeReturnParams.toString()}`}
+                rank={globalRank}
               />
             );
           })}
