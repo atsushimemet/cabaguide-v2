@@ -16,6 +16,11 @@ type StoreOption = {
   downtownName?: string | null;
 };
 
+type PrefectureOption = {
+  name: string;
+  minAreaId: number;
+};
+
 const formatStoreLabel = (store: StoreOption) => {
   const prefecture = store.todofukenName?.trim();
   const downtown = store.downtownName?.trim();
@@ -56,12 +61,100 @@ export default function AdminCastsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [storeError, setStoreError] = useState<string | null>(null);
   const [castError, setCastError] = useState<string | null>(null);
+  const [selectedPrefecture, setSelectedPrefecture] = useState("");
+  const [selectedDowntownId, setSelectedDowntownId] = useState("");
 
   const storeMap = useMemo(() => {
     const map = new Map<string, string>();
     stores.forEach((store) => map.set(store.id, formatStoreLabel(store)));
     return map;
   }, [stores]);
+
+  const storeMetaMap = useMemo(() => {
+    const map = new Map<string, StoreOption>();
+    stores.forEach((store) => map.set(store.id, store));
+    return map;
+  }, [stores]);
+
+  const prefectureOptions = useMemo(() => {
+    const map = new Map<string, PrefectureOption>();
+    stores.forEach((store) => {
+      if (!store.todofukenName || !Number.isFinite(store.areaId)) {
+        return;
+      }
+      const areaId = Number(store.areaId);
+      const existing = map.get(store.todofukenName);
+      if (!existing || areaId < existing.minAreaId) {
+        map.set(store.todofukenName, { name: store.todofukenName, minAreaId: areaId });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.minAreaId - b.minAreaId);
+  }, [stores]);
+
+  const downtownOptions = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        value: string;
+        label: string;
+      }
+    >();
+
+    stores.forEach((store) => {
+      if (!Number.isFinite(store.areaId) || !store.downtownName) {
+        return;
+      }
+      if (selectedPrefecture && store.todofukenName !== selectedPrefecture) {
+        return;
+      }
+      const key = String(store.areaId);
+      if (!map.has(key)) {
+        const areaLabel = [store.todofukenName, store.downtownName].filter(Boolean).join(" ");
+        map.set(key, { value: key, label: areaLabel || `area_id: ${key}` });
+      }
+    });
+
+    return Array.from(map.entries())
+      .sort((a, b) => Number(a[0]) - Number(b[0]))
+      .map(([, value]) => value);
+  }, [stores, selectedPrefecture]);
+
+  useEffect(() => {
+    if (!selectedDowntownId) {
+      return;
+    }
+    const exists = downtownOptions.some((option) => option.value === selectedDowntownId);
+    if (!exists) {
+      setSelectedDowntownId("");
+    }
+  }, [selectedDowntownId, downtownOptions]);
+
+  const filteredCasts = useMemo(() => {
+    const hasPrefFilter = Boolean(selectedPrefecture);
+    const hasDowntownFilter = Boolean(selectedDowntownId);
+    if (!hasPrefFilter && !hasDowntownFilter) {
+      return casts;
+    }
+
+    return casts.filter((cast) => {
+      const store = storeMetaMap.get(cast.store_id);
+      if (selectedPrefecture && store?.todofukenName !== selectedPrefecture) {
+        return false;
+      }
+      if (selectedDowntownId) {
+        const areaIdValue = store?.areaId !== undefined && store?.areaId !== null ? String(store.areaId) : "";
+        if (areaIdValue !== selectedDowntownId) {
+          return false;
+        }
+      }
+      return Boolean(store);
+    });
+  }, [casts, selectedPrefecture, selectedDowntownId, storeMetaMap]);
+
+  const handleClearFilters = () => {
+    setSelectedPrefecture("");
+    setSelectedDowntownId("");
+  };
 
   const fetchStores = useCallback(async () => {
     setStoreError(null);
@@ -275,6 +368,54 @@ export default function AdminCastsPage() {
             </button>
           </div>
 
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <label className="text-sm text-white/70">
+              都道府県で絞り込む
+              <select
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                value={selectedPrefecture}
+                onChange={(event) => {
+                  setSelectedPrefecture(event.target.value);
+                }}
+              >
+                <option value="">すべての都道府県</option>
+                {prefectureOptions.map((prefecture) => (
+                  <option key={prefecture.name} value={prefecture.name}>
+                    {prefecture.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-sm text-white/70">
+              繁華街で絞り込む
+              <select
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                value={selectedDowntownId}
+                onChange={(event) => setSelectedDowntownId(event.target.value)}
+                disabled={downtownOptions.length === 0}
+              >
+                <option value="">すべての繁華街</option>
+                {downtownOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="w-full rounded-2xl border border-white/20 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!selectedPrefecture && !selectedDowntownId}
+              >
+                フィルターをクリア
+              </button>
+            </div>
+          </div>
+
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {castError && (
               <p className="rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
@@ -282,12 +423,14 @@ export default function AdminCastsPage() {
               </p>
             )}
 
-            {casts.length === 0 && !isLoading ? (
+            {filteredCasts.length === 0 && !isLoading ? (
               <p className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
-                まだキャストが登録されていません。
+                {casts.length === 0
+                  ? "まだキャストが登録されていません。"
+                  : "該当するキャストが見つかりません。"}
               </p>
             ) : (
-              casts.map((cast) => (
+              filteredCasts.map((cast) => (
                 <Link
                   key={cast.id}
                   href={`/admin/casts/${cast.id}`}

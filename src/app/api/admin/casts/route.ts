@@ -30,8 +30,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("casts")
       .select("id, name, store_id, age, image_url, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
+      .order("created_at", { ascending: false });
 
     if (error) {
       throw new Error(error.message);
