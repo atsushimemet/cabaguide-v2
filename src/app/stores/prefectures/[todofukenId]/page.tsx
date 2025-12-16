@@ -6,8 +6,8 @@ import { PageFrame } from "@/components/PageFrame";
 import { DEFAULT_STORE_RANKING_PREFECTURE, STORE_RANKING_PAGE_SIZE } from "@/constants/storeRanking";
 import { getPrefectureList } from "@/lib/areas";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
-import { StructuredDataScript, buildStoreRankingStructuredData } from "@/lib/structuredData";
 import { getStoreFollowerRankingsByPrefecture } from "@/lib/stores";
+import { StructuredDataScript, buildStoreRankingStructuredData } from "@/lib/structuredData";
 
 type StoreRankingPageProps = {
   params: Promise<{
@@ -110,9 +110,7 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
             SNSフォロワー数で見る本当の人気店舗
           </span>
           <span className="mt-1 block text-xs text-white/60">
-            広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。
-            <br />
-            Instagram/TikTokで有名・人気店舗を見つけよう！
+            広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。Instagram/TikTokで有名・人気店舗を見つけよう！
           </span>
         </h1>
       </section>

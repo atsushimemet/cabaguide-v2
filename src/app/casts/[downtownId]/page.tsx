@@ -8,7 +8,7 @@ import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { getPaginatedCasts, PAGE_SIZE } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
-import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
+import { buildCastRankingStructuredData, StructuredDataScript } from "@/lib/structuredData";
 
 type CastListPageParams = Promise<{
   downtownId: string;
@@ -108,9 +108,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
             SNSフォロワー数で見る本当の人気キャスト
           </span>
           <span className="mt-1 block text-xs text-white/60">
-            広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。
-            <br />
-            Instagram/TikTokで有名・人気キャストを見つけよう！
+            広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。Instagram/TikTokで有名・人気キャストを見つけよう！
           </span>
         </h1>
       </header>
