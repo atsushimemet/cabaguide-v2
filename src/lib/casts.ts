@@ -1,4 +1,5 @@
 import { getAreaMap } from "@/lib/areas";
+import { fetchLatestFollowersByCastIds } from "@/lib/castFollowers";
 import { getServiceSupabaseClient } from "@/lib/supabaseServer";
 import { Cast } from "@/types/cast";
 import { Area } from "@/types/area";
@@ -35,13 +36,6 @@ type StoreRow = {
   phone: string;
 };
 
-type FollowersRow = {
-  cast_id: string;
-  platform: string;
-  followers: number;
-  captured_at: string;
-};
-
 const buildStoreMap = (rows: StoreRow[]) => {
   const map = new Map<string, StoreRow>();
   rows.forEach((row) => map.set(row.id, row));
@@ -54,33 +48,10 @@ const fetchLatestFollowerTotals = async (castIds: string[]): Promise<Record<stri
   }
 
   const supabase = getServiceSupabaseClient();
-  const { data, error } = await supabase
-    .from("cast_follower_snapshots")
-    .select("cast_id, platform, followers, captured_at")
-    .in("cast_id", castIds)
-    .order("captured_at", { ascending: false });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const latestMap: Record<string, { instagram?: number; tiktok?: number }> = {};
-
-  (data as FollowersRow[] | null)?.forEach((row) => {
-    const castId = row.cast_id;
-    if (!latestMap[castId]) {
-      latestMap[castId] = {};
-    }
-    if (row.platform === "instagram" && latestMap[castId].instagram === undefined) {
-      latestMap[castId].instagram = row.followers;
-    }
-    if (row.platform === "tiktok" && latestMap[castId].tiktok === undefined) {
-      latestMap[castId].tiktok = row.followers;
-    }
-  });
+  const followersMap = await fetchLatestFollowersByCastIds(supabase, castIds);
 
   const totals: Record<string, number> = {};
-  Object.entries(latestMap).forEach(([castId, followers]) => {
+  Object.entries(followersMap).forEach(([castId, followers]) => {
     totals[castId] = (followers.instagram ?? 0) + (followers.tiktok ?? 0);
   });
   return totals;

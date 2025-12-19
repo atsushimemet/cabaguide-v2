@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { ensureAdminSession } from "@/lib/adminAuth";
+import { fetchLatestFollowersByCastIds } from "@/lib/castFollowers";
 import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
-
-type FollowersRow = {
-  cast_id: string;
-  platform: string;
-  followers: number;
-  captured_at: string;
-};
 
 export async function GET() {
   const unauthorized = await ensureAdminSession();
@@ -38,33 +32,8 @@ export async function GET() {
 
     const casts = data ?? [];
     const castIds = casts.map((cast) => cast.id);
-    const followersMap: Record<string, { instagram?: number; tiktok?: number }> = {};
-
-    if (castIds.length > 0) {
-      const { data: followersData, error: followersError } = await supabase
-        .from("cast_follower_snapshots")
-        .select("cast_id, platform, followers, captured_at")
-        .in("cast_id", castIds)
-        .order("captured_at", { ascending: false });
-
-      if (followersError) {
-        throw new Error(followersError.message);
-      }
-
-      const rows = (followersData ?? []) as FollowersRow[];
-      for (const row of rows) {
-        const castId = row.cast_id;
-        if (!followersMap[castId]) {
-          followersMap[castId] = {};
-        }
-        if (row.platform === "instagram" && followersMap[castId].instagram === undefined) {
-          followersMap[castId].instagram = row.followers;
-        }
-        if (row.platform === "tiktok" && followersMap[castId].tiktok === undefined) {
-          followersMap[castId].tiktok = row.followers;
-        }
-      }
-    }
+    const followersMap =
+      castIds.length > 0 ? await fetchLatestFollowersByCastIds(supabase, castIds) : {};
 
     return NextResponse.json({ casts, followers: followersMap });
   } catch (error) {
