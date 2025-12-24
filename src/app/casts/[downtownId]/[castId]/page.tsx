@@ -194,7 +194,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
               <span className="text-xs uppercase tracking-[0.3em] text-white/50">STORE</span>
               <Link
                 href={storeDetailHref}
-                className="text-lg font-semibold transition hover:text-white"
+                className="text-lg font-semibold text-cyan-200 transition hover:text-white"
                 aria-label={`${detail.store.name} の店舗ページを開く`}
               >
                 {detail.store.name}
@@ -205,9 +205,14 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-cyan-200 transition hover:text-white"
               >
-                Google Mapで開く ↗
+                Google Map
               </Link>
-              <p>電話番号: {detail.store.phone}</p>
+              <a
+                href={`tel:${detail.store.phone.replace(/[^0-9+]/g, "")}`}
+                className="text-sm text-cyan-200 transition hover:text-white"
+              >
+                {detail.store.phone}
+              </a>
             </div>
           </div>
         </section>
