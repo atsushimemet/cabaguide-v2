@@ -16,6 +16,8 @@ type CastDetailPageProps = {
   searchParams: Promise<{
     from?: string;
     page?: string;
+    storeId?: string;
+    storePath?: string;
   }>;
 };
 
@@ -55,6 +57,8 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
   }
 
   const searchParamsData = (await searchParams) ?? {};
+  const source = searchParamsData.from;
+  const rawStorePath = typeof searchParamsData.storePath === "string" ? searchParamsData.storePath : null;
 
   const detail = await getCastDetail(downtownId, castId);
 
@@ -69,7 +73,6 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
   const instagramUrl = detail.sns.find((sns) => sns.platform === "instagram")?.url;
   const tiktokUrl = detail.sns.find((sns) => sns.platform === "tiktok")?.url;
 
-  const source = searchParamsData.from;
   const pageFromList = Number(searchParamsData.page ?? "");
   const hasValidPage = Number.isFinite(pageFromList) && pageFromList > 0;
   const castDetailBasePath = `/casts/${downtownId}/${castId}`;
@@ -88,6 +91,11 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
     returnLabel: "キャスト詳細に戻る",
   });
   const storeDetailHref = `/stores/${detail.store.id}?${storeBackParams.toString()}`;
+  const expectedStorePathPrefix = `/stores/${detail.store.id}`;
+  const storeBackLinkHref =
+    rawStorePath && rawStorePath.startsWith(expectedStorePathPrefix)
+      ? rawStorePath
+      : `/stores/${detail.store.id}`;
 
   const defaultBackLink = {
     href: `/casts/${downtownId}`,
@@ -102,6 +110,11 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
             href: hasValidPage ? `/casts/${downtownId}?page=${pageFromList}` : `/casts/${downtownId}`,
             label: `${area.todofukenName} ${area.downtownName} のキャスト一覧に戻る`,
           }
+        : source === "store"
+          ? {
+              href: storeBackLinkHref,
+              label: `${detail.store.name} の店舗詳細に戻る`,
+            }
         : defaultBackLink;
 
   return (

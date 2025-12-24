@@ -226,3 +226,32 @@ export const getTopCasts = async (limit = 10): Promise<Cast[]> => {
   mapped.sort((a, b) => b.followers - a.followers);
   return mapped.slice(0, limit);
 };
+
+export const getCastsByStoreId = async (storeId: string): Promise<Cast[]> => {
+  if (!storeId) {
+    return [];
+  }
+
+  const areaMap = await getAreaMap();
+  const castRows = await fetchCastRowsByStoreIds([storeId]);
+  const followerTotals = await fetchLatestFollowerTotals(castRows.map((row) => row.id));
+  const storeRows = await fetchStoreRowsByIds([storeId]);
+  const storeMap = buildStoreMap(storeRows);
+
+  const casts: Cast[] = [];
+  castRows.forEach((row, index) => {
+    const cast = mapCastRowToCard(
+      row,
+      storeMap.get(row.store_id),
+      areaMap,
+      followerTotals[row.id] ?? 0,
+      index
+    );
+    if (cast) {
+      casts.push(cast);
+    }
+  });
+
+  casts.sort((a, b) => b.followers - a.followers);
+  return casts;
+};
