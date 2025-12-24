@@ -50,21 +50,9 @@ export default async function Home() {
           <p className="text-xs text-white/50">{lastUpdatedText}</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {topCasts.map((cast, index) => {
-            const storeReturnParams = new URLSearchParams({
-              returnTo: "/",
-              returnLabel: "トップページに戻る",
-            });
-            return (
-              <CastCard
-                key={cast.id}
-                cast={cast}
-                detailHref={`${cast.castLink}?from=home`}
-                storeHref={`${cast.storeLink}?${storeReturnParams.toString()}`}
-                rank={index + 1}
-              />
-            );
-          })}
+          {topCasts.map((cast, index) => (
+            <CastCard key={cast.id} cast={cast} detailHref={`${cast.castLink}?from=home`} rank={index + 1} />
+          ))}
         </div>
       </section>
 

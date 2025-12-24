@@ -205,7 +205,6 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
                 key={cast.id}
                 cast={cast}
                 detailHref={`${cast.castLink}?${castDetailQueryString}`}
-                storeHref={storePageHref}
                 rank={index + 1}
               />
             ))}

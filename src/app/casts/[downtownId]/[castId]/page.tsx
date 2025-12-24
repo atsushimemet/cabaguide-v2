@@ -143,7 +143,6 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
             </div>
             <div>
               <h1 className="text-3xl font-semibold">{detail.cast.name}</h1>
-              <p className="text-sm text-white/70">所属店舗: {detail.store.name}</p>
             </div>
           </div>
 
