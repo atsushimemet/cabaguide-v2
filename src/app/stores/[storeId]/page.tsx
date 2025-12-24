@@ -156,7 +156,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-cyan-200 transition hover:text-white"
               >
-                店舗ホームページ ↗
+                店舗HP
               </Link>
             </div>
           )}
