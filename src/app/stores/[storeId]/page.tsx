@@ -122,7 +122,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">電話番号</p>
             <a
               href={`tel:${store.phone.replace(/[^0-9+]/g, "")}`}
-              className="text-lg font-semibold text-cyan-100 underline-offset-4 hover:underline"
+              className="text-lg font-semibold text-cyan-200 underline-offset-4 transition hover:text-white"
             >
               {store.phone}
             </a>
@@ -136,7 +136,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
               rel="noreferrer"
               className="inline-flex items-center gap-2 text-cyan-200 transition hover:text-white"
             >
-              Google Mapで位置を見る ↗
+              Google Map
             </a>
           </div>
 
@@ -156,7 +156,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-cyan-200 transition hover:text-white"
               >
-                店舗ホームページ ↗
+                店舗HP
               </Link>
             </div>
           )}
@@ -205,7 +205,6 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
                 key={cast.id}
                 cast={cast}
                 detailHref={`${cast.castLink}?${castDetailQueryString}`}
-                storeHref={storePageHref}
                 rank={index + 1}
               />
             ))}
