@@ -137,6 +137,8 @@ export default function AdminCastsPage() {
       .map(([, value]) => value);
   }, [stores, selectedPrefecture]);
 
+  const isDowntownDisabled = !selectedPrefecture || downtownOptions.length === 0;
+
   useEffect(() => {
     if (!selectedDowntownId) {
       return;
@@ -451,9 +453,11 @@ export default function AdminCastsPage() {
                   captureScrollPosition();
                   setSelectedDowntownId(event.target.value);
                 }}
-                disabled={downtownOptions.length === 0}
+                disabled={isDowntownDisabled}
               >
-                <option value="">すべての繁華街</option>
+                <option value="">
+                  {selectedPrefecture ? "すべての繁華街" : "先に都道府県を選択"}
+                </option>
                 {downtownOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
