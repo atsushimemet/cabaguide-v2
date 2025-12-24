@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { getAreaById } from "@/lib/areas";
 import { createBudgetTimeline } from "@/lib/budget";
+import { getCastsByStoreId } from "@/lib/casts";
 import { getStoreById } from "@/lib/stores";
 import { CONSUMPTION_TAX_RATE } from "@/lib/tax";
 
@@ -78,6 +80,26 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
   const mapSearchLabel = `${store.name} ${locationLabel}`;
   const mapDetailLink =
     store.googleMapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapSearchLabel)}`;
+  const casts = await getCastsByStoreId(store.id);
+
+  const storeQueryParams = new URLSearchParams();
+  if (hasCustomReturn && searchParamsData.returnTo) {
+    storeQueryParams.set("returnTo", searchParamsData.returnTo);
+  }
+  if (typeof searchParamsData.returnLabel === "string" && searchParamsData.returnLabel.trim()) {
+    storeQueryParams.set("returnLabel", searchParamsData.returnLabel.trim());
+  }
+  const storePageHref =
+    storeQueryParams.toString().length > 0
+      ? `/stores/${store.id}?${storeQueryParams.toString()}`
+      : `/stores/${store.id}`;
+
+  const castDetailBaseParams = new URLSearchParams({
+    from: "store",
+    storeId: store.id,
+  });
+  castDetailBaseParams.set("storePath", storePageHref);
+  const castDetailQueryString = castDetailBaseParams.toString();
 
   return (
     <PageFrame mainClassName="gap-8">
@@ -164,6 +186,31 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
             );
           })}
         </div>
+      </section>
+
+      <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+        <div>
+          <p className="text-xs uppercase tracking-[0.4em] text-white/50">CAST</p>
+          <h2 className="mt-2 text-2xl font-semibold">所属キャスト</h2>
+          <p className="text-sm text-white/70">SNSフォロワー数順に、登録済みキャストを表示しています。</p>
+        </div>
+        {casts.length === 0 ? (
+          <p className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
+            まだキャストが登録されていません。
+          </p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {casts.map((cast, index) => (
+              <CastCard
+                key={cast.id}
+                cast={cast}
+                detailHref={`${cast.castLink}?${castDetailQueryString}`}
+                storeHref={storePageHref}
+                rank={index + 1}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </PageFrame>
   );
