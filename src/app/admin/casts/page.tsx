@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
 import { PageFrame } from "@/components/PageFrame";
@@ -63,6 +63,9 @@ export default function AdminCastsPage() {
   const [castError, setCastError] = useState<string | null>(null);
   const [selectedPrefecture, setSelectedPrefecture] = useState("");
   const [selectedDowntownId, setSelectedDowntownId] = useState("");
+  const hasActiveFilter = Boolean(selectedPrefecture);
+  const latestFilterRef = useRef({ prefecture: "", downtownId: "" });
+  const scrollPositionRef = useRef<number | null>(null);
 
   const storeMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -70,11 +73,26 @@ export default function AdminCastsPage() {
     return map;
   }, [stores]);
 
-  const storeMetaMap = useMemo(() => {
-    const map = new Map<string, StoreOption>();
-    stores.forEach((store) => map.set(store.id, store));
-    return map;
-  }, [stores]);
+  const captureScrollPosition = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    scrollPositionRef.current = window.scrollY;
+  };
+
+  const restoreScrollPosition = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (scrollPositionRef.current === null) {
+      return;
+    }
+    const target = scrollPositionRef.current;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: target, behavior: "auto" });
+      scrollPositionRef.current = null;
+    });
+  };
 
   const prefectureOptions = useMemo(() => {
     const map = new Map<string, PrefectureOption>();
@@ -129,27 +147,12 @@ export default function AdminCastsPage() {
     }
   }, [selectedDowntownId, downtownOptions]);
 
-  const filteredCasts = useMemo(() => {
-    const hasPrefFilter = Boolean(selectedPrefecture);
-    const hasDowntownFilter = Boolean(selectedDowntownId);
-    if (!hasPrefFilter && !hasDowntownFilter) {
-      return casts;
-    }
-
-    return casts.filter((cast) => {
-      const store = storeMetaMap.get(cast.store_id);
-      if (selectedPrefecture && store?.todofukenName !== selectedPrefecture) {
-        return false;
-      }
-      if (selectedDowntownId) {
-        const areaIdValue = store?.areaId !== undefined && store?.areaId !== null ? String(store.areaId) : "";
-        if (areaIdValue !== selectedDowntownId) {
-          return false;
-        }
-      }
-      return Boolean(store);
-    });
-  }, [casts, selectedPrefecture, selectedDowntownId, storeMetaMap]);
+  useEffect(() => {
+    latestFilterRef.current = {
+      prefecture: selectedPrefecture.trim(),
+      downtownId: selectedDowntownId.trim(),
+    };
+  }, [selectedPrefecture, selectedDowntownId]);
 
   const handleClearFilters = () => {
     setSelectedPrefecture("");
@@ -183,42 +186,85 @@ export default function AdminCastsPage() {
     }
   }, []);
 
-  const fetchCasts = useCallback(async () => {
-    setIsLoading(true);
-    setCastError(null);
-    try {
-      const response = await fetch("/api/admin/casts", { credentials: "include" });
-      const payload = await response.json().catch(() => null);
+  const fetchCasts = useCallback(
+    async (filters?: { prefecture?: string; downtownId?: string }) => {
+      const prefecture = filters?.prefecture?.trim();
+      const downtownId = filters?.downtownId?.trim();
 
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "キャスト一覧の取得に失敗しました");
-      }
-
-      const castRows = Array.isArray(payload?.casts) ? (payload.casts as CastRow[]) : [];
-      setCasts(castRows);
-      const followerPayload = payload?.followers;
-      if (followerPayload && typeof followerPayload === "object") {
-        setFollowersMap(followerPayload as Record<string, Followers>);
-      } else {
+      if (!prefecture) {
+        setCasts([]);
         setFollowersMap({});
+        restoreScrollPosition();
+        return;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "キャスト一覧の取得に失敗しました";
-      setCastError(message);
-      setCasts([]);
-      setFollowersMap({});
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+
+      const normalizedDowntownId = downtownId ?? "";
+      const matchesLatestSelection = () => {
+        const current = latestFilterRef.current;
+        return current.prefecture === prefecture && (current.downtownId || "") === normalizedDowntownId;
+      };
+
+      setIsLoading(true);
+      setCastError(null);
+      try {
+        const params = new URLSearchParams();
+        params.set("prefecture", prefecture);
+        if (downtownId) {
+          params.set("areaId", downtownId);
+        }
+
+        const query = params.toString();
+        const response = await fetch(`/api/admin/casts?${query}`, { credentials: "include" });
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "キャスト一覧の取得に失敗しました");
+        }
+
+        const castRows = Array.isArray(payload?.casts) ? (payload.casts as CastRow[]) : [];
+        if (!matchesLatestSelection()) {
+          return;
+        }
+        setCasts(castRows);
+        const followerPayload = payload?.followers;
+        if (followerPayload && typeof followerPayload === "object") {
+          setFollowersMap(followerPayload as Record<string, Followers>);
+        } else {
+          setFollowersMap({});
+        }
+        restoreScrollPosition();
+      } catch (err) {
+        if (!matchesLatestSelection()) {
+          return;
+        }
+        const message = err instanceof Error ? err.message : "キャスト一覧の取得に失敗しました";
+        setCastError(message);
+        setCasts([]);
+        setFollowersMap({});
+        restoreScrollPosition();
+      } finally {
+        if (matchesLatestSelection()) {
+          setIsLoading(false);
+        }
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     fetchStores();
   }, [fetchStores]);
 
   useEffect(() => {
-    fetchCasts();
-  }, [fetchCasts]);
+    if (!selectedPrefecture) {
+      setCasts([]);
+      setFollowersMap({});
+      setCastError(null);
+      setIsLoading(false);
+      return;
+    }
+    fetchCasts({ prefecture: selectedPrefecture, downtownId: selectedDowntownId || undefined });
+  }, [selectedPrefecture, selectedDowntownId, fetchCasts]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -360,9 +406,17 @@ export default function AdminCastsPage() {
               <p className="text-sm text-white/70">カードをタップして SNS フォロワーを更新。</p>
             </div>
             <button
-              onClick={fetchCasts}
+              onClick={() =>
+                {
+                  captureScrollPosition();
+                  fetchCasts({
+                    prefecture: selectedPrefecture,
+                    downtownId: selectedDowntownId || undefined,
+                  });
+                }
+              }
               className="text-sm text-white/70 underline-offset-4 hover:underline"
-              disabled={isLoading}
+              disabled={!selectedPrefecture || isLoading}
             >
               {isLoading ? "更新中" : "再読み込み"}
             </button>
@@ -375,6 +429,7 @@ export default function AdminCastsPage() {
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
                 value={selectedPrefecture}
                 onChange={(event) => {
+                  captureScrollPosition();
                   setSelectedPrefecture(event.target.value);
                 }}
               >
@@ -392,7 +447,10 @@ export default function AdminCastsPage() {
               <select
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
                 value={selectedDowntownId}
-                onChange={(event) => setSelectedDowntownId(event.target.value)}
+                onChange={(event) => {
+                  captureScrollPosition();
+                  setSelectedDowntownId(event.target.value);
+                }}
                 disabled={downtownOptions.length === 0}
               >
                 <option value="">すべての繁華街</option>
@@ -407,7 +465,10 @@ export default function AdminCastsPage() {
             <div className="flex items-end">
               <button
                 type="button"
-                onClick={handleClearFilters}
+                onClick={() => {
+                  captureScrollPosition();
+                  handleClearFilters();
+                }}
                 className="w-full rounded-2xl border border-white/20 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!selectedPrefecture && !selectedDowntownId}
               >
@@ -423,14 +484,16 @@ export default function AdminCastsPage() {
               </p>
             )}
 
-            {filteredCasts.length === 0 && !isLoading ? (
+            {!hasActiveFilter ? (
               <p className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
-                {casts.length === 0
-                  ? "まだキャストが登録されていません。"
-                  : "該当するキャストが見つかりません。"}
+                対象キャストの都道府県、繁華街を選択してください。
+              </p>
+            ) : casts.length === 0 && !isLoading ? (
+              <p className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
+                該当するキャストが見つかりません。
               </p>
             ) : (
-              filteredCasts.map((cast) => (
+              casts.map((cast) => (
                 <Link
                   key={cast.id}
                   href={`/admin/casts/${cast.id}`}
