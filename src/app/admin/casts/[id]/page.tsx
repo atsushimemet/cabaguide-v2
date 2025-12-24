@@ -41,6 +41,14 @@ type SocialLink = {
   url: string;
 };
 
+type StoreOption = {
+  id: string;
+  name: string;
+  areaId?: number | null;
+  todofukenName?: string | null;
+  downtownName?: string | null;
+};
+
 export default function CastDetailPage() {
   const params = useParams<{ id: string }>();
   const castId = params?.id;
@@ -68,6 +76,25 @@ export default function CastDetailPage() {
   const [nameUpdateStatus, setNameUpdateStatus] = useState<string | null>(null);
   const [nameUpdateError, setNameUpdateError] = useState<string | null>(null);
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [storeOptions, setStoreOptions] = useState<StoreOption[]>([]);
+  const [storeOptionsError, setStoreOptionsError] = useState<string | null>(null);
+  const [isStoreOptionsLoading, setIsStoreOptionsLoading] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState("");
+  const [isUpdatingStore, setIsUpdatingStore] = useState(false);
+  const [storeUpdateStatus, setStoreUpdateStatus] = useState<string | null>(null);
+  const [storeUpdateError, setStoreUpdateError] = useState<string | null>(null);
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [editingLinkForm, setEditingLinkForm] = useState<{ platform: SocialPlatform; url: string }>({
+    platform: SOCIAL_PLATFORM_OPTIONS[0].value,
+    url: "",
+  });
+  const [isUpdatingLink, setIsUpdatingLink] = useState(false);
+  const [editingSnapshotId, setEditingSnapshotId] = useState<string | null>(null);
+  const [snapshotInputValue, setSnapshotInputValue] = useState("");
+  const [snapshotStatus, setSnapshotStatus] = useState<string | null>(null);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
+  const [isUpdatingSnapshot, setIsUpdatingSnapshot] = useState(false);
+  const [deletingSnapshotId, setDeletingSnapshotId] = useState<string | null>(null);
 
   const fetchCastDetail = useCallback(async () => {
     if (!castId) {
@@ -107,6 +134,10 @@ export default function CastDetailPage() {
   useEffect(() => {
     setNameInput(cast?.name ?? "");
   }, [cast?.name]);
+
+  useEffect(() => {
+    setSelectedStoreId(cast?.store_id ?? "");
+  }, [cast?.store_id]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -216,6 +247,73 @@ export default function CastDetailPage() {
     }
   };
 
+  const fetchStoreOptions = useCallback(async () => {
+    setIsStoreOptionsLoading(true);
+    setStoreOptionsError(null);
+    try {
+      const response = await fetch("/api/admin/store-options", { credentials: "include" });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "店舗一覧の取得に失敗しました");
+      }
+
+      const storesPayload = Array.isArray(payload?.stores) ? (payload.stores as StoreOption[]) : [];
+      setStoreOptions(storesPayload);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "店舗一覧の取得に失敗しました";
+      setStoreOptions([]);
+      setStoreOptionsError(message);
+    } finally {
+      setIsStoreOptionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStoreOptions();
+  }, [fetchStoreOptions]);
+
+  const handleStoreSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStoreUpdateError(null);
+    setStoreUpdateStatus(null);
+    if (!castId) {
+      setStoreUpdateError("cast_id が不明です");
+      return;
+    }
+    if (!selectedStoreId) {
+      setStoreUpdateError("店舗を選択してください");
+      return;
+    }
+    if (selectedStoreId === cast?.store_id) {
+      setStoreUpdateError("変更する店舗を選択してください");
+      return;
+    }
+
+    setIsUpdatingStore(true);
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ storeId: selectedStoreId }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "店舗の更新に失敗しました");
+      }
+
+      setStoreUpdateStatus("所属店舗を更新しました");
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "店舗の更新に失敗しました";
+      setStoreUpdateError(message);
+    } finally {
+      setIsUpdatingStore(false);
+    }
+  };
+
   const handleSocialSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSocialError(null);
@@ -296,6 +394,157 @@ export default function CastDetailPage() {
       setSocialError(message);
     } finally {
       setDeletingLinkId(null);
+    }
+  };
+
+  const handleStartLinkEdit = (link: SocialLink) => {
+    setEditingLinkId(link.id);
+    setEditingLinkForm({
+      platform: (SOCIAL_PLATFORM_OPTIONS.find((option) => option.value === link.platform)?.value ??
+        SOCIAL_PLATFORM_OPTIONS[0].value) as SocialPlatform,
+      url: link.url,
+    });
+    setSocialError(null);
+    setSocialMessage(null);
+  };
+
+  const handleCancelLinkEdit = () => {
+    setEditingLinkId(null);
+    setEditingLinkForm((prev) => ({ ...prev, url: "" }));
+    setIsUpdatingLink(false);
+  };
+
+  const handleLinkUpdate = async (event: FormEvent<HTMLFormElement>, linkId: string) => {
+    event.preventDefault();
+    if (!castId) {
+      setSocialError("cast_id が不明です");
+      return;
+    }
+    if (!editingLinkForm.url) {
+      setSocialError("URL を入力してください");
+      return;
+    }
+
+    try {
+      new URL(editingLinkForm.url);
+    } catch {
+      setSocialError("有効な URL を入力してください");
+      return;
+    }
+
+    setIsUpdatingLink(true);
+    setSocialError(null);
+    setSocialMessage(null);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}/social-links?linkId=${linkId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          platform: editingLinkForm.platform,
+          url: editingLinkForm.url,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "SNS リンクの更新に失敗しました");
+      }
+
+      setSocialMessage("SNS リンクを更新しました");
+      setEditingLinkId(null);
+      setEditingLinkForm((prev) => ({ ...prev, url: "" }));
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "SNS リンクの更新に失敗しました";
+      setSocialError(message);
+    } finally {
+      setIsUpdatingLink(false);
+    }
+  };
+
+  const handleStartSnapshotEdit = (snapshot: SnapshotRow) => {
+    setEditingSnapshotId(snapshot.id);
+    setSnapshotInputValue(String(snapshot.followers));
+    setSnapshotError(null);
+    setSnapshotStatus(null);
+  };
+
+  const handleCancelSnapshotEdit = () => {
+    setEditingSnapshotId(null);
+    setSnapshotInputValue("");
+    setSnapshotError(null);
+  };
+
+  const handleSnapshotUpdate = async (event: FormEvent<HTMLFormElement>, snapshotId: string) => {
+    event.preventDefault();
+    if (!castId) {
+      setSnapshotError("cast_id が不明です");
+      return;
+    }
+
+    const value = Number(snapshotInputValue);
+    if (!Number.isFinite(value) || value < 0) {
+      setSnapshotError("フォロワー数は0以上の数値で入力してください");
+      return;
+    }
+
+    setIsUpdatingSnapshot(true);
+    setSnapshotError(null);
+    setSnapshotStatus(null);
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}/followers?snapshotId=${snapshotId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ followers: value }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "フォロワー履歴の更新に失敗しました");
+      }
+
+      setSnapshotStatus("フォロワー履歴を更新しました");
+      setEditingSnapshotId(null);
+      setSnapshotInputValue("");
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "フォロワー履歴の更新に失敗しました";
+      setSnapshotError(message);
+    } finally {
+      setIsUpdatingSnapshot(false);
+    }
+  };
+
+  const handleSnapshotDelete = async (snapshotId: string) => {
+    if (!castId) {
+      setSnapshotError("cast_id が不明です");
+      return;
+    }
+    setDeletingSnapshotId(snapshotId);
+    setSnapshotError(null);
+    setSnapshotStatus(null);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}/followers?snapshotId=${snapshotId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "フォロワー履歴の削除に失敗しました");
+      }
+
+      setSnapshotStatus("フォロワー履歴を削除しました");
+      fetchCastDetail();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "フォロワー履歴の削除に失敗しました";
+      setSnapshotError(message);
+    } finally {
+      setDeletingSnapshotId(null);
     }
   };
 
@@ -387,6 +636,57 @@ export default function CastDetailPage() {
             </div>
           </div>
         </header>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold">所属店舗を更新</h2>
+            {store && <p className="text-sm text-white/70">現在の店舗: {store.name}</p>}
+          </div>
+          {storeOptionsError && (
+            <p className="mt-3 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
+              {storeOptionsError}
+            </p>
+          )}
+          <form className="mt-4 space-y-4" onSubmit={handleStoreSubmit}>
+            <label className="block text-sm text-white/70">
+              店舗を選択
+              <select
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                value={selectedStoreId}
+                onChange={(event) => {
+                  setSelectedStoreId(event.target.value);
+                  setStoreUpdateError(null);
+                  setStoreUpdateStatus(null);
+                }}
+                disabled={isStoreOptionsLoading}
+              >
+                <option value="">店舗を選択してください</option>
+                {storeOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {formatStoreOptionLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {storeUpdateError && (
+              <p className="rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
+                {storeUpdateError}
+              </p>
+            )}
+            {storeUpdateStatus && (
+              <p className="rounded-xl border border-emerald-500/60 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-100">
+                {storeUpdateStatus}
+              </p>
+            )}
+            <button
+              type="submit"
+              className="w-full rounded-full bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 px-4 py-3 text-base font-semibold shadow-lg shadow-indigo-900/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isUpdatingStore || isStoreOptionsLoading}
+            >
+              {isUpdatingStore ? "更新中..." : "所属店舗を保存"}
+            </button>
+          </form>
+        </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
           <div className="flex flex-col gap-1">
@@ -516,29 +816,89 @@ export default function CastDetailPage() {
             ) : (
               <ul className="mt-3 space-y-3">
                 {socialLinks.map((link) => (
-                  <li
-                    key={link.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <p className="text-sm text-white/60">{getPlatformLabel(link.platform)}</p>
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-base text-white/90 underline-offset-4 hover:underline"
-                      >
-                        {link.url}
-                      </a>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteLink(link.id)}
-                      className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={deletingLinkId === link.id}
-                    >
-                      {deletingLinkId === link.id ? "削除中..." : "削除"}
-                    </button>
+                  <li key={link.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                    {editingLinkId === link.id ? (
+                      <form className="space-y-4" onSubmit={(event) => handleLinkUpdate(event, link.id)}>
+                        <label className="block text-sm text-white/70">
+                          プラットフォーム
+                          <select
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                            value={editingLinkForm.platform}
+                            onChange={(event) =>
+                              setEditingLinkForm((prev) => ({
+                                ...prev,
+                                platform: event.target.value as SocialPlatform,
+                              }))
+                            }
+                          >
+                            {SOCIAL_PLATFORM_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="block text-sm text-white/70">
+                          URL
+                          <input
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                            value={editingLinkForm.url}
+                            onChange={(event) =>
+                              setEditingLinkForm((prev) => ({ ...prev, url: event.target.value }))
+                            }
+                            placeholder="https://instagram.com/example"
+                          />
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="submit"
+                            className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={isUpdatingLink}
+                          >
+                            {isUpdatingLink ? "更新中..." : "保存"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelLinkEdit}
+                            className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled={isUpdatingLink}
+                          >
+                            キャンセル
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-sm text-white/60">{getPlatformLabel(link.platform)}</p>
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-base text-white/90 underline-offset-4 hover:underline"
+                          >
+                            {link.url}
+                          </a>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleStartLinkEdit(link)}
+                            className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10"
+                          >
+                            編集
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteLink(link.id)}
+                            className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled={deletingLinkId === link.id}
+                          >
+                            {deletingLinkId === link.id ? "削除中..." : "削除"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -553,6 +913,16 @@ export default function CastDetailPage() {
               {detailError}
             </p>
           )}
+          {snapshotError && (
+            <p className="mt-3 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
+              {snapshotError}
+            </p>
+          )}
+          {snapshotStatus && (
+            <p className="mt-3 rounded-xl border border-emerald-500/60 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-100">
+              {snapshotStatus}
+            </p>
+          )}
           <ul className="mt-4 space-y-3 text-sm text-white/70">
             {snapshots.length === 0 ? (
               <li className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
@@ -561,13 +931,65 @@ export default function CastDetailPage() {
             ) : (
               snapshots.map((snapshot) => (
                 <li key={snapshot.id} className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">{snapshot.platform}</span>
-                    <span className="text-white">{snapshot.followers.toLocaleString()} 人</span>
-                  </div>
-                  <p className="text-xs text-white/50">
-                    {new Date(snapshot.captured_at).toLocaleString("ja-JP")}
-                  </p>
+                  {editingSnapshotId === snapshot.id ? (
+                    <form className="space-y-3" onSubmit={(event) => handleSnapshotUpdate(event, snapshot.id)}>
+                      <p className="text-sm text-white/60">{getPlatformLabel(snapshot.platform)}</p>
+                      <label className="block text-sm text-white/70">
+                        フォロワー数
+                        <input
+                          type="number"
+                          min="0"
+                          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                          value={snapshotInputValue}
+                          onChange={(event) => setSnapshotInputValue(event.target.value)}
+                        />
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="submit"
+                          className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={isUpdatingSnapshot}
+                        >
+                          {isUpdatingSnapshot ? "更新中..." : "保存"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelSnapshotEdit}
+                          className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          disabled={isUpdatingSnapshot}
+                        >
+                          キャンセル
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{getPlatformLabel(snapshot.platform)}</span>
+                        <span className="text-white">{snapshot.followers.toLocaleString()} 人</span>
+                      </div>
+                      <p className="text-xs text-white/50">
+                        {new Date(snapshot.captured_at).toLocaleString("ja-JP")}
+                      </p>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStartSnapshotEdit(snapshot)}
+                          className="rounded-full border border-white/20 px-4 py-2 text-xs text-white/80 transition hover:bg-white/10"
+                        >
+                          編集
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSnapshotDelete(snapshot.id)}
+                          className="rounded-full border border-white/20 px-4 py-2 text-xs text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          disabled={deletingSnapshotId === snapshot.id}
+                        >
+                          {deletingSnapshotId === snapshot.id ? "削除中..." : "削除"}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </li>
               ))
             )}
@@ -582,6 +1004,11 @@ export default function CastDetailPage() {
 const getPlatformLabel = (value: string) => {
   const option = SOCIAL_PLATFORM_OPTIONS.find((platform) => platform.value === value);
   return option ? option.label : value;
+};
+
+const formatStoreOptionLabel = (option: StoreOption) => {
+  const area = [option.todofukenName, option.downtownName].filter(Boolean).join(" ");
+  return area ? `${area} ${option.name}` : option.name;
 };
 
 const AdminLoading = ({ message = "読み込み中" }: { message?: string }) => (

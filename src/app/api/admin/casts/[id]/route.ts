@@ -12,6 +12,7 @@ type SnapshotRow = {
 
 type CastUpdatePayload = {
   name?: string;
+  storeId?: string;
 };
 
 export async function GET(
@@ -129,8 +130,10 @@ export async function PATCH(
 
   const payload = (await request.json().catch(() => null)) as CastUpdatePayload | null;
   const name = typeof payload?.name === "string" ? payload.name.trim() : "";
-  if (!name) {
-    return NextResponse.json({ error: "キャスト名を入力してください" }, { status: 400 });
+  const storeId = typeof payload?.storeId === "string" ? payload.storeId.trim() : "";
+
+  if (!name && !storeId) {
+    return NextResponse.json({ error: "変更内容がありません" }, { status: 400 });
   }
 
   let supabase;
@@ -143,12 +146,39 @@ export async function PATCH(
     throw error;
   }
 
+  let storeExists = true;
+  if (storeId) {
+    const { data: storeData, error: storeError } = await supabase
+      .from("stores")
+      .select("id")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    if (storeError) {
+      console.error(`[admin/casts/${castId}][PATCH][store-check]`, storeError);
+      return NextResponse.json({ error: "店舗情報の確認に失敗しました" }, { status: 500 });
+    }
+
+    storeExists = Boolean(storeData);
+    if (!storeExists) {
+      return NextResponse.json({ error: "店舗が見つかりません" }, { status: 404 });
+    }
+  }
+
   try {
+    const updates: Record<string, unknown> = {};
+    if (name) {
+      updates.name = name;
+    }
+    if (storeId) {
+      updates.store_id = storeId;
+    }
+
     const { data, error } = await supabase
       .from("casts")
-      .update({ name })
+      .update(updates)
       .eq("id", castId)
-      .select("id, name")
+      .select("id, name, store_id")
       .maybeSingle();
 
     if (error) {
@@ -162,7 +192,7 @@ export async function PATCH(
     return NextResponse.json({ cast: data });
   } catch (error) {
     console.error(`[admin/casts/${castId}][PATCH]`, error);
-    const message = error instanceof Error ? error.message : "キャスト名の更新に失敗しました";
+    const message = error instanceof Error ? error.message : "キャスト情報の更新に失敗しました";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
