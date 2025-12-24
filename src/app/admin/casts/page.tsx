@@ -127,8 +127,7 @@ export default function AdminCastsPage() {
       }
       const key = String(store.areaId);
       if (!map.has(key)) {
-        const areaLabel = [store.todofukenName, store.downtownName].filter(Boolean).join(" ");
-        map.set(key, { value: key, label: areaLabel || `area_id: ${key}` });
+        map.set(key, { value: key, label: store.downtownName || `area_id: ${key}` });
       }
     });
 
