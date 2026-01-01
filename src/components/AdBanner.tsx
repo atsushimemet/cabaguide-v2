@@ -1,4 +1,7 @@
+'use client';
+
 import Link from "next/link";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
 type AdBannerProps = {
   label: string;
@@ -7,6 +10,7 @@ type AdBannerProps = {
   href: string;
   ctaLabel?: string;
   className?: string;
+  animationVariant?: "none" | "top" | "bottom";
 };
 
 const baseClasses =
@@ -19,11 +23,147 @@ export const AdBanner = ({
   href,
   ctaLabel = "広告掲載について",
   className,
+  animationVariant = "none",
 }: AdBannerProps) => {
+  const [canAnimate, setCanAnimate] = useState(animationVariant === "none");
+  const [isVisible, setIsVisible] = useState(animationVariant === "none");
+  const [tenthCardVisible, setTenthCardVisible] = useState(animationVariant !== "bottom");
+  const [bannerInView, setBannerInView] = useState(animationVariant !== "bottom");
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const hasRevealedRef = useRef(animationVariant === "none");
+
+  useEffect(() => {
+    if (animationVariant === "none" || canAnimate) return;
+
+    let readyTimer: number | undefined;
+    const handleReady = () => setCanAnimate(true);
+    const loadingScreenEl = document.querySelector(".loading-screen");
+
+    if (!loadingScreenEl) {
+      readyTimer = window.setTimeout(() => setCanAnimate(true), 0);
+    } else {
+      window.addEventListener("loading-screen:completed", handleReady, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener("loading-screen:completed", handleReady);
+      if (readyTimer) {
+        window.clearTimeout(readyTimer);
+      }
+    };
+  }, [animationVariant, canAnimate]);
+
+  useEffect(() => {
+    if (!canAnimate || animationVariant !== "top" || hasRevealedRef.current) return;
+
+    let instantRevealTimer: number | undefined;
+    const handleReveal = () => {
+      if (hasRevealedRef.current) return;
+      hasRevealedRef.current = true;
+      setIsVisible(true);
+    };
+
+    if (document.body?.dataset.areaSearchDescriptionVisible === "true") {
+      instantRevealTimer = window.setTimeout(handleReveal, 0);
+    } else {
+      window.addEventListener("area-search:description-visible", handleReveal, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener("area-search:description-visible", handleReveal);
+      if (instantRevealTimer) {
+        window.clearTimeout(instantRevealTimer);
+      }
+    };
+  }, [animationVariant, canAnimate]);
+
+  useEffect(() => {
+    if (animationVariant !== "bottom" || hasRevealedRef.current) return;
+
+    let observer: IntersectionObserver | undefined;
+    let fallbackTimer: number | undefined;
+    const target = document.querySelector('[data-rank="10"]');
+
+    if (!target) {
+      fallbackTimer = window.setTimeout(() => setTenthCardVisible(true), 0);
+    } else {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            setTenthCardVisible(true);
+            observer?.disconnect();
+          }
+        },
+        { threshold: 0.6 },
+      );
+
+      observer.observe(target);
+    }
+
+    return () => {
+      observer?.disconnect();
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer);
+      }
+    };
+  }, [animationVariant]);
+
+  useEffect(() => {
+    if (!canAnimate || animationVariant !== "bottom" || hasRevealedRef.current) return;
+
+    const target = sectionRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setBannerInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3, rootMargin: "0px 0px -10% 0px" },
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [animationVariant, canAnimate]);
+
+  useEffect(() => {
+    if (
+      animationVariant !== "bottom" ||
+      hasRevealedRef.current ||
+      !canAnimate ||
+      !tenthCardVisible ||
+      !bannerInView
+    ) {
+      return;
+    }
+
+    hasRevealedRef.current = true;
+    const revealTimer = window.setTimeout(() => setIsVisible(true), 0);
+
+    return () => {
+      window.clearTimeout(revealTimer);
+    };
+  }, [animationVariant, bannerInView, canAnimate, tenthCardVisible]);
+
   const sectionClass = [baseClasses, className].filter(Boolean).join(" ");
 
+  const sectionStyle = useMemo<CSSProperties>(() => {
+    if (animationVariant === "none") {
+      return {};
+    }
+
+    return {
+      transform: isVisible ? "translate3d(0, 0, 0)" : "translate3d(120px, 0, 0)",
+      opacity: isVisible ? 1 : 0,
+      transition: "transform 750ms cubic-bezier(0.4, 0, 0.2, 1), opacity 700ms ease",
+    };
+  }, [animationVariant, isVisible]);
+
   return (
-    <section className={sectionClass}>
+    <section className={sectionClass} style={sectionStyle} ref={sectionRef}>
       <div className="flex-1 space-y-3">
         <p className="text-xs font-semibold tracking-[0.3em] text-white/70">{label}</p>
         <h3 className="text-2xl font-semibold text-white">{title}</h3>

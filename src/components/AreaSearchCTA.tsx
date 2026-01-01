@@ -15,19 +15,24 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
   const [canAnimate, setCanAnimate] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const hasTriggeredRef = useRef(false);
+  const hasAnnouncedDescriptionRef = useRef(false);
 
   useEffect(() => {
+    let readyTimer: number | undefined;
     const handleReady = () => setCanAnimate(true);
 
     const loadingScreenEl = document.querySelector(".loading-screen");
     if (!loadingScreenEl) {
-      setCanAnimate(true);
+      readyTimer = window.setTimeout(() => setCanAnimate(true), 0);
     } else {
       window.addEventListener("loading-screen:completed", handleReady, { once: true });
     }
 
     return () => {
       window.removeEventListener("loading-screen:completed", handleReady);
+      if (readyTimer) {
+        window.clearTimeout(readyTimer);
+      }
     };
   }, []);
 
@@ -66,6 +71,17 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
       }
     };
   }, [canAnimate]);
+
+  useEffect(() => {
+    if (!descriptionVisible || hasAnnouncedDescriptionRef.current) return;
+    hasAnnouncedDescriptionRef.current = true;
+
+    if (document.body) {
+      document.body.dataset.areaSearchDescriptionVisible = "true";
+    }
+
+    window.dispatchEvent(new CustomEvent("area-search:description-visible"));
+  }, [descriptionVisible]);
 
   const titleStyle = useMemo<CSSProperties>(
     () => ({
