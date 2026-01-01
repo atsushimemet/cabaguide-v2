@@ -1,8 +1,8 @@
 import { AdBanner } from "@/components/AdBanner";
 import { AreaSearchCTA } from "@/components/AreaSearchCTA";
-import { CastCard } from "@/components/CastCard";
 import { PageFrame } from "@/components/PageFrame";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { TopCastGrid } from "@/components/TopCastGrid";
 import { getTopCasts } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
@@ -37,7 +37,7 @@ export default async function Home() {
         />
 
         <section className="space-y-6">
-          <div>
+          <div id="top-cast-lead">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/50">
               TOP CAST
             </p>
@@ -47,11 +47,7 @@ export default async function Home() {
             </p>
             <p className="text-xs text-white/50">{lastUpdatedText}</p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {topCasts.map((cast, index) => (
-              <CastCard key={cast.id} cast={cast} detailHref={`${cast.castLink}?from=home`} rank={index + 1} />
-            ))}
-          </div>
+          <TopCastGrid casts={topCasts} triggerId="top-cast-lead" />
         </section>
 
         <AdBanner
