@@ -26,22 +26,6 @@ const adPlans = [
 ];
 
 const mailAddress = "noap3b69n@gmail.com";
-const mailSubject = encodeURIComponent("cabaguide広告掲載の相談");
-const mailBody = encodeURIComponent(
-  [
-    "以下テンプレート（店舗名など）を編集の上、ご送信ください。",
-    "",
-    "【店舗名】",
-    "【担当者名】",
-    "【電話番号】",
-    "【希望プラン】トップ / ボトム / 繁華街",
-    "【希望エリア（繁華街プランの場合のみ）】",
-    "【クリエイティブ添付（メールに画像ファイルを添付してください）】",
-    "【想定訴求内容（全角80文字以内）】",
-    "【その他】",
-  ].join("\n"),
-);
-const mailHref = `mailto:${mailAddress}?subject=${mailSubject}&body=${mailBody}`;
 
 const mailTemplate = `件名: cabaguide広告掲載の相談
 

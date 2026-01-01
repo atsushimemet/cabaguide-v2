@@ -18,17 +18,21 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
   const hasAnnouncedDescriptionRef = useRef(false);
 
   useEffect(() => {
+    let readyTimer: number | undefined;
     const handleReady = () => setCanAnimate(true);
 
     const loadingScreenEl = document.querySelector(".loading-screen");
     if (!loadingScreenEl) {
-      setCanAnimate(true);
+      readyTimer = window.setTimeout(() => setCanAnimate(true), 0);
     } else {
       window.addEventListener("loading-screen:completed", handleReady, { once: true });
     }
 
     return () => {
       window.removeEventListener("loading-screen:completed", handleReady);
+      if (readyTimer) {
+        window.clearTimeout(readyTimer);
+      }
     };
   }, []);
 

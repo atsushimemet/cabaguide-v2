@@ -35,65 +35,77 @@ export const AdBanner = ({
   useEffect(() => {
     if (animationVariant === "none" || canAnimate) return;
 
+    let readyTimer: number | undefined;
     const handleReady = () => setCanAnimate(true);
     const loadingScreenEl = document.querySelector(".loading-screen");
 
     if (!loadingScreenEl) {
-      setCanAnimate(true);
-      return;
+      readyTimer = window.setTimeout(() => setCanAnimate(true), 0);
+    } else {
+      window.addEventListener("loading-screen:completed", handleReady, { once: true });
     }
-
-    window.addEventListener("loading-screen:completed", handleReady, { once: true });
 
     return () => {
       window.removeEventListener("loading-screen:completed", handleReady);
+      if (readyTimer) {
+        window.clearTimeout(readyTimer);
+      }
     };
   }, [animationVariant, canAnimate]);
 
   useEffect(() => {
     if (!canAnimate || animationVariant !== "top" || hasRevealedRef.current) return;
 
-    if (document.body?.dataset.areaSearchDescriptionVisible === "true") {
-      hasRevealedRef.current = true;
-      setIsVisible(true);
-      return;
-    }
-
+    let instantRevealTimer: number | undefined;
     const handleReveal = () => {
+      if (hasRevealedRef.current) return;
       hasRevealedRef.current = true;
       setIsVisible(true);
     };
 
-    window.addEventListener("area-search:description-visible", handleReveal, { once: true });
+    if (document.body?.dataset.areaSearchDescriptionVisible === "true") {
+      instantRevealTimer = window.setTimeout(handleReveal, 0);
+    } else {
+      window.addEventListener("area-search:description-visible", handleReveal, { once: true });
+    }
 
     return () => {
       window.removeEventListener("area-search:description-visible", handleReveal);
+      if (instantRevealTimer) {
+        window.clearTimeout(instantRevealTimer);
+      }
     };
   }, [animationVariant, canAnimate]);
 
   useEffect(() => {
     if (animationVariant !== "bottom" || hasRevealedRef.current) return;
 
+    let observer: IntersectionObserver | undefined;
+    let fallbackTimer: number | undefined;
     const target = document.querySelector('[data-rank="10"]');
 
     if (!target) {
-      setTenthCardVisible(true);
-      return;
+      fallbackTimer = window.setTimeout(() => setTenthCardVisible(true), 0);
+    } else {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            setTenthCardVisible(true);
+            observer?.disconnect();
+          }
+        },
+        { threshold: 0.6 },
+      );
+
+      observer.observe(target);
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setTenthCardVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.6 },
-    );
-
-    observer.observe(target);
-
-    return () => observer.disconnect();
+    return () => {
+      observer?.disconnect();
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer);
+      }
+    };
   }, [animationVariant]);
 
   useEffect(() => {
@@ -129,7 +141,11 @@ export const AdBanner = ({
     }
 
     hasRevealedRef.current = true;
-    setIsVisible(true);
+    const revealTimer = window.setTimeout(() => setIsVisible(true), 0);
+
+    return () => {
+      window.clearTimeout(revealTimer);
+    };
   }, [animationVariant, bannerInView, canAnimate, tenthCardVisible]);
 
   const sectionClass = [baseClasses, className].filter(Boolean).join(" ");
