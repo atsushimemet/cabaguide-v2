@@ -61,7 +61,7 @@ const flowSteps = [
     title: "入金（前月25日締め）",
     description: "最終クリエイティブ確定後、月額費用を以下口座へお振り込みください。",
     extra: (
-      <div className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-xs text-white/80">
+      <div className="space-y-1 text-xs text-white/80">
         <p className="text-[10px] uppercase tracking-[0.4em] text-fuchsia-200">振込先</p>
         <p className="font-semibold text-white">GMOあおぞらネット銀行</p>
         <p>法人営業部(101) / 普通 1619609</p>
@@ -80,21 +80,17 @@ const flowSteps = [
 export default function AdsPage() {
   return (
     <PageFrame mainClassName="space-y-5">
-      <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-600/40 via-purple-800/30 to-blue-800/30 p-6 text-center backdrop-blur-xl lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">
-          ADS
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">cabaguide 広告プラン</h1>
-        <p className="mt-4 text-sm text-white/80">
+      <section className="space-y-3 border-y border-white/15 px-4 py-10 text-center lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/70">ADS</p>
+        <h1 className="text-3xl font-semibold text-white">cabaguide 広告プラン</h1>
+        <p className="text-sm text-white/80">
           「シンプルで運用負荷の少ない広告枠」がコンセプト。全て月額定額・成果課金なしで、メール1通とクリエイティブ入稿だけで運用が完結します。
         </p>
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+      <section className="space-y-6 border-y border-white/15 px-2 py-10 sm:px-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-            PLAN
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">PLAN</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">料金プラン一覧</h2>
           <p className="text-sm text-white/80">
             すべてのプランは月額固定・自動更新なし。毎月リセットされるため、競合した場合はランダム抽選で掲載枠を決定します。
@@ -104,7 +100,7 @@ export default function AdsPage() {
           {adPlans.map((plan) => (
             <div
               key={plan.name}
-              className="flex h-full flex-col gap-4 rounded-2xl border border-white/10 bg-black/40 p-5"
+              className="flex h-full flex-col gap-4 border-t border-white/15 pt-4"
             >
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-fuchsia-200 lg:min-h-[20px]">
@@ -114,7 +110,7 @@ export default function AdsPage() {
               </div>
               <p className="text-2xl font-bold text-white lg:min-h-[40px]">{plan.price}</p>
               <p className="flex-1 text-sm text-white/80">{plan.description}</p>
-              <div className="flex items-center rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-xs text-white/70 lg:min-h-[58px]">
+              <div className="flex items-center border-y border-white/15 py-3 text-xs text-white/70 lg:min-h-[58px]">
                 想定リーチ: {plan.reach}
               </div>
             </div>
@@ -122,12 +118,10 @@ export default function AdsPage() {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+      <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-              TEMPLATE
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">TEMPLATE</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">メール送付テンプレート</h2>
             <p className="text-sm text-white/80">
               {mailAddress} あてにメールを送る際、以下のテンプレートをコピーして必要箇所を編集してください。
@@ -138,28 +132,26 @@ export default function AdsPage() {
         <textarea
           readOnly
           value={mailTemplate}
-          className="w-full rounded-2xl border border-white/15 bg-[#0b0b18] p-4 font-mono text-xs text-white focus:outline-none"
+          className="w-full border border-white/20 bg-[#0b0b18] p-4 font-mono text-xs text-white focus:outline-none"
           rows={12}
         />
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+      <section className="space-y-6 border-y border-white/15 px-2 py-10 sm:px-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-            FLOW
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">FLOW</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">掲載までの流れ</h2>
           <p className="mt-2 text-sm text-white/70">
             すべての工程を前月内に完了させ、翌月1日に掲載がスタートするスケジュールです。
           </p>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {flowSteps.map((step, index) => (
             <div
               key={step.title}
-              className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80 lg:flex-row lg:items-start"
+              className="flex flex-col gap-4 border-t border-white/15 pt-4 text-sm text-white/80 lg:flex-row lg:items-start"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-black/40 text-xl font-semibold text-fuchsia-200">
+              <div className="flex h-12 w-12 items-center justify-center border border-white/20 text-xl font-semibold text-fuchsia-200">
                 {String(index + 1).padStart(2, "0")}
               </div>
               <div className="flex-1 space-y-3">
@@ -171,7 +163,9 @@ export default function AdsPage() {
                 </div>
                 <p className="text-sm text-fuchsia-200/80">{step.timeline}</p>
                 <p>{step.description}</p>
-                {step.extra}
+                {step.extra && (
+                  <div className="border-l-4 border-white/25 pl-4 text-xs text-white/80">{step.extra}</div>
+                )}
               </div>
             </div>
           ))}
