@@ -149,21 +149,19 @@ const policySections: PolicySection[] = [
 export default function PolicyPage() {
   return (
     <PageFrame mainClassName="space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">
-          TERMS
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">cabaguide 利用規約</h1>
-        <p className="mt-4 text-sm text-white/80">
+      <section className="space-y-3 border-y border-white/15 px-4 py-10 text-center lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">TERMS</p>
+        <h1 className="text-3xl font-semibold text-white">cabaguide 利用規約</h1>
+        <p className="text-sm text-white/80">
           cabaguideを安全かつ公平にご利用いただくための最低限のルールをまとめています。ユーザー・店舗・キャストそれぞれの視点で重要となる事項を確認してください。
         </p>
       </section>
 
-      <section className="space-y-6">
+      <section className="space-y-6 border-y border-white/15 px-2 py-10 sm:px-4">
         {policySections.map((section) => (
           <article
             key={section.title}
-            className="space-y-3 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl"
+            className="space-y-3 border-t border-white/15 pt-4"
           >
             <h2 className="text-xl font-semibold text-white">{section.title}</h2>
             {section.body}

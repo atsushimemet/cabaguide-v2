@@ -14,21 +14,17 @@ const faqs = [
 export default function FAQPage() {
   return (
     <PageFrame mainClassName="space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">
-          FAQ
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">よくある質問</h1>
-        <p className="mt-4 text-sm text-white/80">
-          このページではよくある質問に回答しています。
-        </p>
+      <section className="space-y-3 border-y border-white/15 px-4 py-10 text-center lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">FAQ</p>
+        <h1 className="text-3xl font-semibold text-white">よくある質問</h1>
+        <p className="text-sm text-white/80">このページではよくある質問に回答しています。</p>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-6 border-y border-white/15 px-2 py-10 sm:px-4">
         {faqs.map(({ question, answer }) => (
           <article
             key={question}
-            className="rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl"
+            className="space-y-3 border-t border-white/15 pt-4"
           >
             <h2 className="text-xl font-semibold text-white">{question}</h2>
             <p className="mt-2 text-sm leading-relaxed text-white/80">{answer}</p>

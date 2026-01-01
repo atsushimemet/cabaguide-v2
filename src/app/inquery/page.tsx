@@ -38,22 +38,18 @@ const supportTips = [
 export default function InqueryPage() {
   return (
     <PageFrame mainClassName="space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">
-          CONTACT
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">お問い合わせ</h1>
-        <p className="mt-4 text-sm text-white/80">
-          メールでお問い合わせを受け付けています。下記テンプレートのコピーし、ご連絡よろしくお願いいたします。
+      <section className="space-y-3 border-y border-white/15 px-4 py-10 text-center lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">CONTACT</p>
+        <h1 className="text-3xl font-semibold text-white">お問い合わせ</h1>
+        <p className="text-sm text-white/80">
+          メールでお問い合わせを受け付けています。下記テンプレートをコピーし、ご連絡よろしくお願いいたします。
         </p>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+      <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-              MAIL
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">MAIL</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">メールで問い合わせる</h2>
             <p className="mt-2 text-sm text-white/80">
               {mailAddress} へテンプレートを貼り付けたメールをお送りください。
@@ -64,21 +60,19 @@ export default function InqueryPage() {
         <textarea
           readOnly
           value={mailTemplate}
-          className="mt-4 w-full rounded-2xl border border-white/15 bg-[#0b0b18] p-4 font-mono text-xs text-white focus:outline-none"
+          className="mt-4 w-full border border-white/20 bg-[#0b0b18] p-4 font-mono text-xs text-white focus:outline-none"
           rows={12}
         />
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-          SUPPORT
-        </p>
+      <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">SUPPORT</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">対応ポリシー</h2>
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="mt-4 grid gap-6 lg:grid-cols-3">
           {supportTips.map((tip) => (
             <article
               key={tip.title}
-              className="rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-white/80"
+              className="space-y-2 border-t border-white/15 pt-4 text-sm text-white/80"
             >
               <p className="text-sm font-semibold text-white">{tip.title}</p>
               <p className="mt-2 leading-relaxed">{tip.detail}</p>

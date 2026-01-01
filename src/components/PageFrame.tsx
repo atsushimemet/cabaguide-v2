@@ -93,7 +93,7 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
       </div>
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 sm:px-8 lg:py-14">
-        <header className="neon-laser-frame flex flex-col gap-3 rounded-3xl border border-cyan-100/40 bg-white/5 p-6 text-center backdrop-blur-xl sm:text-left">
+        <header className="neon-laser-frame flex flex-col gap-3 border-y border-cyan-100/40 px-4 py-8 text-center">
           <span className="neon-laser-gap" aria-hidden="true" />
           <span className="neon-laser-inner" aria-hidden="true" />
           <div className="relative z-10 flex flex-col gap-1">
@@ -111,7 +111,7 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
 
         <main className={mainClasses}>{children}</main>
 
-        <footer className="mt-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+        <footer className="mt-4 border-t border-white/15 pt-6">
           <div className="text-center sm:text-left">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/40">
               FOOTER
@@ -122,7 +122,7 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
               <Link
                 key={label}
                 href={href}
-                className="rounded-full border border-white/10 px-4 py-2 font-medium transition hover:border-fuchsia-400/60 hover:text-white"
+                className="border-b border-transparent pb-1 font-medium transition hover:border-fuchsia-400/60 hover:text-white"
               >
                 {label}
               </Link>
