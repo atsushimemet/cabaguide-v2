@@ -19,7 +19,7 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
   const showCrown = typeof rank === "number" && rank >= 1 && rank <= 3;
   const crownBg = rank === 1 ? "bg-[#fcd34d]" : "bg-white/90";
   const cardClassName = [
-    "group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_45px_rgba(15,6,33,0.65)] backdrop-blur-xl",
+    "group relative z-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_45px_rgba(15,6,33,0.65)] backdrop-blur-xl",
     className,
   ]
     .filter(Boolean)

@@ -170,7 +170,7 @@ export const TopCastGrid = ({ casts, triggerId }: TopCastGridProps) => {
         const isVisible = index < visibleCount;
         const wrapperClass = [
           "cast-card-glitch",
-          isVisible ? "cast-card-glitch--visible" : "cast-card-glitch--hidden",
+          isVisible ? "cast-card-glitch--visible neon-laser-frame" : "cast-card-glitch--hidden",
         ]
           .filter(Boolean)
           .join(" ");
@@ -185,6 +185,8 @@ export const TopCastGrid = ({ casts, triggerId }: TopCastGridProps) => {
             }}
             data-index={index}
           >
+            <span className="neon-laser-gap" aria-hidden="true" />
+            <span className="neon-laser-inner" aria-hidden="true" />
             <CastCard cast={cast} detailHref={`${cast.castLink}?from=home`} rank={index + 1} className="h-full" />
           </div>
         );

@@ -86,6 +86,8 @@ body {
     transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
     filter 0.6s ease;
   filter: saturate(0.5) contrast(0.9);
+  border-radius: 1.75rem;
+  isolation: isolate;
 }
 
 .cast-card-glitch::before,
@@ -129,6 +131,38 @@ body {
   animation: card-glitch-scan 0.65s steps(2, end);
 }
 
+.cast-card-glitch.neon-laser-frame::before,
+.cast-card-glitch.neon-laser-frame::after {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
+.cast-card-glitch--visible.neon-laser-frame::before,
+.cast-card-glitch--visible.neon-laser-frame::after {
+  opacity: 1;
+  animation-play-state: running;
+  animation-delay: 0.12s;
+}
+
+.cast-card-glitch .neon-laser-gap,
+.cast-card-glitch .neon-laser-inner {
+  opacity: 0;
+  animation-play-state: paused;
+  transition: opacity 0.4s ease;
+}
+
+.cast-card-glitch--visible .neon-laser-gap,
+.cast-card-glitch--visible .neon-laser-inner {
+  opacity: 1;
+  animation-play-state: running;
+  animation-delay: 0.18s;
+}
+.cast-card-glitch--visible .neon-laser-gap,
+.cast-card-glitch--visible .neon-laser-inner,
+.cast-card-glitch.neon-laser-frame::before,
+.cast-card-glitch.neon-laser-frame::after {
+  border-radius: 1.75rem;
+}
 @media (max-width: 640px) {
   .cast-card-glitch {
     transform: translate3d(42px, 0, 0) scale(0.94);
