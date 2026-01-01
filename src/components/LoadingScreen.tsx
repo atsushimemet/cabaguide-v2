@@ -21,6 +21,11 @@ export const LoadingScreen = ({ children, durationMs = 3000 }: LoadingScreenProp
     };
   }, [durationMs]);
 
+  useEffect(() => {
+    if (isVisible) return;
+    window.dispatchEvent(new CustomEvent("loading-screen:completed"));
+  }, [isVisible]);
+
   return (
     <>
       {children}
