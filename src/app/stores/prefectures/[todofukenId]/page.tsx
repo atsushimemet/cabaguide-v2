@@ -95,18 +95,14 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
 
   return (
     <PageFrame mainClassName="gap-10">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-[0_18px_50px_rgba(5,3,18,0.65)] backdrop-blur-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-          STORE RANKING
-        </p>
-        <h1 className="mt-4 text-xl font-semibold leading-[1.4] sm:text-3xl">
+      <section className="space-y-4 border-y border-white/15 px-4 py-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">STORE RANKING</p>
+        <h1 className="text-xl font-semibold leading-[1.4] sm:text-3xl">
           <span className="block text-base whitespace-nowrap sm:inline sm:text-[1em]">
             {`【${year}年最新】${prefecture}`}
           </span>
-          <span className="block text-base sm:inline sm:ml-2 sm:text-[1em]">
-            キャバクラ店舗ランキング
-          </span>
-          <span className="block text-sm whitespace-nowrap sm:text-[0.75em] sm:ml-4">
+          <span className="block text-base sm:inline sm:ml-2 sm:text-[1em]">キャバクラ店舗ランキング</span>
+          <span className="block text-sm whitespace-nowrap sm:ml-4 sm:text-[0.75em]">
             SNSフォロワー数で見る本当の人気店舗
           </span>
           <span className="mt-1 block text-xs text-white/60">
@@ -115,7 +111,7 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
         </h1>
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+      <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">PREFECTURE</p>
           <h2 className="text-xl font-semibold">都道府県を切り替える</h2>
@@ -129,10 +125,10 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
                 <Link
                   key={pref}
                   href={createPrefectureLink(pref)}
-                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition ${
+                  className={`whitespace-nowrap border-b px-2 pb-1 text-sm transition ${
                     active
-                      ? "border-fuchsia-400/80 bg-fuchsia-500/20 text-white"
-                      : "border-white/15 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
+                      ? "border-white text-white"
+                      : "border-white/30 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
                   }`}
                 >
                   {pref}
@@ -143,7 +139,7 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
         </div>
       </section>
 
-      <section className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_18px_50px_rgba(5,3,18,0.65)] backdrop-blur-xl">
+      <section className="space-y-6 border-y border-white/15 px-2 py-10 sm:px-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">TOP STORES</p>
           <h2 className="text-2xl font-semibold">{prefecture}の人気店舗 TOP {STORE_RANKING_PAGE_SIZE}</h2>
@@ -155,22 +151,22 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
         </div>
 
         {rankings.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/15 bg-black/30 p-6 text-center text-white/70">
+          <div className="border border-dashed border-white/25 p-6 text-center text-white/70">
             データ収集中です。キャスト情報が追加され次第、ランキングを公開します。
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-8">
             {rankings.map((entry, index) => (
               <article
                 key={entry.storeId}
-                className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-5 transition hover:border-fuchsia-400/40"
+                className="space-y-4 border-t border-white/15 pt-6"
               >
                 <div className="flex flex-1 flex-col gap-3">
-                  <div className="relative h-32 w-full rounded-2xl bg-gradient-to-br from-fuchsia-500/40 via-purple-500/30 to-cyan-400/30">
+                  <div className="relative h-32 w-full border border-white/15 bg-gradient-to-br from-fuchsia-500/10 via-purple-500/10 to-cyan-400/10">
                     {index < 3 && (
                       <span
-                        className={`absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${
-                          index === 0 ? "bg-[#fcd34d]" : "bg-white/90"
+                        className={`absolute left-3 top-3 flex h-10 w-10 items-center justify-center border border-white/30 text-2xl ${
+                          index === 0 ? "bg-[#fcd34d]" : "bg-white/90 text-black"
                         }`}
                       >
                         <span aria-hidden>👑</span>
@@ -196,12 +192,12 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
                     </p>
                   </div>
                 </div>
-                <div className="grid gap-4 text-sm text-white/80 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="grid gap-4 border-t border-white/15 pt-4 text-sm text-white/80 sm:grid-cols-2">
+                  <div className="border-b border-white/15 pb-4">
                     <p className="text-xs uppercase tracking-[0.3em] text-white/50">FOLLOWERS</p>
                     <p className="mt-2 text-xl font-semibold text-white">{formatFollowers(entry.followers)}</p>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="border-b border-white/15 pb-4">
                     <p className="text-xs uppercase tracking-[0.3em] text-white/50">LAST UPDATE</p>
                     <p className="mt-2 text-base text-white">{formatCapturedAt(entry.capturedAt)}</p>
                   </div>
