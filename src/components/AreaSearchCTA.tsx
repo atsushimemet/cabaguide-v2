@@ -15,6 +15,7 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
   const [canAnimate, setCanAnimate] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const hasTriggeredRef = useRef(false);
+  const hasAnnouncedDescriptionRef = useRef(false);
 
   useEffect(() => {
     const handleReady = () => setCanAnimate(true);
@@ -66,6 +67,17 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
       }
     };
   }, [canAnimate]);
+
+  useEffect(() => {
+    if (!descriptionVisible || hasAnnouncedDescriptionRef.current) return;
+    hasAnnouncedDescriptionRef.current = true;
+
+    if (document.body) {
+      document.body.dataset.areaSearchDescriptionVisible = "true";
+    }
+
+    window.dispatchEvent(new CustomEvent("area-search:description-visible"));
+  }, [descriptionVisible]);
 
   const titleStyle = useMemo<CSSProperties>(
     () => ({

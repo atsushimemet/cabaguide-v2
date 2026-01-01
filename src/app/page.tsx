@@ -33,34 +33,36 @@ export default async function Home() {
           title="トッププレミアムバナー"
           description="店舗専用TOP枠で最新情報を発信"
           href="/ads"
+          animationVariant="top"
         />
 
-      <section className="space-y-6">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/50">
-            TOP CAST
-          </p>
-          <h3 className="mt-2 text-3xl font-semibold">今週のベスト10</h3>
-          <p className="text-sm text-white/70">
-            キャスト画像をタップして、詳細プロフィールにアクセス。
-          </p>
-          <p className="text-xs text-white/50">{lastUpdatedText}</p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {topCasts.map((cast, index) => (
-            <CastCard key={cast.id} cast={cast} detailHref={`${cast.castLink}?from=home`} rank={index + 1} />
-          ))}
-        </div>
-      </section>
+        <section className="space-y-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/50">
+              TOP CAST
+            </p>
+            <h3 className="mt-2 text-3xl font-semibold">今週のベスト10</h3>
+            <p className="text-sm text-white/70">
+              キャスト画像をタップして、詳細プロフィールにアクセス。
+            </p>
+            <p className="text-xs text-white/50">{lastUpdatedText}</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {topCasts.map((cast, index) => (
+              <CastCard key={cast.id} cast={cast} detailHref={`${cast.castLink}?from=home`} rank={index + 1} />
+            ))}
+          </div>
+        </section>
 
-      <AdBanner
-        label="広告エリア（BOTTOM）"
-        title="BOTTOMプレミアムバナー"
-        description="店舗専用BOTTOM枠で最新情報を発信"
-        href="/ads"
-      />
+        <AdBanner
+          label="広告エリア（BOTTOM）"
+          title="BOTTOMプレミアムバナー"
+          description="店舗専用BOTTOM枠で最新情報を発信"
+          href="/ads"
+          animationVariant="bottom"
+        />
 
-      <AreaSearchCTA />
+        <AreaSearchCTA />
 
         {topCastStructuredData && <StructuredDataScript data={topCastStructuredData} />}
       </PageFrame>
