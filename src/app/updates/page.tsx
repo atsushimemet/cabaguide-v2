@@ -13,27 +13,23 @@ export default async function UpdatesPage() {
 
   return (
     <PageFrame mainClassName="space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">
-          UPDATES
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">更新情報</h1>
-        <p className="mt-4 text-sm text-white/80">
-          本ページではcabaguideの更新情報を掲載します。
-        </p>
+      <section className="space-y-3 border-y border-white/15 px-4 py-10 text-center lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">UPDATES</p>
+        <h1 className="text-3xl font-semibold text-white">更新情報</h1>
+        <p className="text-sm text-white/80">本ページではcabaguideの更新情報を掲載します。</p>
       </section>
 
       {updates.length === 0 ? (
-        <section className="rounded-3xl border border-dashed border-white/10 bg-black/40 p-6 text-center text-sm text-white/70">
+        <section className="border border-dashed border-white/20 px-4 py-6 text-center text-sm text-white/70">
           最新の更新情報はまだありません。
         </section>
       ) : (
         updates.map((entry) => (
           <article
             key={entry.slug}
-            className="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl"
+            className="space-y-4 border-b border-white/15 px-4 pb-8"
           >
-            <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
+            <div className="flex flex-col gap-2 border-b border-white/20 pb-4">
               <p className="text-xs uppercase tracking-[0.4em] text-white/50">
                 {formatDate(entry.created_at)}
               </p>
