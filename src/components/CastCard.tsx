@@ -33,10 +33,9 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
   const showCrown = typeof rank === "number" && rank >= 1 && rank <= 3;
   const crownBg = rank === 1 ? "bg-[#fcd34d]" : "bg-white/90";
   const [columnCount, setColumnCount] = useState(1);
-  const [fontIndex, setFontIndex] = useState(0);
+  const [rotationStep, setRotationStep] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const cardRef = useRef<HTMLElement | null>(null);
-  const fontMode = FONT_VARIANTS[fontIndex];
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia === "undefined") return;
@@ -73,7 +72,7 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
         const entry = entries[0];
         setIsInView(Boolean(entry?.isIntersecting));
       },
-      { threshold: 0.5, rootMargin: "0px 0px -10% 0px" },
+      { threshold: 0.25, rootMargin: "0px 0px -15% 0px" },
     );
 
     observer.observe(target);
@@ -83,20 +82,19 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
 
   useEffect(() => {
     if (!isInView) {
-      const resetTimer = window.setTimeout(() => setFontIndex(baseFontIndex), 0);
+      const resetTimer = window.setTimeout(() => setRotationStep(0), 0);
       return () => window.clearTimeout(resetTimer);
     }
 
-    const syncTimer = window.setTimeout(() => setFontIndex(baseFontIndex), 0);
     const interval = window.setInterval(() => {
-      setFontIndex((prev) => (prev + 1) % FONT_VARIANTS.length);
+      setRotationStep((prev) => (prev + 1) % FONT_VARIANTS.length);
     }, 1000);
 
-    return () => {
-      window.clearTimeout(syncTimer);
-      window.clearInterval(interval);
-    };
-  }, [baseFontIndex, isInView]);
+    return () => window.clearInterval(interval);
+  }, [isInView]);
+
+  const fontIndex = (baseFontIndex + rotationStep) % FONT_VARIANTS.length;
+  const fontMode = FONT_VARIANTS[fontIndex];
 
   const headingFontClass =
     fontMode === "serif"
