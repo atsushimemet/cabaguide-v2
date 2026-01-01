@@ -75,7 +75,37 @@ export default async function CastListPage({ params, searchParams }: CastListPag
   const lastUpdatedLabel = await getRankingLastUpdatedLabel();
   const lastUpdatedText = `最終更新：${lastUpdatedLabel ?? "更新準備中"}`;
 
-  const pageNumbers = Array.from({ length: totalPages }).map((_, index) => index + 1);
+  const buildPagination = () => {
+    if (totalPages <= 1) {
+      return [1];
+    }
+
+    const pages = new Set<number>();
+    pages.add(1);
+    pages.add(totalPages);
+    pages.add(currentPage);
+
+    const prev = currentPage - 1;
+    const next = currentPage + 1;
+    if (prev > 1) pages.add(prev);
+    if (next < totalPages) pages.add(next);
+
+    const sortedPages = Array.from(pages).sort((a, b) => a - b);
+
+    const result: Array<number | "ellipsis"> = [];
+    let previous: number | undefined;
+
+    for (const page of sortedPages) {
+      if (previous !== undefined && page - previous > 1) {
+        result.push("ellipsis");
+      }
+      result.push(page);
+      previous = page;
+    }
+
+    return result;
+  };
+  const pageNumbers = buildPagination();
   const currentYear = new Date().getFullYear();
   const areaLabel = `${area.todofukenName} ${area.downtownName}`;
   const startPosition = (currentPage - 1) * PAGE_SIZE;
@@ -141,20 +171,26 @@ export default async function CastListPage({ params, searchParams }: CastListPag
           <div>
             ページ {currentPage}/{totalPages} ・ 表示 {casts.length} 件 / 全 {totalCount} 件
           </div>
-          <div className="flex flex-wrap gap-2">
-            {pageNumbers.map((pageNumber) => (
-              <Link
-                key={pageNumber}
-                href={`/casts/${downtownId}?page=${pageNumber}`}
-                className={`border-b px-2 pb-1 text-sm font-semibold transition ${
-                  pageNumber === currentPage
-                    ? "border-white text-white"
-                    : "border-white/30 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
-                }`}
-              >
-                {pageNumber}
-              </Link>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            {pageNumbers.map((item, index) =>
+              item === "ellipsis" ? (
+                <span key={`ellipsis-${index}`} className="px-2 text-white/50">
+                  …
+                </span>
+              ) : (
+                <Link
+                  key={`page-${item}`}
+                  href={`/casts/${downtownId}?page=${item}`}
+                  className={`border-b px-2 pb-1 text-sm font-semibold transition ${
+                    item === currentPage
+                      ? "border-white text-white"
+                      : "border-white/30 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
+                  }`}
+                >
+                  {item}
+                </Link>
+              ),
+            )}
           </div>
         </nav>
       </section>
