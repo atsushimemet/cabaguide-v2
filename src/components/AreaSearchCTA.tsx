@@ -11,6 +11,7 @@ type AreaSearchCTAProps = {
 export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAProps) => {
   const [titleVisible, setTitleVisible] = useState(false);
   const [descriptionVisible, setDescriptionVisible] = useState(false);
+  const [buttonVisible, setButtonVisible] = useState(false);
   const [canAnimate, setCanAnimate] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const hasTriggeredRef = useRef(false);
@@ -44,7 +45,10 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
           if (!entry.isIntersecting || hasTriggeredRef.current) return;
           hasTriggeredRef.current = true;
           setTitleVisible(true);
-          descriptionTimer = window.setTimeout(() => setDescriptionVisible(true), 650);
+          descriptionTimer = window.setTimeout(() => {
+            setDescriptionVisible(true);
+            setButtonVisible(true);
+          }, 650);
         });
       },
       {
@@ -81,6 +85,13 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
     [descriptionVisible],
   );
 
+  const buttonClassName = [
+    "glitch-button inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 px-8 py-3 text-base font-semibold shadow-[0_0_25px_rgba(236,72,153,0.45)] lg:self-start",
+    buttonVisible ? "glitch-button--visible" : "glitch-button--hidden",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const baseSectionClass =
     "flex flex-col gap-6 rounded-3xl bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 text-center backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:text-left";
   const sectionClassName = hideBorder ? baseSectionClass : `${baseSectionClass} border border-white/10`;
@@ -98,7 +109,8 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
       </div>
       <Link
         href="/todofuken-choice"
-        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 px-8 py-3 text-base font-semibold shadow-[0_0_25px_rgba(236,72,153,0.45)] transition hover:scale-105 lg:self-start"
+        className={buttonClassName}
+        data-label="エリアから探す"
       >
         エリアから探す
       </Link>

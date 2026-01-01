@@ -27,6 +27,55 @@ body {
   min-height: 100vh;
 }
 
+.glitch-button {
+  position: relative;
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.glitch-button::before,
+.glitch-button::after {
+  content: attr(data-label);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.glitch-button::before {
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 2px 0 rgba(0, 255, 255, 0.6);
+}
+
+.glitch-button::after {
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: -2px 0 rgba(255, 0, 255, 0.6);
+}
+
+.glitch-button--hidden {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+}
+
+.glitch-button--visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  animation: glitch-flicker 0.6s steps(2, end);
+}
+
+.glitch-button--visible::before,
+.glitch-button--visible::after {
+  animation: glitch-scan 0.45s steps(2, end);
+}
+
 .neon-outline-text {
   color: transparent;
   -webkit-text-stroke: 2px rgba(255, 130, 28, 0.95);
@@ -376,6 +425,43 @@ body {
   }
   85% {
     opacity: 0.6;
+  }
+}
+
+@keyframes glitch-flicker {
+  0% {
+    filter: blur(0.5px);
+  }
+  30% {
+    filter: blur(1.6px);
+    opacity: 0.4;
+  }
+  45% {
+    filter: blur(0);
+    opacity: 1;
+  }
+  60% {
+    filter: blur(2px);
+    opacity: 0.35;
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes glitch-scan {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+    transform: translate3d(2px, -2px, 0);
+  }
+  60% {
+    opacity: 0.6;
+    transform: translate3d(-3px, 3px, 0);
   }
 }
 
