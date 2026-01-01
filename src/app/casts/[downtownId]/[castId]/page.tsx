@@ -119,17 +119,19 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
 
   return (
     <PageFrame mainClassName="gap-8">
-      <Link
-        href={backLink.href}
-        className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
-      >
-        ← {backLink.label}
-      </Link>
+      <div className="border-b border-white/20 pb-4">
+        <Link
+          href={backLink.href}
+          className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+        >
+          ← {backLink.label}
+        </Link>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">
-        <section className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_18px_50px_rgba(5,3,18,0.65)] backdrop-blur-xl">
+      <div className="grid gap-6 border-y border-white/15 px-2 py-10 lg:grid-cols-[2fr_3fr]">
+        <section className="space-y-6 border-white/15 lg:border-r lg:pr-4">
           <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-3xl">
+            <div className="relative overflow-hidden">
               <Image
                 src={detail.cast.image}
                 alt={`${detail.cast.name}のキャスト画像`}
@@ -137,7 +139,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
                 height={820}
                 className="h-80 w-full object-cover"
               />
-              <span className="absolute left-4 top-4 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold text-white/80">
+              <span className="absolute left-4 top-4 border border-white/30 bg-black/70 px-4 py-1 text-xs font-semibold text-white/80">
                 {detail.cast.prefecture}・{detail.cast.downtownName}
               </span>
             </div>
@@ -146,7 +148,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 sm:grid-cols-3">
+          <div className="grid gap-3 border-y border-white/15 py-4 sm:grid-cols-3">
             <div>
               {instagramUrl ? (
                 <Link
@@ -189,7 +191,7 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
             </div>
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-white/10 bg-black/40 p-4">
+          <div className="space-y-3 border-t border-white/15 pt-4">
             <div className="flex flex-col gap-1 text-sm text-white/80">
               <span className="text-xs uppercase tracking-[0.3em] text-white/50">STORE</span>
               <Link
