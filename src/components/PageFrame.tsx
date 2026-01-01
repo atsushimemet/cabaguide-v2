@@ -42,7 +42,7 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
           <div className="relative z-10 flex flex-col gap-1">
             <Link
               href="/"
-              className="text-3xl font-semibold tracking-[0.3em] text-white sm:text-4xl"
+              className="neon-outline-text text-3xl font-semibold tracking-[0.3em] text-transparent sm:text-4xl"
             >
               cabaguide
             </Link>

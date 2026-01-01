@@ -27,6 +27,15 @@ body {
   min-height: 100vh;
 }
 
+.neon-outline-text {
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 130, 28, 0.95);
+  text-stroke: 2px rgba(255, 130, 28, 0.95);
+  text-shadow: 0 0 8px rgba(255, 94, 0, 0.9), 0 0 18px rgba(255, 187, 0, 0.8);
+  letter-spacing: 0.3em;
+  animation: neon-outline-pulse 1.6s ease-in-out infinite;
+}
+
 .neon-laser-frame {
   position: relative;
   overflow: hidden;
@@ -367,5 +376,15 @@ body {
   }
   85% {
     opacity: 0.6;
+  }
+}
+
+@keyframes neon-outline-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 8px rgba(255, 94, 0, 0.9), 0 0 18px rgba(255, 187, 0, 0.8);
+  }
+  50% {
+    text-shadow: 0 0 14px rgba(255, 178, 0, 1), 0 0 26px rgba(255, 233, 122, 0.95);
   }
 }
