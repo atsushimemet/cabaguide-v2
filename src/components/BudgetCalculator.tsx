@@ -85,7 +85,7 @@ export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps
   const hasStartOptions = startOptions.length > 0;
 
   return (
-    <section className="space-y-6 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+    <section className="space-y-8 border-y border-white/15 px-2 py-10 sm:px-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-fuchsia-200">
@@ -96,7 +96,7 @@ export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps
         <button
           type="button"
           onClick={() => setShowDetails((prev) => !prev)}
-          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-fuchsia-400/60 hover:text-white"
+          className="inline-flex items-center gap-2 border-b border-white/30 px-1 pb-1 text-sm font-semibold text-white/80 transition hover:border-fuchsia-400/60 hover:text-white"
           aria-expanded={showDetails}
         >
           {showDetails ? "前提を隠す" : "概算の前提"}
@@ -104,7 +104,7 @@ export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps
       </header>
       <div className="space-y-4">
         {showDetails && (
-          <div className="rounded-2xl border border-white/15 bg-black/50 p-4 text-sm text-white/80">
+          <div className="border-l-4 border-white/20 pl-4 text-sm text-white/80">
             開始時間を選ぶと選択した時間から 2 時間滞在した際の概算を表示します。通常席（メイン料金）を前提に、キャストドリンク{" "}
             {LIGHT_DRINKS_PER_GUEST} 杯（1 杯 {formatYen(LIGHT_DRINK_UNIT_PRICE)}）とシャンパン 1 本{" "}
             {formatYen(CHAMPAGNE_PRICE)} を加味したシナリオを自動算出します。料金詳細は
@@ -132,7 +132,7 @@ export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps
             <select
               value={hasStartOptions ? params.startTime : ""}
               onChange={handleStartChange}
-              className="w-full rounded-2xl border border-white/10 bg-black/60 px-4 py-2 focus:border-fuchsia-400/60 focus:outline-none"
+              className="w-full border-b border-white/30 bg-transparent px-0 py-2 focus:border-fuchsia-400/60 focus:outline-none"
               disabled={!hasStartOptions}
             >
               {hasStartOptions ? (
@@ -153,7 +153,7 @@ export const BudgetCalculator = ({ store, storePageHref }: BudgetCalculatorProps
         {result.scenarios.map((scenario) => (
           <div
             key={scenario.id}
-            className="space-y-3 rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-white/80"
+            className="space-y-3 border-t border-white/10 pt-4 text-sm text-white/80"
           >
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-white/60">

@@ -109,8 +109,8 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
     .join(" ");
 
   const baseSectionClass =
-    "flex flex-col gap-6 rounded-3xl bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 text-center backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:text-left";
-  const sectionClassName = hideBorder ? baseSectionClass : `${baseSectionClass} border border-white/10`;
+    "flex flex-col gap-6 px-4 py-10 text-center lg:flex-row lg:items-center lg:justify-between lg:text-left";
+  const sectionClassName = hideBorder ? baseSectionClass : `${baseSectionClass} border-y border-white/15`;
 
   return (
     <section id={sectionId} className={sectionClassName} ref={sectionRef}>

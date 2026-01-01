@@ -14,7 +14,7 @@ type AdBannerProps = {
 };
 
 const baseClasses =
-  "rounded-3xl border border-white/10 bg-gradient-to-r from-purple-800/80 via-fuchsia-700/60 to-blue-700/70 p-6 text-center shadow-[0_0_45px_rgba(147,51,234,0.45)] backdrop-blur-xl lg:flex lg:items-center lg:justify-between lg:text-left";
+  "relative border-y border-white/15 px-4 py-10 text-center lg:flex lg:items-center lg:justify-between lg:text-left";
 
 export const AdBanner = ({
   label,
