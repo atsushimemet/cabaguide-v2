@@ -93,25 +93,23 @@ export default async function CastListPage({ params, searchParams }: CastListPag
 
   return (
     <PageFrame mainClassName="gap-10">
-      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
-          STEP 3
-        </p>
-        <h1 className="mt-4 text-xl font-semibold leading-[1.4] sm:text-3xl">
-          <span className="block text-base whitespace-nowrap sm:text-[1em] sm:inline">
+      <section className="space-y-4 border-y border-white/15 px-4 py-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">STEP 3</p>
+        <h1 className="text-xl font-semibold leading-[1.5] sm:text-3xl">
+          <span className="block text-base whitespace-nowrap sm:inline sm:text-[1em]">
             {`【${currentYear}年最新】${area.todofukenName} ${area.downtownName}`}
           </span>
-          <span className="block text-base sm:inline sm:ml-2 sm:whitespace-nowrap sm:text-[1em]">
+          <span className="block text-base sm:ml-2 sm:inline sm:whitespace-nowrap sm:text-[1em]">
             キャバクラキャストランキング
           </span>
-          <span className="block text-sm whitespace-nowrap sm:text-[0.75em] sm:ml-4">
+          <span className="block text-sm whitespace-nowrap sm:ml-4 sm:text-[0.75em]">
             SNSフォロワー数で見る本当の人気キャスト
           </span>
           <span className="mt-1 block text-xs text-white/60">
             広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングです。Instagram/TikTokで有名・人気キャストを見つけよう！
           </span>
         </h1>
-      </header>
+      </section>
 
       <AdBanner
         label="繁華街プラン"
@@ -120,7 +118,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
         href="/ads"
       />
 
-      <section className="space-y-4">
+      <section className="space-y-6 border-y border-white/15 px-2 py-10 sm:px-4">
         <div className="space-y-1 text-sm text-white/70">
           <p>キャスト画像をタップして、詳細プロフィールにアクセス。</p>
           <p className="text-xs text-white/50">{lastUpdatedText}</p>
@@ -139,7 +137,7 @@ export default async function CastListPage({ params, searchParams }: CastListPag
           })}
         </div>
 
-        <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-white/80">
+        <nav className="flex flex-wrap items-center justify-between gap-4 border-y border-white/15 py-6 text-sm text-white/80">
           <div>
             ページ {currentPage}/{totalPages} ・ 表示 {casts.length} 件 / 全 {totalCount} 件
           </div>
@@ -148,10 +146,10 @@ export default async function CastListPage({ params, searchParams }: CastListPag
               <Link
                 key={pageNumber}
                 href={`/casts/${downtownId}?page=${pageNumber}`}
-                className={`rounded-full px-4 py-2 font-semibold transition ${
+                className={`border-b px-2 pb-1 text-sm font-semibold transition ${
                   pageNumber === currentPage
-                    ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 text-white"
-                    : "border border-white/15 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
+                    ? "border-white text-white"
+                    : "border-white/30 text-white/70 hover:border-fuchsia-400/60 hover:text-white"
                 }`}
               >
                 {pageNumber}
@@ -161,22 +159,22 @@ export default async function CastListPage({ params, searchParams }: CastListPag
         </nav>
       </section>
 
-      <div className="flex flex-wrap gap-4 text-sm text-white/70">
+      <div className="flex flex-wrap gap-4 border-t border-white/15 pt-6 text-sm text-white/70">
         <Link
           href={`/downtown-choice?prefecture=${encodeURIComponent(area.todofukenName)}`}
-          className="rounded-full border border-white/10 px-4 py-2 transition hover:border-fuchsia-400/60 hover:text-white"
+          className="border-b border-white/30 px-2 pb-1 transition hover:border-fuchsia-400/60 hover:text-white"
         >
           繁華街選択に戻る
         </Link>
         <Link
           href="/todofuken-choice"
-          className="rounded-full border border-white/10 px-4 py-2 transition hover:border-fuchsia-400/60 hover:text-white"
+          className="border-b border-white/30 px-2 pb-1 transition hover:border-fuchsia-400/60 hover:text-white"
         >
           都道府県選択に戻る
         </Link>
         <Link
           href="/"
-          className="rounded-full border border-white/10 px-4 py-2 transition hover:border-fuchsia-400/60 hover:text-white"
+          className="border-b border-white/30 px-2 pb-1 transition hover:border-fuchsia-400/60 hover:text-white"
         >
           トップページに戻る
         </Link>
