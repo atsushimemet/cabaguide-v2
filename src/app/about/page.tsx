@@ -33,12 +33,10 @@ const aboutSections = [
 export default function AboutPage() {
   return (
     <PageFrame mainClassName="space-y-8">
-      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl lg:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">
-          ABOUT
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">cabaguideについて</h1>
-        <p className="mt-4 text-sm text-white/80">
+      <section className="space-y-3 border-y border-white/15 px-4 py-10 text-center lg:text-left">
+        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-fuchsia-200">ABOUT</p>
+        <h1 className="text-3xl font-semibold text-white">cabaguideについて</h1>
+        <p className="text-sm text-white/80">
           フッターの「これはなに？」から辿り着いたあなたへ。cabaguideが解決したい課題と、私たちが提供する価値を4つの柱でご紹介します。
         </p>
       </section>
@@ -46,7 +44,7 @@ export default function AboutPage() {
       {aboutSections.map(({ title, body }) => (
         <section
           key={title}
-          className="space-y-3 rounded-3xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl"
+          className="space-y-3 border-b border-white/15 px-4 pb-8"
         >
           <h2 className="text-xl font-semibold text-white">{title}</h2>
           {body.map((text) => (
