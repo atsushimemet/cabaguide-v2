@@ -163,6 +163,23 @@ body {
 .cast-card-glitch.neon-laser-frame::after {
   border-radius: 1.75rem;
 }
+
+.cast-name--serif {
+  font-family: "Georgia", "Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  letter-spacing: 0.05em;
+}
+
+.cast-name--yuji {
+  font-family: var(--font-hachi-maru), "Hachi Maru Pop", "M PLUS Rounded 1c", "BIZ UDPGothic", cursive;
+  letter-spacing: 0.08em;
+}
+
+.cast-name--dela {
+  font-family: var(--font-dela-gothic), "Dela Gothic One", "M PLUS Rounded 1c", "BIZ UDPGothic", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 640px) {
   .cast-card-glitch {
     transform: translate3d(42px, 0, 0) scale(0.94);
