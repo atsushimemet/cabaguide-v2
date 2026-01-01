@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Cast } from "@/types/cast";
 
@@ -18,15 +18,51 @@ export type CastCardProps = {
 };
 
 const FONT_VARIANTS = ["serif", "yuji", "dela"] as const;
+const LG_BREAKPOINT = "(min-width: 1024px)";
+const SM_BREAKPOINT = "(min-width: 640px)";
+
+const resolveColumnCount = () => {
+  if (typeof window === "undefined" || typeof window.matchMedia === "undefined") return 1;
+  if (window.matchMedia(LG_BREAKPOINT).matches) return 3;
+  if (window.matchMedia(SM_BREAKPOINT).matches) return 2;
+  return 1;
+};
 
 export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) => {
   const href = detailHref ?? cast.castLink;
   const showCrown = typeof rank === "number" && rank >= 1 && rank <= 3;
   const crownBg = rank === 1 ? "bg-[#fcd34d]" : "bg-white/90";
+  const [columnCount, setColumnCount] = useState(1);
   const [fontIndex, setFontIndex] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const cardRef = useRef<HTMLElement | null>(null);
   const fontMode = FONT_VARIANTS[fontIndex];
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia === "undefined") return;
+
+    const update = () => setColumnCount(resolveColumnCount());
+    const lgQuery = window.matchMedia(LG_BREAKPOINT);
+    const smQuery = window.matchMedia(SM_BREAKPOINT);
+
+    update();
+    lgQuery.addEventListener("change", update);
+    smQuery.addEventListener("change", update);
+
+    return () => {
+      lgQuery.removeEventListener("change", update);
+      smQuery.removeEventListener("change", update);
+    };
+  }, []);
+
+  const baseFontIndex = useMemo(() => {
+    const zeroIndex = typeof rank === "number" ? Math.max(0, rank - 1) : 0;
+    const cols = Math.max(1, columnCount);
+    const row = Math.floor(zeroIndex / cols);
+    const col = zeroIndex % cols;
+    const diff = ((col - row) % FONT_VARIANTS.length + FONT_VARIANTS.length) % FONT_VARIANTS.length;
+    return diff;
+  }, [columnCount, rank]);
 
   useEffect(() => {
     const target = cardRef.current;
@@ -47,16 +83,20 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
 
   useEffect(() => {
     if (!isInView) {
-      const resetTimer = window.setTimeout(() => setFontIndex(0), 0);
+      const resetTimer = window.setTimeout(() => setFontIndex(baseFontIndex), 0);
       return () => window.clearTimeout(resetTimer);
     }
 
+    const syncTimer = window.setTimeout(() => setFontIndex(baseFontIndex), 0);
     const interval = window.setInterval(() => {
       setFontIndex((prev) => (prev + 1) % FONT_VARIANTS.length);
     }, 1000);
 
-    return () => window.clearInterval(interval);
-  }, [isInView]);
+    return () => {
+      window.clearTimeout(syncTimer);
+      window.clearInterval(interval);
+    };
+  }, [baseFontIndex, isInView]);
 
   const headingFontClass =
     fontMode === "serif"
