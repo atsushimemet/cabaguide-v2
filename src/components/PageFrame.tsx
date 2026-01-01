@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { DEFAULT_STORE_RANKING_PREFECTURE } from "@/constants/storeRanking";
 
@@ -19,6 +20,8 @@ const footerLinks = [
   { label: "障害情報", href: "#" },
 ];
 
+const TAGLINE_TEXT = "「この子でよかった」と思える夜へ";
+
 type PageFrameProps = {
   children: React.ReactNode;
   mainClassName?: string;
@@ -26,6 +29,60 @@ type PageFrameProps = {
 
 export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
   const mainClasses = ["flex flex-col", mainClassName].filter(Boolean).join(" ");
+  const [displayedTagline, setDisplayedTagline] = useState("");
+  const [canAnimateTagline, setCanAnimateTagline] = useState(false);
+
+  useEffect(() => {
+    const handleReady = () => setCanAnimateTagline(true);
+    const loadingScreenEl = document.querySelector(".loading-screen");
+    let readyTimer: number | undefined;
+
+    if (!loadingScreenEl) {
+      readyTimer = window.setTimeout(() => setCanAnimateTagline(true), 0);
+    } else {
+      window.addEventListener("loading-screen:completed", handleReady, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener("loading-screen:completed", handleReady);
+      if (readyTimer) {
+        window.clearTimeout(readyTimer);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!canAnimateTagline) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion.matches) {
+      const motionTimer = window.setTimeout(() => setDisplayedTagline(TAGLINE_TEXT), 0);
+      return () => window.clearTimeout(motionTimer);
+    }
+
+    let currentIndex = 0;
+    let typingTimer: number | undefined;
+
+    const typeNext = () => {
+      setDisplayedTagline(TAGLINE_TEXT.slice(0, currentIndex + 1));
+      currentIndex += 1;
+      if (currentIndex < TAGLINE_TEXT.length) {
+        typingTimer = window.setTimeout(typeNext, 110);
+      }
+    };
+
+    const delayTimer = window.setTimeout(() => {
+      setDisplayedTagline("");
+      typeNext();
+    }, 200);
+
+    return () => {
+      if (typingTimer) {
+        window.clearTimeout(typingTimer);
+      }
+      window.clearTimeout(delayTimer);
+    };
+  }, [canAnimateTagline]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050312] text-white">
@@ -46,8 +103,8 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
             >
               cabaguide
             </Link>
-            <p className="text-sm text-cyan-200 sm:text-base">
-            「この子でよかった」と思える夜へ
+            <p className="text-sm text-cyan-200 sm:text-base" aria-live="polite" aria-label={TAGLINE_TEXT}>
+              {displayedTagline}
             </p>
           </div>
         </header>

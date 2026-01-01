@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Dela_Gothic_One, Geist, Geist_Mono, Hachi_Maru_Pop } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -11,6 +11,20 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const hachiMaruPop = Hachi_Maru_Pop({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-hachi-maru",
+  display: "swap",
+});
+
+const delaGothic = Dela_Gothic_One({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-dela-gothic",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +56,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${hachiMaruPop.variable} ${delaGothic.variable} antialiased`}
       >
         {children}
       </body>
