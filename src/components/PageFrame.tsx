@@ -36,15 +36,17 @@ export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
       </div>
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 sm:px-8 lg:py-14">
-        <header className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-xl sm:text-left">
-          <div className="flex flex-col gap-1">
+        <header className="neon-laser-frame flex flex-col gap-3 rounded-3xl border border-cyan-100/40 bg-white/5 p-6 text-center backdrop-blur-xl sm:text-left">
+          <span className="neon-laser-gap" aria-hidden="true" />
+          <span className="neon-laser-inner" aria-hidden="true" />
+          <div className="relative z-10 flex flex-col gap-1">
             <Link
               href="/"
-              className="text-3xl font-semibold tracking-[0.3em] text-white sm:text-4xl"
+              className="neon-outline-text text-3xl font-semibold tracking-[0.3em] text-transparent sm:text-4xl"
             >
               cabaguide
             </Link>
-            <p className="text-sm text-fuchsia-200 sm:text-base">
+            <p className="text-sm text-cyan-200 sm:text-base">
             「この子でよかった」と思える夜へ
             </p>
           </div>
