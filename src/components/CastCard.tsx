@@ -104,7 +104,7 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
         : "cast-name--dela";
 
   const cardClassName = [
-    "group relative z-10 overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_45px_rgba(15,6,33,0.65)] backdrop-blur-xl",
+    "cast-card group relative z-10 flex flex-col gap-4 border-y border-white/15 pb-6 pt-6",
     className,
   ]
     .filter(Boolean)
@@ -115,7 +115,7 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
       data-rank={typeof rank === "number" ? rank : undefined}
       ref={cardRef}
     >
-      <Link href={href} className="relative block overflow-hidden rounded-2xl">
+      <Link href={href} className="relative block overflow-hidden">
         {showCrown && (
           <span
             className={`absolute left-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${crownBg}`}
