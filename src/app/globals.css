@@ -262,6 +262,7 @@ body {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  border-radius: 0;
 }
 
 .neon-laser-frame::before {
