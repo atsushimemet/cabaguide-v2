@@ -112,12 +112,12 @@ export default async function StoreRankingPage({ params }: StoreRankingPageProps
       </section>
 
       <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 border-b border-white/20 pb-4">
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">PREFECTURE</p>
           <h2 className="text-xl font-semibold">都道府県を切り替える</h2>
           <p className="text-sm text-white/70">ランキングを見たい都道府県を選んでください。</p>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto mt-6">
           <div className="flex min-w-full gap-3">
             {prefectureList.map((pref) => {
               const active = pref === prefecture;
