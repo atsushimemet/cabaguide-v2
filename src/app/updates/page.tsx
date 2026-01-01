@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { PageFrame } from "@/components/PageFrame";
 import { getServiceSupabaseClient, SupabaseServiceEnvError } from "@/lib/supabaseServer";
 
@@ -24,22 +26,27 @@ export default async function UpdatesPage() {
           最新の更新情報はまだありません。
         </section>
       ) : (
-        updates.map((entry) => (
-          <article
-            key={entry.slug}
-            className="space-y-4 border-b border-white/15 px-4 pb-8"
-          >
-            <div className="flex flex-col gap-2 border-b border-white/20 pb-4">
-              <p className="text-xs uppercase tracking-[0.4em] text-white/50">
-                {formatDate(entry.created_at)}
-              </p>
-              {entry.title && (
-                <h2 className="text-2xl font-semibold text-white">{entry.title}</h2>
-              )}
-            </div>
-            <div className="space-y-3 text-sm text-white/80">{renderMarkdown(entry.body)}</div>
-          </article>
-        ))
+        updates.map((entry) => {
+          const bodyContent = renderMarkdown(entry.body);
+          const headerClassName = [
+            "flex flex-col gap-2",
+            bodyContent ? "border-b border-white/20 pb-4" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+          return (
+            <article key={entry.slug} className="space-y-4 border-b border-white/15 px-4 pb-8">
+              <div className={headerClassName}>
+                <p className="text-xs uppercase tracking-[0.4em] text-white/50">
+                  {formatDate(entry.created_at)}
+                </p>
+                {entry.title && <h2 className="text-2xl font-semibold text-white">{entry.title}</h2>}
+              </div>
+              {bodyContent && <div className="space-y-3 text-sm text-white/80">{bodyContent}</div>}
+            </article>
+          );
+        })
       )}
     </PageFrame>
   );
@@ -76,13 +83,9 @@ type MarkdownBlock =
   | { type: "paragraph"; text: string }
   | { type: "list"; items: string[] };
 
-function renderMarkdown(markdown: string) {
-  if (!markdown) {
-    return (
-      <p className="text-white/60" key="empty">
-        詳細な説明はありません。
-      </p>
-    );
+function renderMarkdown(markdown: string): ReactNode[] | null {
+  if (!markdown || !markdown.trim()) {
+    return null;
   }
 
   const blocks: MarkdownBlock[] = [];
@@ -134,6 +137,10 @@ function renderMarkdown(markdown: string) {
 
   pushParagraph();
   pushList();
+
+  if (blocks.length === 0) {
+    return null;
+  }
 
   return blocks.map((block, index) => {
     if (block.type === "heading") {
