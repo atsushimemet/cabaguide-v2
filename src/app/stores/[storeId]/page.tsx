@@ -103,22 +103,24 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
 
   return (
     <PageFrame mainClassName="gap-8">
-      <Link
-        href={backLink.href}
-        className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
-      >
-        ← {backLink.label}
-      </Link>
+      <div className="border-b border-white/20 pb-4">
+        <Link
+          href={backLink.href}
+          className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+        >
+          ← {backLink.label}
+        </Link>
+      </div>
 
-      <section className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_18px_50px_rgba(5,3,18,0.65)] backdrop-blur-xl">
+      <section className="space-y-6 border-y border-white/15 px-4 py-10">
         <div className="space-y-3">
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">STORE</p>
           <h1 className="text-3xl font-semibold">{store.name}</h1>
           <p className="text-sm text-white/70">{locationLabel}</p>
         </div>
 
-        <div className="grid gap-4 text-sm text-white/80 md:grid-cols-2 xl:grid-cols-4">
-          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+        <div className="grid gap-6 text-sm text-white/80 md:grid-cols-2 xl:grid-cols-4">
+          <div className="flex flex-col gap-3 border-t border-white/15 pt-4">
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">電話番号</p>
             <a
               href={`tel:${store.phone.replace(/[^0-9+]/g, "")}`}
@@ -128,7 +130,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
             </a>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+          <div className="flex flex-col gap-3 border-t border-white/15 pt-4">
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">Google Map</p>
             <a
               href={mapDetailLink}
@@ -140,7 +142,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
             </a>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+          <div className="flex flex-col gap-3 border-t border-white/15 pt-4">
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">基本価格</p>
             <p>指名料: {formatYen(store.basePricing.nominationPrice)}</p>
             <p>サービス料率: {formatPercent(store.basePricing.serviceFeeRate)}</p>
@@ -148,7 +150,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
           </div>
 
           {store.homepageLink && (
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+            <div className="flex flex-col gap-3 border-t border-white/15 pt-4">
               <p className="text-xs uppercase tracking-[0.3em] text-white/50">店舗HP</p>
               <Link
                 href={store.homepageLink}
@@ -164,19 +166,19 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
 
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl">
+      <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">TIME SLOT</p>
           <h2 className="mt-2 text-2xl font-semibold">時間帯別料金</h2>
           <p className="text-sm text-white/70">1時間ごとの通常席（メイン）料金を参考値として掲載しています。</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           {timeline.map((slot, index) => {
             const nextSlot = timeline[index + 1];
             const rangeLabel = formatDisplayRange(slot.label, slot.startMinutes, nextSlot?.startMinutes);
             return (
-              <div key={slot.label} className="space-y-2 rounded-2xl border border-white/10 bg-black/60 p-4">
+              <div key={slot.label} className="space-y-2 border-t border-white/15 pt-4">
                 <p className="text-lg font-semibold">{rangeLabel}</p>
                 <div className="flex items-center justify-between text-sm text-white/80">
                   <span>通常席</span>
@@ -188,14 +190,14 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
         </div>
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+      <section className="space-y-4 border-y border-white/15 px-2 py-10 sm:px-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-white/50">CAST</p>
           <h2 className="mt-2 text-2xl font-semibold">所属キャスト</h2>
           <p className="text-sm text-white/70">SNSフォロワー数順に、登録済みキャストを表示しています。</p>
         </div>
         {casts.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white/70">
+          <p className="border border-dashed border-white/20 px-4 py-3 text-sm text-white/70">
             まだキャストが登録されていません。
           </p>
         ) : (
