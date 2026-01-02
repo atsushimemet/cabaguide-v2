@@ -30,6 +30,9 @@ const delaGothic = Dela_Gothic_One({
 export const metadata: Metadata = {
   title: "cabaguide 「この子でよかった」と思える夜へ",
   description: "広告費によるランキングではなく、Instagram・TikTokの総フォロワー数に基づいたランキングで有名・人気キャストを見つけよう！",
+  verification: {
+    google: "wtUbhnp9MNYrynatbdDqn_6x0zGjrnPC5v4M7rIDt1k",
+  },
 };
 
 export default function RootLayout({
