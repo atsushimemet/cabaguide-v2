@@ -95,6 +95,10 @@ export default function CastDetailPage() {
   const [snapshotError, setSnapshotError] = useState<string | null>(null);
   const [isUpdatingSnapshot, setIsUpdatingSnapshot] = useState(false);
   const [deletingSnapshotId, setDeletingSnapshotId] = useState<string | null>(null);
+  const [ageInput, setAgeInput] = useState("");
+  const [ageUpdateStatus, setAgeUpdateStatus] = useState<string | null>(null);
+  const [ageUpdateError, setAgeUpdateError] = useState<string | null>(null);
+  const [isUpdatingAge, setIsUpdatingAge] = useState(false);
 
   const fetchCastDetail = useCallback(async () => {
     if (!castId) {
@@ -138,6 +142,12 @@ export default function CastDetailPage() {
   useEffect(() => {
     setSelectedStoreId(cast?.store_id ?? "");
   }, [cast?.store_id]);
+
+  useEffect(() => {
+    setAgeInput(
+      cast?.age != null && Number.isFinite(cast.age) ? String(cast.age) : ""
+    );
+  }, [cast?.age]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -244,6 +254,54 @@ export default function CastDetailPage() {
       setNameUpdateError(message);
     } finally {
       setIsUpdatingName(false);
+    }
+  };
+
+  const handleAgeSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!castId) {
+      setAgeUpdateError("cast_id が不明です");
+      return;
+    }
+
+    const trimmed = ageInput.trim();
+    let ageValue: number | null = null;
+    if (trimmed) {
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        setAgeUpdateError("年齢は0以上の数値で入力してください");
+        return;
+      }
+      ageValue = Math.floor(parsed);
+    }
+
+    setIsUpdatingAge(true);
+    setAgeUpdateError(null);
+    setAgeUpdateStatus(null);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ age: ageValue }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "年齢の更新に失敗しました");
+      }
+
+      setAgeUpdateStatus("年齢を更新しました");
+      setCast((prev) => (prev ? { ...prev, age: ageValue ?? null } : prev));
+      fetchCastDetail();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "年齢の更新に失敗しました";
+      setAgeUpdateError(message);
+    } finally {
+      setIsUpdatingAge(false);
     }
   };
 
@@ -684,6 +742,46 @@ export default function CastDetailPage() {
               disabled={isUpdatingStore || isStoreOptionsLoading}
             >
               {isUpdatingStore ? "更新中..." : "所属店舗を保存"}
+            </button>
+          </form>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold">年齢を更新</h2>
+            <p className="text-sm text-white/70">
+              現在の登録: {cast?.age != null ? `${cast.age}歳` : "未設定"}
+            </p>
+          </div>
+          {ageUpdateError && (
+            <p className="mt-3 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm text-red-100">
+              {ageUpdateError}
+            </p>
+          )}
+          {ageUpdateStatus && (
+            <p className="mt-3 rounded-xl border border-emerald-500/60 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-100">
+              {ageUpdateStatus}
+            </p>
+          )}
+          <form className="mt-4 space-y-4" onSubmit={handleAgeSubmit}>
+            <label className="block text-sm text-white/70">
+              年齢
+              <input
+                type="number"
+                min={0}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3"
+                value={ageInput}
+                onChange={(event) => setAgeInput(event.target.value)}
+                placeholder="例: 24"
+              />
+              <span className="mt-1 block text-xs text-white/50">空にすると未設定に戻ります</span>
+            </label>
+            <button
+              type="submit"
+              className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isUpdatingAge}
+            >
+              {isUpdatingAge ? "更新中..." : "年齢を保存"}
             </button>
           </form>
         </section>
