@@ -23,6 +23,14 @@ type SnapshotRow = {
   captured_at: string;
 };
 
+type CastRow = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  store_id: string;
+  age: number | null;
+};
+
 const PLACEHOLDER_IMAGE = "/images/top-casts/placeholder.svg";
 const DEFAULT_ACCENT = "#f472b6";
 
@@ -58,9 +66,9 @@ export const getCastDetail = async (downtownId: number, castId: string): Promise
   }
 
   const supabase = getServiceSupabaseClient();
-  const { data: castRow, error: castError } = await supabase
+  const { data: castRowData, error: castError } = await supabase
     .from("casts")
-    .select("id, name, image_url, store_id")
+    .select("id, name, image_url, store_id, age")
     .eq("id", castId)
     .single();
 
@@ -68,9 +76,10 @@ export const getCastDetail = async (downtownId: number, castId: string): Promise
     throw new Error(castError.message);
   }
 
-  if (!castRow) {
+  if (!castRowData) {
     return null;
   }
+  const castRow = castRowData as CastRow;
 
   const store = await getStoreById(castRow.store_id);
   if (!store || store.areaId !== downtownId) {
@@ -130,6 +139,7 @@ export const getCastDetail = async (downtownId: number, castId: string): Promise
     storeLink: `/stores/${store.id}`,
     accent: DEFAULT_ACCENT,
     badgeText: area.downtownName,
+    age: castRow.age ?? null,
   };
 
   return {

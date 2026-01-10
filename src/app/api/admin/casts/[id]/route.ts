@@ -13,6 +13,7 @@ type SnapshotRow = {
 type CastUpdatePayload = {
   name?: string;
   storeId?: string;
+  age?: number | null;
 };
 
 export async function GET(
@@ -131,8 +132,15 @@ export async function PATCH(
   const payload = (await request.json().catch(() => null)) as CastUpdatePayload | null;
   const name = typeof payload?.name === "string" ? payload.name.trim() : "";
   const storeId = typeof payload?.storeId === "string" ? payload.storeId.trim() : "";
+  const hasAgeField = payload?.age !== undefined;
+  const age =
+    payload?.age === null
+      ? null
+      : typeof payload?.age === "number" && Number.isFinite(payload.age)
+        ? Math.max(0, Math.floor(payload.age))
+        : undefined;
 
-  if (!name && !storeId) {
+  if (!name && !storeId && !hasAgeField) {
     return NextResponse.json({ error: "変更内容がありません" }, { status: 400 });
   }
 
@@ -173,12 +181,15 @@ export async function PATCH(
     if (storeId) {
       updates.store_id = storeId;
     }
+    if (hasAgeField) {
+      updates.age = age ?? null;
+    }
 
     const { data, error } = await supabase
       .from("casts")
       .update(updates)
       .eq("id", castId)
-      .select("id, name, store_id")
+      .select("id, name, store_id, age")
       .maybeSingle();
 
     if (error) {

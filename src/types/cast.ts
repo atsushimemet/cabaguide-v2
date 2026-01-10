@@ -4,6 +4,7 @@ export type Cast = {
   prefecture: string;
   downtownName: string;
   name: string;
+  age?: number | null;
   followers: number;
   storeId: string;
   storeName: string;

@@ -144,7 +144,12 @@ export default async function CastDetailPage({ params, searchParams }: CastDetai
               </span>
             </div>
             <div>
-              <h1 className="text-3xl font-semibold">{detail.cast.name}</h1>
+              <div className="flex flex-wrap items-baseline gap-3">
+                <h1 className="text-3xl font-semibold">{detail.cast.name}</h1>
+                <span className="text-sm text-white/60">
+                  {detail.cast.age != null ? `${detail.cast.age}歳` : "未確認"}
+                </span>
+              </div>
             </div>
           </div>
 
