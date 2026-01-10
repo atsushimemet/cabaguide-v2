@@ -3,7 +3,7 @@ import { AreaSearchCTA } from "@/components/AreaSearchCTA";
 import { EditorialHero } from "@/components/EditorialHero";
 import { PageFrame } from "@/components/PageFrame";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { TopCastGrid } from "@/components/TopCastGrid";
+import { TopCastCarousel } from "@/components/TopCastCarousel";
 import { getTopCasts } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
@@ -49,7 +49,7 @@ export default async function Home() {
             </p>
             <p className="text-xs text-white/50">{lastUpdatedText}</p>
           </div>
-          <TopCastGrid casts={topCasts} triggerId="top-cast-lead" />
+          <TopCastCarousel casts={topCasts} />
         </section>
 
         <AdBanner
