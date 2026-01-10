@@ -1,5 +1,6 @@
 import { AdBanner } from "@/components/AdBanner";
 import { AreaSearchCTA } from "@/components/AreaSearchCTA";
+import { EditorialHero } from "@/components/EditorialHero";
 import { PageFrame } from "@/components/PageFrame";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { TopCastGrid } from "@/components/TopCastGrid";
@@ -26,6 +27,7 @@ export default async function Home() {
   return (
     <LoadingScreen>
       <PageFrame mainClassName="gap-12">
+        <EditorialHero />
         <AreaSearchCTA sectionId="area-search" />
 
         <AdBanner
