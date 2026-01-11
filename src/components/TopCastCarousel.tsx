@@ -57,7 +57,6 @@ const CarouselItem = ({ entry, index, itemWidth, transition }: CarouselItemProps
           <div className={styles.followSection}>
             <span className={styles.followLabel}>FOLLOWERS</span>
             <p className={styles.followValue}>{entry.cast.followers.toLocaleString("ja-JP")}</p>
-            <p className={styles.followDetail}>{formatFollowers(entry.cast.followers)}</p>
           </div>
         </div>
       </Link>
@@ -146,18 +145,8 @@ export const TopCastCarousel = ({ casts }: TopCastCarouselProps) => {
   }, [itemsForRender.length, loop, position]);
 
   useEffect(() => {
-    if (!loop || itemsForRender.length <= 1) {
-      return;
-    }
-    if (isHovered) {
-      return;
-    }
-    const timer = window.setInterval(() => {
-      setPosition((prev) => clampPosition(prev + 1));
-    }, AUTO_PLAY_DELAY);
-
-    return () => window.clearInterval(timer);
-  }, [clampPosition, isHovered, itemsForRender.length, loop]);
+    return () => {};
+  }, []);
 
   const effectiveTransition: Transition = isJumping ? { duration: 0 } : SPRING_OPTIONS;
 
