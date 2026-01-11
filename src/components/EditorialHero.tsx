@@ -67,7 +67,7 @@ export function EditorialHero() {
   }, []);
 
   return (
-    <section className="relative -mt-10 mb-32 flex min-h-[85vh] items-end overflow-hidden pb-20 sm:-mt-12">
+    <section className="relative -mt-10 mb-0 flex min-h-[85vh] items-end overflow-hidden pb-16 sm:-mt-12">
       <div className="absolute inset-0 pointer-events-none">
         {Array.from({ length: 12 }).map((_, index) => (
           <motion.div

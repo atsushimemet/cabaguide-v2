@@ -24,11 +24,16 @@ export default async function Home() {
         })
       : null;
 
+  const spacerClass = "h-6 md:h-8";
+
   return (
     <LoadingScreen>
-      <PageFrame mainClassName="gap-12">
-        <EditorialHero />
-        <AreaSearchCTA sectionId="area-search" />
+      <PageFrame mainClassName="gap-0">
+        <div className="space-y-0">
+          <EditorialHero />
+          <div className={spacerClass} aria-hidden />
+          <AreaSearchCTA sectionId="area-search" compact />
+        </div>
 
         <AdBanner
           label="広告エリア（TOP）"
@@ -43,10 +48,12 @@ export default async function Home() {
           subtitle={`最終更新 ${lastUpdatedLabel ?? "更新準備中"}`}
           index={0}
           variant="kabukicho"
+          spacing="compact"
         >
           <TopCastCarousel casts={topCasts} />
         </EditorialSection>
 
+        <div className={spacerClass} aria-hidden />
         <AdBanner
           label="広告エリア（BOTTOM）"
           title="BOTTOMプレミアムバナー"

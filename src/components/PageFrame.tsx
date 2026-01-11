@@ -24,7 +24,7 @@ type PageFrameProps = {
 };
 
 export const PageFrame = ({ children, mainClassName }: PageFrameProps) => {
-  const mainClasses = ["flex flex-col", mainClassName].filter(Boolean).join(" ");
+  const mainClasses = ["flex flex-col gap-4", mainClassName].filter(Boolean).join(" ");
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050312] text-white">

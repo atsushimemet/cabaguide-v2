@@ -1,130 +1,214 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, useMotionValue } from "motion/react";
+import type { Transition } from "motion/react";
+import { useCallback, useEffect, useMemo, useRef, useState, KeyboardEvent } from "react";
 
-import { CastCard } from "@/components/CastCard";
+import { formatFollowers } from "@/components/CastCard";
+import styles from "./TopCastCarousel.module.css";
 import { Cast } from "@/types/cast";
 
 type TopCastCarouselProps = {
   casts: Cast[];
 };
 
-const SCROLL_EPSILON = 2;
-const AUTO_PLAY_INTERVAL = 5000;
+const GAP = 24;
+const SPRING_OPTIONS: Transition = { type: "spring", stiffness: 320, damping: 32 };
+const AUTO_PLAY_DELAY = 5000;
+
+type CarouselEntry = {
+  cast: Cast;
+  rank: number;
+};
+
+type CarouselItemProps = {
+  entry: CarouselEntry;
+  index: number;
+  itemWidth: number;
+  transition: Transition;
+};
+
+const buildDetailHref = (castLink: string) => {
+  return castLink.includes("?") ? `${castLink}&from=home` : `${castLink}?from=home`;
+};
+
+const CarouselItem = ({ entry, index, itemWidth, transition }: CarouselItemProps) => {
+  return (
+    <motion.article
+      className={styles.carouselItem}
+      style={{ width: itemWidth }}
+      transition={transition}
+      key={`${entry.cast.id}-${index}`}
+    >
+      <Link href={buildDetailHref(entry.cast.castLink)} className={styles.carouselCard}>
+        <div className={styles.cardMedia}>
+          <Image src={entry.cast.image} alt={`${entry.cast.name}のキャスト画像`} fill sizes="360px" />
+          <div className={styles.mediaOverlay} />
+          <span className={styles.rankBadge}>
+            #{entry.rank.toString().padStart(2, "0")}
+          </span>
+        </div>
+        <div className={styles.cardBody}>
+          <p className={styles.cardLabel}>TOP CAST</p>
+          <h3 className={styles.castName}>{entry.cast.name}</h3>
+          <p className={styles.storeName}>{entry.cast.storeName}</p>
+          <div className={styles.followSection}>
+            <span className={styles.followLabel}>FOLLOWERS</span>
+            <p className={styles.followValue}>{entry.cast.followers.toLocaleString("ja-JP")}</p>
+          </div>
+        </div>
+      </Link>
+    </motion.article>
+  );
+};
 
 export const TopCastCarousel = ({ casts }: TopCastCarouselProps) => {
-  const sliderRef = useRef<HTMLDivElement | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(casts.length > 1);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isJumping, setIsJumping] = useState(false);
+  const canNavigate = casts.length > 1;
 
-  const slides = useMemo(
-    () =>
-      casts.map((cast, index) => (
-        <div
-          key={cast.id}
-          className="w-[85vw] flex-shrink-0 snap-center sm:w-[360px] lg:w-[380px]"
-        >
-          <CastCard cast={cast} detailHref={`${cast.castLink}?from=home`} rank={index + 1} className="h-full" />
-        </div>
-      )),
-    [casts],
-  );
-
-  const updateScrollState = useCallback(() => {
-    const container = sliderRef.current;
-    if (!container) {
-      return;
-    }
-
-    const { scrollLeft, clientWidth, scrollWidth } = container;
-    setCanScrollPrev(scrollLeft > SCROLL_EPSILON);
-    setCanScrollNext(scrollLeft + clientWidth < scrollWidth - SCROLL_EPSILON);
-
-    const midpoint = scrollLeft + clientWidth / 2;
-    const childNodes = Array.from(container.children) as HTMLElement[];
-    if (childNodes.length === 0) {
-      setActiveIndex(0);
-      return;
-    }
-
-    let closestIndex = 0;
-    let closestDistance = Number.POSITIVE_INFINITY;
-    childNodes.forEach((child, index) => {
-      const center = child.offsetLeft + child.offsetWidth / 2;
-      const distance = Math.abs(center - midpoint);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIndex = index;
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerWidth(entry.contentRect.width);
       }
     });
-    setActiveIndex(closestIndex);
+    observer.observe(node);
+    return () => observer.disconnect();
   }, []);
 
-  const scrollToIndex = useCallback((index: number) => {
-    const container = sliderRef.current;
-    if (!container) {
-      return;
+  const itemWidth = useMemo(() => {
+    if (containerWidth === 0) {
+      return 300;
     }
-    const childNodes = Array.from(container.children) as HTMLElement[];
-    if (childNodes.length === 0) {
-      return;
-    }
+    const target = containerWidth * 0.65;
+    return Math.max(260, Math.min(340, target));
+  }, [containerWidth]);
 
-    const length = childNodes.length;
-    const normalizedIndex = ((index % length) + length) % length;
-    const target = childNodes[normalizedIndex];
-    container.scrollTo({
-      left: target.offsetLeft,
-      behavior: "smooth",
+  const trackOffset = itemWidth + GAP;
+  const loop = casts.length > 1;
+
+  const itemsForRender = useMemo<CarouselEntry[]>(() => {
+    if (casts.length === 0) {
+      return [];
+    }
+    if (!loop) {
+      return casts.map((cast, index) => ({ cast, rank: index + 1 }));
+    }
+    const first = casts[0];
+    const last = casts[casts.length - 1];
+    return [
+      { cast: last, rank: casts.length },
+      ...casts.map((cast, index) => ({ cast, rank: index + 1 })),
+      { cast: first, rank: 1 },
+    ];
+  }, [casts, loop]);
+
+  const x = useMotionValue(0);
+  const [position, setPosition] = useState(loop ? 1 : 0);
+  const maxPositionIndex = Math.max(0, itemsForRender.length - 1);
+
+  const clampPosition = useCallback(
+    (value: number) => Math.max(0, Math.min(value, maxPositionIndex)),
+    [maxPositionIndex]
+  );
+
+  useEffect(() => {
+    const start = loop ? 1 : 0;
+    const frame = window.requestAnimationFrame(() => {
+      setPosition(start);
+      x.set(-start * trackOffset);
     });
+    return () => window.cancelAnimationFrame(frame);
+  }, [loop, trackOffset, casts.length, x]);
+
+  useEffect(() => {
+    if (loop) {
+      return;
+    }
+    const max = Math.max(0, itemsForRender.length - 1);
+    if (position <= max) {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      setPosition(max);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [itemsForRender.length, loop, position]);
+
+  useEffect(() => {
+    return () => {};
   }, []);
 
-  const handlePrev = useCallback(() => {
-    scrollToIndex(activeIndex - 1);
-  }, [activeIndex, scrollToIndex]);
+  const effectiveTransition: Transition = isJumping ? { duration: 0 } : SPRING_OPTIONS;
 
-  const handleNext = useCallback(() => {
-    scrollToIndex(activeIndex + 1);
-  }, [activeIndex, scrollToIndex]);
-
-  useEffect(() => {
-    const container = sliderRef.current;
-    if (!container) {
+  const handleAnimationComplete = () => {
+    if (!loop || itemsForRender.length <= 1) {
+      setIsAnimating(false);
       return;
     }
 
-    updateScrollState();
-    const handleScroll = () => updateScrollState();
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
+    const lastCloneIndex = itemsForRender.length - 1;
 
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, [updateScrollState]);
-
-  useEffect(() => {
-    const container = sliderRef.current;
-    if (container) {
-      container.scrollTo({ left: 0 });
-    }
-    updateScrollState();
-  }, [casts, updateScrollState]);
-
-  useEffect(() => {
-    if (casts.length <= 1) {
+    if (position === lastCloneIndex) {
+      setIsJumping(true);
+      const target = 1;
+      setPosition(target);
+      x.set(-target * trackOffset);
+      requestAnimationFrame(() => {
+        setIsJumping(false);
+        setIsAnimating(false);
+      });
       return;
     }
-    const intervalId = window.setInterval(() => {
-      scrollToIndex(activeIndex + 1);
-    }, AUTO_PLAY_INTERVAL);
 
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [activeIndex, casts.length, scrollToIndex]);
+    if (position === 0) {
+      setIsJumping(true);
+      const target = casts.length;
+      setPosition(target);
+      x.set(-target * trackOffset);
+      requestAnimationFrame(() => {
+        setIsJumping(false);
+        setIsAnimating(false);
+      });
+      return;
+    }
+
+    setIsAnimating(false);
+  };
+
+  const goToPrevious = useCallback(() => {
+    setPosition((prev) => clampPosition(prev - 1));
+  }, [clampPosition]);
+
+  const goToNext = useCallback(() => {
+    setPosition((prev) => clampPosition(prev + 1));
+  }, [clampPosition]);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!canNavigate) {
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      goToPrevious();
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      goToNext();
+    }
+  };
+
+  const isPrevDisabled = !loop && position <= 0;
+  const isNextDisabled = !loop && position >= Math.max(itemsForRender.length - 1, 0);
+
 
   if (casts.length === 0) {
     return (
@@ -135,43 +219,68 @@ export const TopCastCarousel = ({ casts }: TopCastCarouselProps) => {
   }
 
   return (
-    <div className="relative">
-      <div className="relative">
-        <div
-          ref={sliderRef}
-          className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 pt-2"
-          style={{ scrollBehavior: "smooth" }}
-        >
-          {slides}
-        </div>
-
-        <div className="pointer-events-none absolute inset-y-2 left-0 w-10 bg-gradient-to-r from-[#050312] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-2 right-0 w-10 bg-gradient-to-l from-[#050312] to-transparent" />
-
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center">
-          <button
-            type="button"
-            onClick={handlePrev}
-            disabled={!canScrollPrev}
-            className="pointer-events-auto hidden h-12 w-12 -translate-x-4 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white transition hover:bg-black/50 disabled:pointer-events-none disabled:opacity-30 sm:flex"
-            aria-label="前のキャストを見る"
-          >
-            ←
-          </button>
-        </div>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={!canScrollNext}
-            className="pointer-events-auto hidden h-12 w-12 translate-x-4 items-center justify-center rounded-full border border-white/10 bg-black/30 text-white transition hover:bg-black/50 disabled:pointer-events-none disabled:opacity-30 sm:flex"
-            aria-label="次のキャストを見る"
-          >
-            →
-          </button>
+    <div
+      ref={containerRef}
+      className={styles.carouselContainer}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsHovered(true)}
+      onBlur={() => setIsHovered(false)}
+      tabIndex={canNavigate ? 0 : -1}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="全国ベスト10"
+      onKeyDown={handleKeyDown}
+    >
+      <div className={styles.carouselViewport}>
+        <div className={styles.carouselInner}>
+          <div className={styles.carouselWindow}>
+            <motion.div
+              className={styles.carouselTrack}
+              drag={false}
+              style={{ gap: `${GAP}px`, x }}
+              animate={{ x: -(position * trackOffset) }}
+              transition={effectiveTransition}
+              onAnimationStart={() => setIsAnimating(true)}
+              onAnimationComplete={handleAnimationComplete}
+            >
+              {itemsForRender.map((entry, index) => (
+                <CarouselItem
+                  key={`${entry.cast.id}-${index}`}
+                  entry={entry}
+                  index={index}
+                  itemWidth={itemWidth}
+                  transition={effectiveTransition}
+                />
+              ))}
+            </motion.div>
+          </div>
+          {canNavigate && (
+            <>
+              <button
+                type="button"
+                className={`${styles.navButton} ${styles.prevButton}`}
+                onClick={goToPrevious}
+                aria-label="前のキャストへ"
+                disabled={isPrevDisabled}
+                data-testid="carousel-prev"
+              >
+                <span aria-hidden="true">‹</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.navButton} ${styles.nextButton}`}
+                onClick={goToNext}
+                aria-label="次のキャストへ"
+                disabled={isNextDisabled}
+                data-testid="carousel-next"
+              >
+                <span aria-hidden="true">›</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
-
     </div>
   );
 };
