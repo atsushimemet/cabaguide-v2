@@ -26,9 +26,11 @@ export default async function Home() {
 
   return (
     <LoadingScreen>
-      <PageFrame mainClassName="gap-12">
-        <EditorialHero />
-        <AreaSearchCTA sectionId="area-search" />
+      <PageFrame mainClassName="gap-22">
+        <div className="space-y-0">
+          <EditorialHero />
+          <AreaSearchCTA sectionId="area-search" />
+        </div>
 
         <AdBanner
           label="広告エリア（TOP）"
