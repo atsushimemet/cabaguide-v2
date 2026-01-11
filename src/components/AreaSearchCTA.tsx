@@ -6,9 +6,10 @@ import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 type AreaSearchCTAProps = {
   sectionId?: string;
   hideBorder?: boolean;
+  compact?: boolean;
 };
 
-export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAProps) => {
+export const AreaSearchCTA = ({ sectionId, hideBorder = false, compact = false }: AreaSearchCTAProps) => {
   const [titleVisible, setTitleVisible] = useState(false);
   const [descriptionVisible, setDescriptionVisible] = useState(false);
   const [buttonVisible, setButtonVisible] = useState(false);
@@ -108,8 +109,9 @@ export const AreaSearchCTA = ({ sectionId, hideBorder = false }: AreaSearchCTAPr
     .filter(Boolean)
     .join(" ");
 
+  const spacingClass = compact ? "py-6" : "py-10";
   const baseSectionClass =
-    "flex flex-col gap-6 px-4 py-10 text-center lg:flex-row lg:items-center lg:justify-between lg:text-left";
+    `flex flex-col gap-6 px-4 ${spacingClass} text-center lg:flex-row lg:items-center lg:justify-between lg:text-left`;
   const sectionClassName = hideBorder ? baseSectionClass : `${baseSectionClass} border-y border-white/15`;
 
   return (

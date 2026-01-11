@@ -1,7 +1,7 @@
 'use client';
 
-import type { ReactNode } from "react";
 import { motion } from "motion/react";
+import type { ReactNode } from "react";
 
 type EditorialSectionProps = {
   title: string;
@@ -9,6 +9,7 @@ type EditorialSectionProps = {
   children: ReactNode;
   index: number;
   variant?: "default" | "kabukicho";
+  spacing?: "default" | "compact";
 };
 
 export function EditorialSection({
@@ -17,10 +18,13 @@ export function EditorialSection({
   children,
   index,
   variant = "default",
+  spacing = "default",
 }: EditorialSectionProps) {
+  const sectionMarginClass = spacing === "compact" ? "mb-16" : "mb-40";
   if (variant === "kabukicho") {
+    const ringPaddingClass = spacing === "compact" ? "py-6 md:py-10" : "py-12 md:py-16";
     return (
-      <section className="mb-40">
+      <section className={sectionMarginClass}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -50,7 +54,7 @@ export function EditorialSection({
               aria-hidden="true"
             />
 
-            <div className="flex min-h-[60vh] items-center px-4 py-12 md:min-h-0 md:py-16">
+            <div className={`flex items-center px-4 ${ringPaddingClass}`}>
               <div className="flex w-full flex-col items-center gap-8 md:flex-row md:gap-12">
                 <motion.div
                   className="flex flex-col items-center"
@@ -130,7 +134,7 @@ export function EditorialSection({
   }
 
   return (
-    <section className="mb-40">
+    <section className={sectionMarginClass}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
