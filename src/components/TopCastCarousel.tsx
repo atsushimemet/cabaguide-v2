@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useMotionValue } from "motion/react";
+import type { Transition } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState, KeyboardEvent } from "react";
 
 import { formatFollowers } from "@/components/CastCard";
@@ -14,7 +15,7 @@ type TopCastCarouselProps = {
 };
 
 const GAP = 24;
-const SPRING_OPTIONS = { type: "spring", stiffness: 320, damping: 32 };
+const SPRING_OPTIONS: Transition = { type: "spring", stiffness: 320, damping: 32 };
 const AUTO_PLAY_DELAY = 5000;
 
 type CarouselEntry = {
@@ -26,7 +27,7 @@ type CarouselItemProps = {
   entry: CarouselEntry;
   index: number;
   itemWidth: number;
-  transition: typeof SPRING_OPTIONS | { duration: number };
+  transition: Transition;
 };
 
 const buildDetailHref = (castLink: string) => {
@@ -158,7 +159,7 @@ export const TopCastCarousel = ({ casts }: TopCastCarouselProps) => {
     return () => window.clearInterval(timer);
   }, [clampPosition, isHovered, itemsForRender.length, loop]);
 
-  const effectiveTransition = isJumping ? { duration: 0 } : SPRING_OPTIONS;
+  const effectiveTransition: Transition = isJumping ? { duration: 0 } : SPRING_OPTIONS;
 
   const handleAnimationComplete = () => {
     if (!loop || itemsForRender.length <= 1) {
