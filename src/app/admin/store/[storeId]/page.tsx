@@ -158,6 +158,8 @@ export default function AdminShopEditPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -405,6 +407,58 @@ export default function AdminShopEditPage() {
     }
   };
 
+  const handleDelete = async () => {
+    setDeleteError(null);
+
+    if (!isAuthenticated) {
+      setDeleteError("管理者セッションを確認できませんでした。再度ログインしてください。");
+      return;
+    }
+
+    if (!storeId) {
+      setDeleteError("店舗IDが指定されていません");
+      return;
+    }
+
+    if (!store) {
+      setDeleteError("店舗情報を読み込めませんでした");
+      return;
+    }
+
+    const confirmed = window.confirm(`「${store.name}」の店舗情報を削除します。よろしいですか？`);
+    if (!confirmed) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/admin/stores/${storeId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.status === 401) {
+        setDeleteError("管理者セッションの有効期限が切れました。再度ログインしてください。");
+        await logout();
+        return;
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setDeleteError(data?.error ?? "店舗削除に失敗しました");
+        return;
+      }
+
+      router.push("/admin/store");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "店舗削除に失敗しました";
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isChecking) {
     return <AdminLoading />;
   }
@@ -634,6 +688,24 @@ export default function AdminShopEditPage() {
               {isSubmitting ? "更新中..." : "店舗を更新"}
             </button>
           </form>
+        </section>
+
+        <section className="rounded-3xl border border-red-500/60 bg-red-500/10 p-6 backdrop-blur">
+          <h2 className="text-xl font-semibold text-red-50">店舗情報を削除</h2>
+          <p className="mt-1 text-sm text-red-100/80">この操作は元に戻せません。店舗に紐づくキャスト情報などもすべて削除されます。</p>
+          {deleteError && (
+            <p className="mt-4 rounded-xl border border-red-500/60 bg-red-500/20 px-4 py-2 text-sm text-red-50">
+              {deleteError}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="mt-4 w-full rounded-full border border-red-500/60 px-4 py-3 text-base font-semibold text-red-100 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isDeleting || !store}
+          >
+            {isDeleting ? "削除中..." : "店舗を削除"}
+          </button>
         </section>
       </div>
 
