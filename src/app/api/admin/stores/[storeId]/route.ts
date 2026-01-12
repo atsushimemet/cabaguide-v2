@@ -272,3 +272,57 @@ export async function PUT(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ storeId: string }> | { storeId: string } }
+) {
+  const unauthorized = await ensureAdminSession();
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  const params = await context.params;
+  const storeId = params.storeId;
+
+  if (!storeId) {
+    return NextResponse.json({ error: "店舗IDが指定されていません" }, { status: 400 });
+  }
+
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
+
+  try {
+    const { data: existingStore, error: fetchError } = await supabase
+      .from("stores")
+      .select("id")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    if (fetchError) {
+      throw new Error(fetchError.message);
+    }
+
+    if (!existingStore) {
+      return NextResponse.json({ error: "店舗が見つかりません" }, { status: 404 });
+    }
+
+    const { error: deleteError } = await supabase.from("stores").delete().eq("id", storeId);
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+
+    return NextResponse.json({ ok: true, storeId });
+  } catch (error) {
+    console.error("[admin/stores/[storeId]][DELETE]", error);
+    const message = error instanceof Error ? error.message : "店舗削除に失敗しました";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
