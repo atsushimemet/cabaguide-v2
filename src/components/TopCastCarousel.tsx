@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, KeyboardEvent } from
 import { formatFollowers } from "@/components/CastCard";
 import styles from "./TopCastCarousel.module.css";
 import { Cast } from "@/types/cast";
+import { reportCastDetailLinkTap } from "@/lib/gtag";
 
 type TopCastCarouselProps = {
   casts: Cast[];
@@ -35,6 +36,9 @@ const buildDetailHref = (castLink: string) => {
 };
 
 const CarouselItem = ({ entry, index, itemWidth, transition }: CarouselItemProps) => {
+  const handleDetailClick = useCallback(() => {
+    reportCastDetailLinkTap();
+  }, []);
   return (
     <motion.article
       className={styles.carouselItem}
@@ -42,7 +46,11 @@ const CarouselItem = ({ entry, index, itemWidth, transition }: CarouselItemProps
       transition={transition}
       key={`${entry.cast.id}-${index}`}
     >
-      <Link href={buildDetailHref(entry.cast.castLink)} className={styles.carouselCard}>
+      <Link
+        href={buildDetailHref(entry.cast.castLink)}
+        className={styles.carouselCard}
+        onClick={handleDetailClick}
+      >
         <div className={styles.cardMedia}>
           <Image src={entry.cast.image} alt={`${entry.cast.name}のキャスト画像`} fill sizes="360px" />
           <div className={styles.mediaOverlay} />

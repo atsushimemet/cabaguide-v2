@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useCallback } from "react";
 
 import { Cast } from "@/types/cast";
+import { reportCastDetailLinkTap } from "@/lib/gtag";
 
 export const formatFollowers = (value: number) => {
   return `総フォロワー数 ${value.toLocaleString("ja-JP")}`;
@@ -26,9 +28,12 @@ export const CastCard = ({ cast, detailHref, rank, className }: CastCardProps) =
   ]
     .filter(Boolean)
     .join(" ");
+  const handleDetailClick = useCallback(() => {
+    reportCastDetailLinkTap();
+  }, []);
   return (
     <article className={cardClassName} data-rank={typeof rank === "number" ? rank : undefined}>
-      <Link href={href} className="relative block overflow-hidden">
+      <Link href={href} className="relative block overflow-hidden" onClick={handleDetailClick}>
         {showCrown && (
           <span
             className={`absolute left-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${crownBg}`}
