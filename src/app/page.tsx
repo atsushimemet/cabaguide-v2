@@ -2,7 +2,6 @@ import { AdBanner } from "@/components/AdBanner";
 import { AreaSearchCTA } from "@/components/AreaSearchCTA";
 import { EditorialHero } from "@/components/EditorialHero";
 import { EditorialSection } from "@/components/EditorialSection";
-import { LoadingScreen } from "@/components/LoadingScreen";
 import { PageFrame } from "@/components/PageFrame";
 import { TopCastCarousel } from "@/components/TopCastCarousel";
 import { getTopCasts } from "@/lib/casts";
@@ -12,8 +11,7 @@ import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/stru
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const topCasts = await getTopCasts();
-  const lastUpdatedLabel = await getRankingLastUpdatedLabel();
+  const [topCasts, lastUpdatedLabel] = await Promise.all([getTopCasts(), getRankingLastUpdatedLabel()]);
   const topCastStructuredData =
     topCasts.length > 0
       ? buildCastRankingStructuredData({
@@ -27,45 +25,43 @@ export default async function Home() {
   const spacerClass = "h-6 md:h-8";
 
   return (
-    <LoadingScreen>
-      <PageFrame mainClassName="gap-0">
-        <div className="space-y-0">
-          <EditorialHero />
-          <div className={spacerClass} aria-hidden />
-          <AreaSearchCTA sectionId="area-search" compact />
-        </div>
-
-        <AdBanner
-          label="広告エリア（TOP）"
-          title="トッププレミアムバナー"
-          description="店舗専用TOP枠で最新情報を発信"
-          href="/ads"
-          animationVariant="top"
-        />
-
-        <EditorialSection
-          title="全国ベスト10"
-          subtitle={`最終更新 ${lastUpdatedLabel ?? "更新準備中"}`}
-          index={0}
-          variant="kabukicho"
-          spacing="compact"
-        >
-          <TopCastCarousel casts={topCasts} />
-        </EditorialSection>
-
+    <PageFrame mainClassName="gap-0">
+      <div className="space-y-0">
+        <EditorialHero />
         <div className={spacerClass} aria-hidden />
-        <AdBanner
-          label="広告エリア（BOTTOM）"
-          title="BOTTOMプレミアムバナー"
-          description="店舗専用BOTTOM枠で最新情報を発信"
-          href="/ads"
-          animationVariant="bottom"
-        />
+        <AreaSearchCTA sectionId="area-search" compact />
+      </div>
 
-        <AreaSearchCTA />
+      <AdBanner
+        label="広告エリア（TOP）"
+        title="トッププレミアムバナー"
+        description="店舗専用TOP枠で最新情報を発信"
+        href="/ads"
+        animationVariant="top"
+      />
 
-        {topCastStructuredData && <StructuredDataScript data={topCastStructuredData} />}
-      </PageFrame>
-    </LoadingScreen>
+      <EditorialSection
+        title="全国ベスト10"
+        subtitle={`最終更新 ${lastUpdatedLabel ?? "更新準備中"}`}
+        index={0}
+        variant="kabukicho"
+        spacing="compact"
+      >
+        <TopCastCarousel casts={topCasts} />
+      </EditorialSection>
+
+      <div className={spacerClass} aria-hidden />
+      <AdBanner
+        label="広告エリア（BOTTOM）"
+        title="BOTTOMプレミアムバナー"
+        description="店舗専用BOTTOM枠で最新情報を発信"
+        href="/ads"
+        animationVariant="bottom"
+      />
+
+      <AreaSearchCTA />
+
+      {topCastStructuredData && <StructuredDataScript data={topCastStructuredData} />}
+    </PageFrame>
   );
 }
