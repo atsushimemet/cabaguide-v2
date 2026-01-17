@@ -3,7 +3,7 @@ import { AreaSearchCTA } from "@/components/AreaSearchCTA";
 import { EditorialHero } from "@/components/EditorialHero";
 import { EditorialSection } from "@/components/EditorialSection";
 import { PageFrame } from "@/components/PageFrame";
-import { TopCastCarousel } from "@/components/TopCastCarousel";
+import { TopCastCarouselLazy } from "@/components/TopCastCarouselLazy";
 import { getTopCasts } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
@@ -47,7 +47,7 @@ export default async function Home() {
         variant="kabukicho"
         spacing="compact"
       >
-        <TopCastCarousel casts={topCasts} />
+        <TopCastCarouselLazy casts={topCasts} />
       </EditorialSection>
 
       <div className={spacerClass} aria-hidden />
