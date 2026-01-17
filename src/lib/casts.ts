@@ -121,25 +121,42 @@ const fetchStoreRowsByIds = async (storeIds: string[]): Promise<StoreRow[]> => {
   return (data ?? []) as StoreRow[];
 };
 
+const CastFetchChunkSize = 1000;
+
 const fetchCastRowsByStoreIds = async (storeIds: string[]): Promise<CastRow[]> => {
   if (storeIds.length === 0) {
     return [];
   }
 
   const supabase = getServiceSupabaseClient();
-  const { data, error } = await supabase
-    .from("casts")
-    .select("id, name, image_url, store_id, created_at")
-    .in("store_id", storeIds);
+  const rows: CastRow[] = [];
+  let offset = 0;
 
-  if (error) {
-    throw new Error(error.message);
+  while (true) {
+    const { data, error } = await supabase
+      .from("casts")
+      .select("id, name, image_url, store_id, created_at")
+      .in("store_id", storeIds)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(offset, offset + CastFetchChunkSize - 1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const chunk = (data ?? []) as CastRow[];
+    rows.push(...chunk);
+
+    if (chunk.length < CastFetchChunkSize) {
+      break;
+    }
+
+    offset += CastFetchChunkSize;
   }
 
-  return (data ?? []) as CastRow[];
+  return rows;
 };
-
-const CastFetchChunkSize = 1000;
 
 const fetchAllCastRows = async (): Promise<CastRow[]> => {
   const supabase = getServiceSupabaseClient();
