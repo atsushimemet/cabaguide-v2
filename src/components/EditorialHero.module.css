@@ -1,0 +1,233 @@
+.heroBackground {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.heroScanlines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(103, 232, 249, 0.04) 2px,
+      rgba(103, 232, 249, 0.04) 4px
+    );
+  animation: heroScanlines 3s ease-in-out infinite;
+}
+
+.heroParticle {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+  animation-name: heroParticle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45));
+}
+
+.heroRing {
+  position: absolute;
+  border-radius: 9999px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(244, 114, 182, 0.12);
+  filter: blur(2px);
+  animation: heroRing 8s ease-in-out infinite;
+}
+
+.heroWatermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.heroWatermarkLayer {
+  position: absolute;
+  font-size: min(20vw, 220px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: rgba(244, 114, 182, 0.25);
+  text-shadow: 0 0 60px rgba(244, 114, 182, 0.5);
+  animation: heroWatermark 6s ease-in-out infinite;
+}
+
+.heroWatermarkOutline {
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(244, 114, 182, 0.65);
+  text-shadow: none;
+  filter: drop-shadow(0 0 18px rgba(244, 114, 182, 0.45));
+}
+
+.heroContent {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+
+.heroTitle {
+  position: relative;
+  font-family: "Geist Sans", sans-serif;
+  font-weight: 700;
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 30px rgba(244, 114, 182, 0.6), 0 0 50px rgba(103, 232, 249, 0.4);
+  animation: heroTitleGlow 4s ease-in-out infinite;
+}
+
+.heroTitleAccent {
+  position: absolute;
+  bottom: -1rem;
+  left: 0;
+  height: 4px;
+  width: 120px;
+  background: linear-gradient(90deg, #f472b6, #c084fc, #67e8f9);
+  filter: blur(4px);
+  animation: heroAccent 3s ease-in-out infinite;
+}
+
+.heroTagline {
+  font-family: "Geist Sans", sans-serif;
+  font-size: clamp(1.1rem, 4vw, 1.6rem);
+  color: #b8b4d3;
+  letter-spacing: 0.01em;
+  text-shadow: 0 0 20px rgba(103, 232, 249, 0.4);
+  animation: heroTagline 5s ease-in-out infinite;
+}
+
+.heroStepLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1.5rem;
+}
+
+.heroGradientDot {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  filter: blur(40px);
+  border-radius: 9999px;
+  opacity: 0.4;
+  animation: heroGradient 6s ease-in-out infinite;
+}
+
+@keyframes heroScanlines {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes heroParticle {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate3d(var(--particle-dx, 0), var(--particle-dy, 0), 0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.2;
+  }
+}
+
+@keyframes heroRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.2;
+  }
+}
+
+@keyframes heroWatermark {
+  0% {
+    opacity: 0.25;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.25;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes heroTitleGlow {
+  0% {
+    text-shadow: 0 0 20px rgba(244, 114, 182, 0.4);
+  }
+  50% {
+    text-shadow: 0 0 35px rgba(244, 114, 182, 0.7), 0 0 45px rgba(103, 232, 249, 0.35);
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(244, 114, 182, 0.4);
+  }
+}
+
+@keyframes heroAccent {
+  0% {
+    width: 40px;
+    opacity: 0.6;
+  }
+  50% {
+    width: 160px;
+    opacity: 1;
+  }
+  100% {
+    width: 40px;
+    opacity: 0.6;
+  }
+}
+
+@keyframes heroTagline {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes heroGradient {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}

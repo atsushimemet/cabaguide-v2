@@ -8,7 +8,7 @@ import { getTopCasts } from "@/lib/casts";
 import { getRankingLastUpdatedLabel } from "@/lib/lastUpdated";
 import { StructuredDataScript, buildCastRankingStructuredData } from "@/lib/structuredData";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
 
 export default async function Home() {
   const [topCasts, lastUpdatedLabel] = await Promise.all([getTopCasts(), getRankingLastUpdatedLabel()]);
