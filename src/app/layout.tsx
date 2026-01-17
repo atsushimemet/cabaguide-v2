@@ -43,6 +43,27 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero/glow.svg"
+          type="image/svg+xml"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="font"
+          href="/fonts/geist/geist-latin.woff2"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          href="/fonts/geist/geist-latin-ext.woff2"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {/* Google tag (gtag.js) */}
         <Script
           async
