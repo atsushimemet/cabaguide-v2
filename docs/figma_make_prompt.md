@@ -22,9 +22,7 @@ Figma Make に入力し、cabaguide の既存UIを踏まえたアップデート
    - ヘッダーはネオンレーザーフレーム。ロゴ＋タグライン＋ページ種別のラベル (STEP1 等) を載せる。
    - フッターは 9 リンクを 4 カラムに並べる。淡い罫線と大文字ラベル「FOOTER」が先頭。
    - バックグラウンドに 2～3 個の円形グラデーション(フューシャ、シアン)をぼかし、下端は黒グラデの幕。
-2. **LoadingScreen**
-   - フルスクリーン固定。ロゴがRGBチャンネルでグリッチし、最後にズームアウトしながら消える。
-3. **セクション共通要素**
+2. **セクション共通要素**
    - 各セクションは border-y border-white/15 の罫線で区切る。内側余白は上下40px以上。
    - セクション先頭には `text-xs uppercase tracking-[0.4em]` のラベル (TOP CAST, STEP 1 など)。
 
@@ -48,7 +46,7 @@ Figma Make に入力し、cabaguide の既存UIを踏まえたアップデート
 
 ## ページ別の構成
 ### トップページ `/`
-1. LoadingScreen → PageFrame。
+1. PageFrame。
 2. AreaSearchCTA (ID=area-search)。「エリアから探す」ボタンで `/todofuken-choice` へ。
 3. AdBanner(トップ枠)。
 4. TOP CAST セクション: 今週のベスト10。リード文 + 更新日 + TopCastGrid (3カラム/レスポンシブ1-2-3)。
@@ -89,7 +87,6 @@ Figma Make に入力し、cabaguide の既存UIを踏まえたアップデート
 - グリッチ: `glitch-button`, `cast-card-glitch` のように、表示時にRGBずれ・走査線・レーザーライン。
 - スクロールトリガー: AreaSearchCTA, AdBanner(bottom)は Intersection Observer でフェードイン。
 - タイプライター: ヘッダータグライン (PageFrame)。
-- LoadingScreen: 3 秒。ズームして暗転。
 
 ## 表示すべきデータポイント
 - キャスト: 名前, 画像URL, 年齢 (nullable), 都道府県, 繁華街名, 総フォロワー数, SNS別フォロワー, 所属店舗名/リンク。

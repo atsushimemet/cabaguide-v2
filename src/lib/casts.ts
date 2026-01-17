@@ -36,6 +36,11 @@ type StoreRow = {
   phone: string;
 };
 
+type CastFollowerTotalRow = {
+  cast_id: string;
+  followers: number;
+};
+
 const buildStoreMap = (rows: StoreRow[]) => {
   const map = new Map<string, StoreRow>();
   rows.forEach((row) => map.set(row.id, row));
@@ -158,34 +163,41 @@ const fetchCastRowsByStoreIds = async (storeIds: string[]): Promise<CastRow[]> =
   return rows;
 };
 
-const fetchAllCastRows = async (): Promise<CastRow[]> => {
-  const supabase = getServiceSupabaseClient();
-  const rows: CastRow[] = [];
-  let offset = 0;
-
-  while (true) {
-    const { data, error } = await supabase
-      .from("casts")
-      .select("id, name, image_url, store_id, created_at")
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true })
-      .range(offset, offset + CastFetchChunkSize - 1);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const chunk = (data ?? []) as CastRow[];
-    rows.push(...chunk);
-
-    if (chunk.length < CastFetchChunkSize) {
-      break;
-    }
-
-    offset += CastFetchChunkSize;
+const fetchCastRowsByIds = async (castIds: string[]): Promise<CastRow[]> => {
+  if (castIds.length === 0) {
+    return [];
   }
 
-  return rows;
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("casts")
+    .select("id, name, image_url, store_id, created_at")
+    .in("id", castIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as CastRow[];
+};
+
+const fetchTopCastFollowerTotals = async (limit: number): Promise<CastFollowerTotalRow[]> => {
+  if (limit <= 0) {
+    return [];
+  }
+
+  const supabase = getServiceSupabaseClient();
+  const { data, error } = await supabase
+    .from("cast_latest_follower_totals")
+    .select("cast_id, followers")
+    .order("followers", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as CastFollowerTotalRow[];
 };
 
 export const getPaginatedCasts = async (
@@ -238,12 +250,19 @@ export const getPaginatedCasts = async (
 };
 
 export const getTopCasts = async (limit = 10): Promise<Cast[]> => {
+  const safeLimit = Math.max(1, limit);
   const areaMap = await getAreaMap();
-  const castRows = await fetchAllCastRows();
+  const followerRows = await fetchTopCastFollowerTotals(safeLimit * 2);
+  const castIds = followerRows.map((row) => row.cast_id);
+  const castRows = await fetchCastRowsByIds(castIds);
   const storeIds = Array.from(new Set(castRows.map((row) => row.store_id)));
   const storeRows = await fetchStoreRowsByIds(storeIds);
   const storeMap = buildStoreMap(storeRows);
-  const followerTotals = await fetchLatestFollowerTotals(castRows.map((row) => row.id));
+
+  const followerTotals: Record<string, number> = {};
+  followerRows.forEach((row) => {
+    followerTotals[row.cast_id] = Number(row.followers ?? 0);
+  });
 
   const mapped: Cast[] = [];
   castRows.forEach((row, index) => {
@@ -260,7 +279,7 @@ export const getTopCasts = async (limit = 10): Promise<Cast[]> => {
   });
 
   mapped.sort((a, b) => b.followers - a.followers);
-  return mapped.slice(0, limit);
+  return mapped.slice(0, safeLimit);
 };
 
 export const getCastsByStoreId = async (storeId: string): Promise<Cast[]> => {
