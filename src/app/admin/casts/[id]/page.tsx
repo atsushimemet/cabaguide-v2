@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { AdminFooter } from "@/components/AdminFooter";
@@ -52,6 +52,7 @@ type StoreOption = {
 export default function CastDetailPage() {
   const params = useParams<{ id: string }>();
   const castId = params?.id;
+  const router = useRouter();
   const { isChecking, isAuthenticated, logout } = useAdminGuard();
   const [cast, setCast] = useState<CastRow | null>(null);
   const [store, setStore] = useState<StoreRow | null>(null);
@@ -99,6 +100,8 @@ export default function CastDetailPage() {
   const [ageUpdateStatus, setAgeUpdateStatus] = useState<string | null>(null);
   const [ageUpdateError, setAgeUpdateError] = useState<string | null>(null);
   const [isUpdatingAge, setIsUpdatingAge] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchCastDetail = useCallback(async () => {
     if (!castId) {
@@ -606,6 +609,58 @@ export default function CastDetailPage() {
     }
   };
 
+  const handleDeleteCast = async () => {
+    setDeleteError(null);
+
+    if (!isAuthenticated) {
+      setDeleteError("管理者セッションを確認できませんでした。再度ログインしてください。");
+      return;
+    }
+
+    if (!castId) {
+      setDeleteError("cast_id が不明です");
+      return;
+    }
+
+    if (!cast) {
+      setDeleteError("キャスト情報を読み込めませんでした");
+      return;
+    }
+
+    const confirmed = window.confirm(`「${cast.name}」のキャスト情報を削除します。よろしいですか？`);
+    if (!confirmed) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/admin/casts/${castId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.status === 401) {
+        setDeleteError("管理者セッションの有効期限が切れました。再度ログインしてください。");
+        await logout();
+        return;
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setDeleteError(data?.error ?? "キャスト削除に失敗しました");
+        return;
+      }
+
+      router.push("/admin/casts");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "キャスト削除に失敗しました";
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isChecking) {
     return <AdminLoading />;
   }
@@ -1092,6 +1147,26 @@ export default function CastDetailPage() {
               ))
             )}
           </ul>
+        </section>
+
+        <section className="rounded-3xl border border-red-500/60 bg-red-500/10 p-6 backdrop-blur">
+          <h2 className="text-xl font-semibold text-red-50">キャスト情報を削除</h2>
+          <p className="mt-1 text-sm text-red-100/80">
+            この操作は元に戻せません。登録済みのフォロワー履歴や SNS リンクも削除されます。
+          </p>
+          {deleteError && (
+            <p className="mt-4 rounded-xl border border-red-500/60 bg-red-500/20 px-4 py-2 text-sm text-red-50">
+              {deleteError}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleDeleteCast}
+            className="mt-4 w-full rounded-full border border-red-500/60 px-4 py-3 text-base font-semibold text-red-50 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isDeleting || !cast}
+          >
+            {isDeleting ? "削除中..." : "キャストを削除"}
+          </button>
         </section>
       </div>
       <AdminFooter onLogout={logout} />

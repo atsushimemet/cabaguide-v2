@@ -207,3 +207,65 @@ export async function PATCH(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ id: string }> | { id: string } }
+) {
+  const unauthorized = await ensureAdminSession();
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  const params = await context.params;
+  const castId = params.id;
+
+  if (!castId) {
+    return NextResponse.json({ error: "cast_id が指定されていません" }, { status: 400 });
+  }
+
+  let supabase;
+  try {
+    supabase = getServiceSupabaseClient();
+  } catch (error) {
+    if (error instanceof SupabaseServiceEnvError) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    throw error;
+  }
+
+  try {
+    const { data: castRow, error: fetchError } = await supabase
+      .from("casts")
+      .select("id")
+      .eq("id", castId)
+      .maybeSingle();
+
+    if (fetchError) {
+      throw new Error(fetchError.message);
+    }
+
+    if (!castRow) {
+      return NextResponse.json({ error: "キャストが見つかりません" }, { status: 404 });
+    }
+
+    const cleanupTargets = ["cast_social_links", "cast_follower_snapshots"];
+    for (const table of cleanupTargets) {
+      const { error: cleanupError } = await supabase.from(table).delete().eq("cast_id", castId);
+      if (cleanupError) {
+        throw new Error(cleanupError.message);
+      }
+    }
+
+    const { error: deleteError } = await supabase.from("casts").delete().eq("id", castId);
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+
+    return NextResponse.json({ ok: true, castId });
+  } catch (error) {
+    console.error(`[admin/casts/${castId}][DELETE]`, error);
+    const message = error instanceof Error ? error.message : "キャスト削除に失敗しました";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
