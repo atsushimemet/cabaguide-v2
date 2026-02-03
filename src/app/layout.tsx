@@ -3,6 +3,8 @@ import { Dela_Gothic_One, Geist, Geist_Mono, Hachi_Maru_Pop } from "next/font/go
 import Script from "next/script";
 import "./globals.css";
 
+const isMaintenanceMode = process.env.MAINTENANCE_MODE === "true";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -40,6 +42,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const bodyClass = `${geistSans.variable} ${geistMono.variable} ${hachiMaruPop.variable} ${delaGothic.variable} antialiased`;
+
   return (
     <html lang="en">
       <head>
@@ -58,10 +62,16 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${hachiMaruPop.variable} ${delaGothic.variable} antialiased`}
-      >
-        {children}
+      <body className={bodyClass}>
+        {isMaintenanceMode ? (
+          <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(236,72,153,0.25),_transparent_55%)] px-6 text-center">
+            <p className="text-2xl font-semibold tracking-wide text-foreground md:text-3xl">
+              現在メンテナンス中です。
+            </p>
+          </main>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );
